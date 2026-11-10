@@ -101,7 +101,7 @@ function bindICD(){
       show(normalize(payload));
     }catch(error){
       if(error.name==='AbortError'||current!==sequence)return;
-      results.innerHTML='<div class="icd-api-fallback"><strong>Сервис данных сейчас не ответил.</strong><p>Можно открыть официальный браузер ВОЗ: в нём доступен поиск по коду и названию. Российские формулировки и национальные дополнения могут отличаться.</p><a href="https://icd.who.int/browse10/2019/en" target="_blank" rel="noopener noreferrer">Открыть браузер МКБ-10 ВОЗ '+icon('external',13)+'</a></div>';
+      results.innerHTML='<div class="icd-api-fallback"><strong>Сервис данных сейчас не ответил.</strong><p>Можно открыть официальный браузер ВОЗ: в нём доступен поиск по коду и названию. Российские формулировки и национальные дополнения могут отличаться.</p><a href="https://icd.who.int/browse10/2019/en" target="_blank" rel="noopener noreferrer">Открыть браузер МКБ-10 ВОЗ '+icon('external',13)+'</a> · <a href="https://data.apicrafter.ru/tables/nsimz/3720" target="_blank" rel="noopener noreferrer">Открыть российский набор данных '+icon('external',13)+'</a></div>';
       status.textContent='Внешний источник временно недоступен.';
     }
   }
