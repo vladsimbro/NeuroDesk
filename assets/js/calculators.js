@@ -123,7 +123,7 @@ export function calculateEGFRCKDEPI2021(ageYears, creatinineUmol, sex) {
 export function calculateCorrectedSodium(sodium, glucose, coefficient = 1.6) {
   const na = Number(sodium), glu = Number(glucose), factor = Number(coefficient);
   if (!Number.isFinite(na) || na < 80 || na > 200 || !Number.isFinite(glu) || glu < 0 || glu > 100 || ![1.6,2.4].includes(factor)) return { status: 'invalid', value: null };
-  const value = na + factor * (glu - 5.6) / 5.6;
+  const value = na + factor * Math.max(glu - 5.6, 0) / 5.6;
   return { status: 'complete', value, coefficient: factor };
 }
 
