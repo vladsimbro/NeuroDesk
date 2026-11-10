@@ -78,7 +78,7 @@
   fill('ascvd','no');fill('diabetes','no');fill('ckd','no');
   cdoc.getElementById('calc-form').dispatchEvent(new cwin.Event('submit',{bubbles:true,cancelable:true}));
   assert(!!cdoc.querySelector('.calc-result-value'),'SCORE2 shows computed probability');
-  assert(cdoc.querySelector('.calc-result-value').textContent.includes('%'),'SCORE2 value contains percent');
+  assert(cdoc.querySelector('.calc-result-unit')?.textContent.includes('%'),'SCORE2 percentage is in its own unit line');
   fill('diabetes','yes');
   cdoc.getElementById('calc-form').dispatchEvent(new cwin.Event('submit',{bubbles:true,cancelable:true}));
   assert(cdoc.getElementById('calc-result').classList.contains('is-error'),'SCORE2 blocks diabetes input');
@@ -149,6 +149,37 @@
   const bounds=mobileCalc.doc.querySelector('.calc-detail').getBoundingClientRect();
   assert(bounds.width>250&&bounds.width<=390,'Calculator fits mobile viewport');
   mobileCalc.frame.remove();
+
+  for(const width of [320,375,390,414]){
+    const mobileMap=await loadFrame('../calculators.html?tool=map',width,780);
+    const mdoc=mobileMap.doc,mwin=mobileMap.win;
+    const f=mdoc.getElementById('calc-form');
+    assert(!!f,'Mobile '+width+' form loaded');
+    f.querySelector('[name="sbp"]').value='120';
+    f.querySelector('[name="dbp"]').value='80';
+    f.dispatchEvent(new mwin.Event('submit',{bubbles:true,cancelable:true}));
+    const number=mdoc.querySelector('.calc-result-metric');
+    const unit=mdoc.querySelector('.calc-result-unit');
+    const eyebrow=mdoc.querySelector('.calc-result-eyebrow');
+    const title=mdoc.querySelector('.calc-result-label');
+    const body=mdoc.querySelector('.calc-result-summary');
+    assert(!!number&&!!unit&&!!eyebrow&&!!title&&!!body,'Mobile '+width+' renders all result blocks');
+    assert(number.textContent==='93,3','Mobile '+width+' shows separate numerical value with comma');
+    assert(unit.textContent==='мм рт. ст.','Mobile '+width+' shows units on own line');
+    const ab=eyebrow.getBoundingClientRect(),nb=number.getBoundingClientRect(),ub=unit.getBoundingClientRect(),tb=title.getBoundingClientRect();
+    assert(nb.top>=ab.bottom-1,'Mobile '+width+' value does not overlap caption');
+    assert(ub.top>=nb.bottom-1,'Mobile '+width+' unit below numerical result');
+    assert(tb.top>=ub.bottom-1,'Mobile '+width+' title below unit');
+    assert([eyebrow,number,unit,title,body].every(node=>{
+      const box=node.getBoundingClientRect();
+      return box.right<=width+1&&box.left>=-1;
+    }),'Mobile '+width+' text stays within viewport');
+    assert(mwin.getComputedStyle(mdoc.querySelector('.calc-result-main')).display==='grid','Mobile '+width+' report heading uses separate grid rows');
+    assert(mwin.getComputedStyle(mdoc.querySelector('.topbar-actions')).display==='none','Mobile '+width+' topbar does not crowd breadcrumb');
+    assert(mdoc.documentElement.scrollWidth<=width+2,'Mobile '+width+' has no horizontal page overflow');
+    mobileMap.frame.remove();
+  }
+
   document.getElementById('result').textContent='PASS '+checks.length+' browser checks';
  }catch(error){
   document.getElementById('result').textContent='FAIL after '+checks.length+' checks: '+error.message;
