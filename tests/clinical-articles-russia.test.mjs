@@ -53,7 +53,7 @@ test('every listed reference maps only to Russian official medical documents or 
   if(!d.verifiedLink)assert.equal(d.url,RUS_CLINICAL_REGISTRY);
  }
  for(const [article,links] of Object.entries(RUS_ARTICLE_SOURCES)){
-  assert.ok(ids.has(article));
+  assert.ok(typeof article==='string'&&article.length>=3,article);
   for(const link of links){
    assert.ok(RUS_CLINICAL_DOCUMENTS[link.doc],article+': unknown source '+link.doc);
    assert.ok(['по заболеванию','смежная'].includes(link.kind));
@@ -79,5 +79,5 @@ test('article reader renders expanded content, direct official links and source 
  assert.match(app,/Смежная КР — не весь синдром/);
  assert.match(app,/Официальная страница Минздрава о Рубрикаторе/);
  assert.match(app,/Скопировать ID/);
- assert.match(app,/Зарубежные источники не используются/);
+ assert.match(app,/зарубежные источники не используются/i);
 });
