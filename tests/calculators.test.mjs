@@ -102,3 +102,34 @@ test('ABCD2 rejects inherited object property names as unsupported options', () 
   assert.equal(calculateABCD2({age:30,systolic:120,diastolic:80,features:'toString',duration:'lt10',diabetes:'no'}).status, 'invalid');
   assert.equal(calculateABCD2({age:30,systolic:120,diastolic:80,features:'other',duration:'constructor',diabetes:'no'}).status, 'invalid');
 });
+
+import { calculateEGFRCKDEPI2021, calculateCorrectedSodium, calculateOsmolarity, calculateAnionGap } from '../assets/js/calculators.js';
+
+test('CKD-EPI 2021 gives expected adult eGFR for reference examples', () => {
+  const female = calculateEGFRCKDEPI2021(60, 88.4, 'female');
+  const male = calculateEGFRCKDEPI2021(60, 88.4, 'male');
+  assert.equal(female.status, 'complete');
+  assert.ok(Math.abs(female.value - 74.9) < 0.2);
+  assert.ok(Math.abs(male.value - 90.1) < 0.2);
+  assert.equal(calculateEGFRCKDEPI2021(17, 80, 'female').status, 'invalid');
+  assert.equal(calculateEGFRCKDEPI2021(60, 80, 'other').status, 'invalid');
+});
+test('Corrected sodium exposes both Katz and Hillier coefficients', () => {
+  assert.ok(Math.abs(calculateCorrectedSodium(130, 16.7, 1.6).value - 133.1714) < 0.01);
+  assert.ok(Math.abs(calculateCorrectedSodium(130, 16.7, 2.4).value - 134.7571) < 0.01);
+  assert.equal(calculateCorrectedSodium(130, 5.6, 1.6).value, 130);
+  assert.equal(calculateCorrectedSodium(130, 16, 2).status, 'invalid');
+});
+test('Calculated osmolarity uses SI mmol/L values', () => {
+  const result = calculateOsmolarity(140, 5, 7);
+  assert.equal(result.status, 'complete');
+  assert.equal(result.value, 292);
+  assert.equal(calculateOsmolarity(70, 5, 7).status, 'invalid');
+});
+test('Anion gap includes both measured and albumin-corrected values', () => {
+  const result = calculateAnionGap(140, 104, 24, 20);
+  assert.equal(result.status, 'complete');
+  assert.equal(result.value, 12);
+  assert.equal(result.albuminCorrected, 17);
+  assert.equal(calculateAnionGap(140, 104, 24, 0).status, 'invalid');
+});
