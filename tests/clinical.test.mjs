@@ -74,7 +74,7 @@ test('clinical mobile layout improves touch targets and reading width', () => {
 test('Russian clinical recommendations are the primary local reference where directly applicable', () => {
   assert.match(app, /Российские клинические рекомендации/);
   assert.match(app, /cr\.minzdrav\.gov\.ru/);
-  for (const id of ['814_1','295_4','165_2','742_2','617_5']) assert.ok(app.includes(id), id);
+  for (const id of ['814_1','295_4','810_1','165_2','742_2','617_5']) assert.ok(app.includes(id), id);
   assert.doesNotMatch(app, /NICE|NHS|SAEM|ILAE|NINDS|AAO|AAPM&R|nice\\.org\\.uk|nhs\\.uk|saem\\.org|ilae\\.org|ninds\\.nih\\.gov|aao\\.org|ncbi\\.nlm\\.nih\\.gov/);
   assert.match(app, /зарубежные источники не используются/);
 });
@@ -107,4 +107,11 @@ test('mobile sidebar backdrop fades smoothly in both directions', () => {
   assert.match(css, /body:before\\{content:"";position:fixed/);
   assert.match(css, /opacity:0;visibility:hidden;pointer-events:none;transition:opacity .28s ease,visibility .28s ease/);
   assert.match(css, /body\\.sidebar-open:before\\{opacity:1;visibility:visible;pointer-events:auto/);
+});
+
+test('project literature policy lists Russian official sources only', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const literature = await readFile(new URL('../docs/LITERATURE.md', import.meta.url), 'utf8');
+  assert.match(literature, /Минздрава России/);
+  assert.doesNotMatch(literature, /NICE|NHS|NCBI|PubMed|McGraw Hill|Oxford University Press|LWW/);
 });
