@@ -264,3 +264,12 @@ body.nd-reader-open{overflow:hidden}
  .nd-article-source-actions a{display:block}
  .nd-article-source-actions button{align-self:flex-start}
 }
+
+/* Related clinical reading: limited to semantically shared article tags. */
+.nd-article-related{margin:24px 0;padding:18px;border-radius:14px;border:1px solid #dce9e6;background:#f7fbf9}
+.nd-article-related h3{font:750 15px/1.35 'Manrope',sans-serif;color:#275b5a;margin:0 0 6px}
+.nd-article-related p{font:500 12px/1.55 'DM Sans',sans-serif;color:#687e83;margin:0 0 14px}
+.nd-article-related>div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.nd-article-related button{border-radius:9px;border:1px solid #d4e5df;background:white;text-align:left;padding:11px 13px;color:#276f68;cursor:pointer;font:700 12px/1.45 'DM Sans',sans-serif;overflow-wrap:anywhere;min-height:46px}
+.nd-article-related button:hover,.nd-article-related button:focus-visible{border-color:#42877b;background:#eff8f4;outline-offset:2px}
+@media(max-width:680px){.nd-article-related{padding:13px}.nd-article-related>div{grid-template-columns:1fr}}
