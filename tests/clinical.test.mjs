@@ -171,3 +171,22 @@ test('clinical article wording does not expose foreign guideline names or untran
   assert.match(library, /диагностические критерии рассеянного склероза/);
   assert.match(library, /ощущение уже виденного или никогда не виденного/);
 });
+
+
+test('clinical articles open in a separate reading pane without shifting the result list', () => {
+  assert.match(app, /clinical-layout/);
+  assert.match(app, /clinical-results-list/);
+  assert.match(app, /<aside class="clinical-open-articles"/);
+  assert.match(css, /\.clinical-layout\.has-open-articles\{grid-template-columns:/);
+  assert.match(css, /\.clinical-open-articles\{display:flex/);
+  assert.match(css, /max-height:calc\(100vh - 110px\)/);
+  assert.match(css, /@media\(max-width:800px\)[\s\S]*?\.clinical-layout\.has-open-articles\{grid-template-columns:minmax\(0,1fr\)\}/);
+  assert.match(app, /window\.matchMedia\('\(max-width: 800px\)'\)\.matches/);
+});
+
+test('home page has a useful static fallback if the application module fails to load', () => {
+  assert.match(home, /id="app-content" aria-live="polite"><section class="home-welcome">/);
+  assert.match(home, /href="#icd"/);
+  assert.match(home, /href="\.\/clinical\.html"/);
+  assert.match(app, /NeuroDesk initialization failed/);
+});
