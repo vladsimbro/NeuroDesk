@@ -91,7 +91,7 @@ function renderCalculatorCatalog(){
  return heading('ИНСТРУМЕНТЫ','Клинические калькуляторы и шкалы','Интерактивные инструменты для оценки сознания, функционального исхода и неврологического статуса. У каждой шкалы указаны источник и ограничения.')+
  '<div class="notice warning" style="margin-bottom:17px">'+icon('info')+'<div><strong>Статус медицинской проверки.</strong> «Технически реализована» означает, что интерфейс и автоматические тесты работают. Это не означает независимую медицинскую валидацию. До такой проверки результаты следует сверять с первоисточником.</div></div>'+
  '<div class="page-toolbar calculator-toolbar"><input class="filter-input" id="calculator-filter" type="search" placeholder="Найти шкалу или инструмент…" aria-label="Поиск по калькуляторам"><span class="soft-chip">13 интерактивных инструментов</span></div>'+
- '<div class="catalog-grid" id="calculator-grid">'+scaleCatalog.map(item=>'<article class="catalog-card" data-calculator-card="'+item.id+'"><div class="metric-icon">'+icon(item.icon)+'</div><div class="catalog-card-copy"><div class="eyebrow">'+esc(item.group||'Шкалы')+'</div><h3>'+esc(item.title)+'</h3><p>'+esc(item.description)+'</p>'+statusChip(item.status,item.label)+((item.status==='ready'||item.id==='abcd2')?'<br><button type="button" class="text-link" data-open-tool="'+item.id+'">Открыть инструмент ↓</button>':'')+'</div></article>').join('')+'</div>'+
+ '<div class="catalog-grid" id="calculator-grid">'+scaleCatalog.map(item=>'<article class="catalog-card" data-calculator-card="'+item.id+'"><div class="metric-icon">'+icon(item.icon)+'</div><div class="catalog-card-copy"><div class="eyebrow">'+esc(item.group||'Шкалы')+'</div><h3>'+esc(item.title)+'</h3><p>'+esc(item.description)+'</p>'+statusChip(item.status,item.label)+'<br><button type="button" class="text-link" data-open-tool="'+item.id+'" aria-expanded="false">'+((item.status==='ready'||item.id==='abcd2')?'Открыть инструмент ↓':'Быстрый просмотр статуса и источника ↓')+'</button></div></article>').join('')+'</div><div class="card card-pad" id="scale-preview" hidden style="margin-top:16px" aria-live="polite"></div>'+
  '<div id="gcs" style="margin-top:23px">'+renderGCSCalculator()+'</div><div class="scale-tools-stack">'+
  renderScaleCard('rass','Шкала возбуждения-седации Ричмонда (RASS)','Richmond Agitation-Sedation Scale · диапазон от +4 до −5',RASS_OPTIONS,'https://cr.minzdrav.gov.ru/preview-cr/814_1','КР Минздрава РФ · ID 814_1, приложение Г5','Оцени последовательно: наблюдение за пациентом, ответ на голос, затем при отсутствии реакции на голос — ответ на физическую стимуляцию. Выбирай только фактически наблюдавшуюся реакцию.')+
  renderScaleCard('mrs','Модифицированная шкала Рэнкина (mRS)','Modified Rankin Scale · функциональная независимость',MRS_OPTIONS,'https://cr.minzdrav.gov.ru/preview-cr/814_1','КР Минздрава РФ · ID 814_1, приложение Г7','Оценивается общий уровень функциональной независимости и потребность в помощи. Для сопоставимых оценок используй единый подход к интервью и учитывай преморбидный уровень.')+
@@ -376,7 +376,40 @@ document.addEventListener('click',(event) => {
   if (nav) { event.preventDefault(); navigate(nav.dataset.route); }
   if (event.target.closest('[data-scroll-gcs]')) document.getElementById('gcs')?.scrollIntoView({behavior:'smooth',block:'start'});
   const toolLink = event.target.closest('[data-open-tool]');
-  if (toolLink) document.getElementById(toolLink.dataset.openTool === 'gcs' ? 'gcs' : 'tool-' + toolLink.dataset.openTool)?.scrollIntoView({behavior:'smooth',block:'start'});
+  if (toolLink) {
+    const id = toolLink.dataset.openTool;
+    const target = document.getElementById(id === 'gcs' ? 'gcs' : 'tool-' + id);
+    if (target) {
+      target.scrollIntoView({behavior:'smooth',block:'start'});
+    } else {
+      const item = scaleCatalog.find(entry => entry.id === id);
+      const preview = document.getElementById('scale-preview');
+      if (item && preview) {
+        const restricted = item.status === 'restricted';
+        const source = id === 'nihss' || id === 'four'
+          ? '<a href="https://cr.minzdrav.gov.ru/preview-cr/814_1" target="_blank" rel="noopener noreferrer">КР Минздрава РФ, ID 814_1 · приложения Г1 и Г8 ↗</a>'
+          : id === 'midas'
+            ? '<a href="https://cr.minzdrav.gov.ru/preview-cr/295_4" target="_blank" rel="noopener noreferrer">КР Минздрава РФ по мигрени, ID 295_4 ↗</a>'
+            : id === 'moca'
+              ? '<a href="https://mocacognition.com/" target="_blank" rel="noopener noreferrer">Официальный сайт MoCA ↗</a>'
+              : id === 'updrs'
+                ? '<a href="https://www.movementdisorders.org/" target="_blank" rel="noopener noreferrer">Movement Disorder Society ↗</a>'
+                : '<a href="https://www.nationalmssociety.org/" target="_blank" rel="noopener noreferrer">National MS Society ↗</a>';
+        const explanation = restricted
+          ? 'Это ознакомительная карточка. Содержимое теста, бланки, вопросы и электронный подсчёт здесь не воспроизводятся: сначала необходимо подтвердить условия правообладателя. Кнопка активна для просмотра статуса, а не для прохождения защищённой шкалы.'
+          : 'Это ознакомительный режим, а не работающий калькулятор. В текущей версии нет полного набора критериев и проверенного алгоритма подсчёта. Я не стал подменять их выдуманными вопросами или приблизительными баллами. Здесь можно посмотреть статус и первоисточник.';
+        preview.innerHTML = '<div class="section-head"><div><div class="eyebrow">БЫСТРЫЙ ПРОСМОТР · '+(restricted?'ОГРАНИЧЕНИЯ ПРАВ':'НЕ ЗАВЕРШЕНО')+'</div><h2>'+esc(item.title)+'</h2></div><button type="button" class="button button-outline" data-close-scale-preview>Закрыть</button></div><p>'+esc(item.description)+'</p><div class="notice '+(restricted?'warning':'')+'"><div>'+explanation+'</div></div><p class="source-citation">Источник для дальнейшей сверки: '+source+'</p>';
+        preview.hidden = false;
+        toolLink.setAttribute('aria-expanded','true');
+        preview.scrollIntoView({behavior:'smooth',block:'nearest'});
+      }
+    }
+  }
+  if (event.target.closest('[data-close-scale-preview]')) {
+    const preview = document.getElementById('scale-preview');
+    if (preview) preview.hidden = true;
+    document.querySelectorAll('[data-open-tool]').forEach(button => button.setAttribute('aria-expanded','false'));
+  }
   if (!event.target.closest('.global-search') && !event.target.closest('.search-popover')) searchPopover.hidden = true;
 });
 window.addEventListener('hashchange',render);
