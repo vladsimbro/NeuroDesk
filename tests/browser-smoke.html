@@ -155,22 +155,37 @@
   assert(cdoc.querySelectorAll('.calc-card').length===11,'Eleven clinical calculator cards render');
   assert(cdoc.querySelector('.calc-tool-header h2')?.textContent.includes('SCORE2'),'SCORE2 opens from deep link');
   const fill=(key,value)=>{
-   const element=cdoc.querySelector('[name="'+key+'"]');
+   const form=cdoc.getElementById('calc-form');
+   const radios=[...form.querySelectorAll('input[type="radio"][name="'+key+'"]')];
+   if(radios.length){
+    const chosen=radios.find(node=>node.value===value);
+    assert(!!chosen,'Radio choice '+key+'='+value+' is available');
+    chosen.checked=true;chosen.dispatchEvent(new cwin.Event('change',{bubbles:true}));
+    return;
+   }
+   const element=form.querySelector('[name="'+key+'"]');
    assert(!!element,'Calculator form field '+key+' exists');
    element.value=value;
+   element.dispatchEvent(new cwin.Event('change',{bubbles:true}));
   };
   fill('age','60');fill('sex','male');fill('region','moderate');fill('smoker','no');
   fill('sbp','120');fill('total','6');fill('hdl','1.3');
   fill('ascvd','no');fill('diabetes','no');fill('ckd','no');
+  assert(cdoc.getElementById('calc-eligibility')?.textContent.includes('SCORE2 для возраста 60'),'SCORE2 model selection is shown before submitting');
   cdoc.getElementById('calc-form').dispatchEvent(new cwin.Event('submit',{bubbles:true,cancelable:true}));
   assert(!!cdoc.querySelector('.calc-result-value'),'SCORE2 shows computed probability');
   assert(cdoc.querySelector('.calc-result-unit')?.textContent.includes('%'),'SCORE2 percentage is in its own unit line');
   fill('diabetes','yes');
+  assert(cdoc.getElementById('calc-eligibility')?.classList.contains('is-excluded'),'Positive diabetes immediately warns about SCORE2 inapplicability');
   cdoc.getElementById('calc-form').dispatchEvent(new cwin.Event('submit',{bubbles:true,cancelable:true}));
   assert(cdoc.getElementById('calc-result').classList.contains('is-error'),'SCORE2 blocks diabetes input');
   cdoc.querySelector('[data-tool="gcs"]').click();
   assert(cdoc.querySelector('.calc-tool-header h2')?.textContent.includes('GCS'),'GCS opens from catalog');
+  assert(cdoc.querySelectorAll('.calc-choice-item input[type="radio"]').length>=17,'GCS uses visible choice cards rather than dropdowns');
+  assert(!!cdoc.querySelector('.calc-form-progress progress'),'Progress indicator is present');
+  assert(cdoc.querySelector('label[for="calc-eye-0"]'),'Native radio choices have accessible clickable labels');
   fill('eye','4');fill('verbal','5');fill('motor','6');fill('pupils','0');
+  assert(cdoc.getElementById('calc-progress-label').textContent==='4 из 4','GCS confirms all four responses provided');
   cdoc.getElementById('calc-form').dispatchEvent(new cwin.Event('submit',{bubbles:true,cancelable:true}));
   assert(cdoc.querySelector('.calc-result-value')?.textContent.includes('15 / 15'),'GCS totals correctly');
   cdoc.getElementById('calc-search').value='МИО';
@@ -179,9 +194,24 @@
   cdoc.getElementById('calc-search').value='';
   cdoc.getElementById('calc-search').dispatchEvent(new cwin.Event('input',{bubbles:true}));
   cdoc.querySelector('[data-tool="fourat"]').click();
+  assert(cdoc.querySelectorAll('input[type="radio"]').length>=9,'4AT provides direct selectable answers');
   fill('alertness','4');fill('orientation','2');fill('attention','2');fill('change','4');
   cdoc.getElementById('calc-form').dispatchEvent(new cwin.Event('submit',{bubbles:true,cancelable:true}));
   assert(cdoc.querySelector('.calc-result-value')?.textContent.includes('12 / 12'),'4AT totals all four domains');
+
+  cdoc.querySelector('[data-tool="nrs"]').click();
+  const nrsSeven=cdoc.querySelector('input[type="radio"][name="value"][value="7"]');
+  assert(!!nrsSeven,'NRS exposes direct numeric choices');
+  nrsSeven.checked=true;nrsSeven.dispatchEvent(new cwin.Event('change',{bubbles:true}));
+  assert(cdoc.getElementById('calc-progress-label').textContent==='1 из 2','NRS progress counts selected numeric rating');
+  const nrsPeriod=cdoc.querySelector('input[name="period"][value="Сейчас"]');
+  nrsPeriod.checked=true;nrsPeriod.dispatchEvent(new cwin.Event('change',{bubbles:true}));
+  assert(cdoc.getElementById('calc-progress-label').textContent==='2 из 2','NRS progress detects completed form');
+  cdoc.getElementById('calc-form').dispatchEvent(new cwin.Event('submit',{bubbles:true,cancelable:true}));
+  assert(cdoc.querySelector('.calc-score-visual'),'NRS displays a neutral score-position chart');
+  cdoc.querySelector('[data-tool="mrc"]').click();
+  assert(cdoc.querySelectorAll('.calc-mrc-group').length===6,'MRC presents six bilateral muscle groups');
+  assert(cdoc.querySelectorAll('.calc-mrc-sides select').length===12,'MRC retains twelve independent ratings');
 
   const examples={
    score2:{age:'60',sex:'male',region:'moderate',smoker:'no',sbp:'120',total:'6',hdl:'1,3',ascvd:'no',diabetes:'no',ckd:'no'},
