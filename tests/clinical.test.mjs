@@ -97,10 +97,11 @@ test('clinical route remains clinical when an article section hash changes', () 
 });
 
 test('article links are limited to direct Russian clinical recommendation records', () => {
-  assert.doesNotMatch(app, /https?:\\/\\/(?!cr\\.minzdrav\\.gov\\.ru|nsi\\.rosminzdrav\\.ru)[^'"]+/);
-  assert.doesNotMatch(app, /href="https:\\/\\/cr\\.minzdrav\\.gov\\.ru\/"[^>]*>Официальный рубрикатор/);
-  assert.match(app, /view-cr\\/742_2/);
-  assert.match(app, /view-cr\\/617_5/);
+  const urls = [...app.matchAll(/https?:\\/\\/[^'"\\s)]+/g)].map(match => match[0]);
+  assert.ok(urls.every(url => url.startsWith('https://cr.minzdrav.gov.ru/') || url.startsWith('https://nsi.rosminzdrav.ru/')));
+  assert.ok(!app.includes('https://cr.minzdrav.gov.ru/"'));
+  assert.ok(app.includes('view-cr/742_2'));
+  assert.ok(app.includes('view-cr/617_5'));
 });
 
 test('mobile sidebar backdrop fades smoothly in both directions', () => {
