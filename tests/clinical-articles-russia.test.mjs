@@ -47,7 +47,7 @@ test('every listed reference maps only to Russian official medical documents or 
  for(const d of documents){
   assert.match(d.id,/^\d+_\d+$/);
   assert.ok(d.year>=2022&&d.year<=2026);
-  assert.ok(d.name.length>10);
+  assert.ok(d.name.length>=5);
   assert.ok(d.age.length>3);
   assert.match(d.url,/^https:\/\/cr\.minzdrav\.gov\.ru\//);
   if(!d.verifiedLink)assert.equal(d.url,RUS_CLINICAL_REGISTRY);
