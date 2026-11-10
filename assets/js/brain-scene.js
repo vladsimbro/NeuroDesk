@@ -54,7 +54,7 @@ export async function initBrainScene(canvasId) {
     }
     model.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(seamPoints), new THREE.LineBasicMaterial({ color: 0x507f7a, transparent: true, opacity: 0.72 })));
     model.rotation.y = -0.26; model.rotation.x = 0.08;
-    let dragging = false, pointerX = 0, pointerY = 0, targetY = model.rotation.y, targetX = model.rotation.x, zoom = 4.15, frame = 0, disposed = false;
+    let dragging = false, pointerX = 0, pointerY = 0, targetY = model.rotation.y, targetX = model.rotation.x, zoom = 4.15, frame = 0, disposed = false, autoRotate = true;
     const resize = () => {
       const rect = canvas.getBoundingClientRect();
       renderer.setSize(Math.max(1, rect.width), Math.max(1, rect.height), false);
@@ -74,13 +74,19 @@ export async function initBrainScene(canvasId) {
     canvas.addEventListener('pointerdown', onPointerDown); canvas.addEventListener('pointermove', onPointerMove);
     canvas.addEventListener('pointerup', onPointerUp); canvas.addEventListener('pointercancel', onPointerUp);
     canvas.addEventListener('wheel', onWheel, { passive: false });
-    const reset = () => { targetY = -0.26; targetX = 0.08; zoom = 4.15; camera.position.z = zoom; };
+    const reset = () => { targetY = -0.26; targetX = 0.08; zoom = 4.15; camera.position.z = zoom; autoRotate = true; if (toggleButton) toggleButton.textContent = 'Пауза вращения'; };
     const resetButton = document.querySelector('[data-brain-reset]');
+    const toggleButton = document.querySelector('[data-brain-toggle]');
+    const zoomButtons = [...document.querySelectorAll('[data-brain-zoom]')];
     if (resetButton) resetButton.addEventListener('click', reset);
+    const toggleRotation = () => { autoRotate = !autoRotate; if (toggleButton) toggleButton.textContent = autoRotate ? 'Пауза вращения' : 'Продолжить вращение'; };
+    if (toggleButton) toggleButton.addEventListener('click', toggleRotation);
+    const zoomByButton = (event) => { zoom = Math.max(2.65, Math.min(5.7, zoom - Number(event.currentTarget.dataset.brainZoom) * 0.3)); camera.position.z = zoom; };
+    zoomButtons.forEach((button) => button.addEventListener('click', zoomByButton));
     const animate = () => {
       if (disposed) return;
       frame = requestAnimationFrame(animate);
-      if (!dragging) targetY += 0.0018;
+      if (autoRotate && !dragging) targetY += 0.0018;
       model.rotation.y += (targetY - model.rotation.y) * 0.045;
       model.rotation.x += (targetX - model.rotation.x) * 0.045;
       renderer.render(scene, camera);
@@ -91,6 +97,8 @@ export async function initBrainScene(canvasId) {
       canvas.removeEventListener('pointerdown', onPointerDown); canvas.removeEventListener('pointermove', onPointerMove);
       canvas.removeEventListener('pointerup', onPointerUp); canvas.removeEventListener('pointercancel', onPointerUp); canvas.removeEventListener('wheel', onWheel);
       if (resetButton) resetButton.removeEventListener('click', reset);
+      if (toggleButton) toggleButton.removeEventListener('click', toggleRotation);
+      zoomButtons.forEach((button) => button.removeEventListener('click', zoomByButton));
       renderer.dispose(); geometryDispose(model); materialLeft.dispose(); materialRight.dispose(); stemMaterial.dispose();
     };
   } catch (error) {
