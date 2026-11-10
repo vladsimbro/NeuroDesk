@@ -33,3 +33,25 @@ test('exam layout has responsive and print styles', () => {
   assert.match(css, /@media\(max-width:600px\)/);
   assert.match(css, /@media print/);
 });
+
+test('clinical reference is a searchable fourth route with sourced neurology topics', () => {
+  assert.match(app, /function renderClinical\(\)/);
+  assert.match(app, /function bindClinical\(\)/);
+  assert.match(app, /clinical:\{title:'Клинический справочник',render:renderClinical\}/);
+  assert.match(html, /data-route="clinical"/);
+  for (const topic of ['Головная боль: первичная оценка','Острое головокружение и вертиго','Слабость в конечностях','Онемение и парестезии']) {
+    assert.ok(app.includes(topic), topic);
+  }
+  assert.match(app, /www\.nice\.org\.uk\/guidance\/cg150/);
+  assert.match(app, /www\.nice\.org\.uk\/guidance\/ng127/);
+  assert.match(app, /www\.saem\.org\/publications\/grace\/grace-3/);
+});
+
+test('clinical reference supports full-text search, category filters and expandable articles', () => {
+  for (const feature of ['clinical-query','clinical-filters','clinical-results','data-clinical-filter','data-clinical-open','clinical-article-section','Первоисточники']) {
+    assert.ok(app.includes(feature), feature);
+  }
+  assert.match(css, /\.clinical-results/);
+  assert.match(css, /\.clinical-article-section/);
+  assert.match(css, /body\.dark \.clinical-notice/);
+});
