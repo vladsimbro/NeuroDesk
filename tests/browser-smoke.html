@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><title>NeuroDesk browser smoke test</title>
+<style>body{font:16px system-ui;margin:20px}iframe{position:absolute;left:-9999px;top:0;border:0}</style></head>
+<body><h1>Browser smoke test</h1><pre id="result">RUNNING</pre>
+<script>
+(async()=>{
+ const checks=[];
+ const assert=(condition,message)=>{if(!condition)throw Error(message);checks.push(message)};
+ const loadFrame=(url,width=1280,height=850)=>new Promise((resolve,reject)=>{
+  const frame=document.createElement('iframe');frame.width=width;frame.height=height;
+  frame.style.width=width+'px';frame.style.height=height+'px';
+  frame.onload=()=>resolve({frame,doc:frame.contentDocument,win:frame.contentWindow});
+  frame.onerror=()=>reject(Error('Frame failed: '+url));
+  document.body.appendChild(frame);frame.src=url;
+ });
+ try{
+  const home=await loadFrame('../index.html');
+  assert(home.doc.title==='Главная — NeuroDesk','Home JavaScript rendered');
+  assert(home.doc.querySelectorAll('.nd-home-gateway').length===2,'Two main sections render');
+  assert(home.doc.querySelectorAll('.nd-home-topic-grid a').length===6,'Six real quick article links render');
+  const gateways=home.doc.querySelector('.nd-home-gateways');
+  assert(gateways.getBoundingClientRect().height>150,'Home cards have usable geometry');
+  home.frame.remove();
+
+  const clinical=await loadFrame('../clinical.html');
+  const {doc,win}=clinical;
+  let cards=[...doc.querySelectorAll('.nd-clinical-card')];
+  assert(cards.length===31,'All clinical cards render');
+  const initialPositions=cards.slice(0,3).map(card=>card.getBoundingClientRect().top);
+  cards[0].click();
+  const reader=doc.getElementById('clinical-reader');
+  assert(!reader.hidden,'Reader opens');
+  assert(win.getComputedStyle(reader).position==='fixed','Reader overlay is fixed');
+  assert(doc.querySelectorAll('.nd-reader-tab').length===1,'First article opens one tab');
+  cards=[...doc.querySelectorAll('.nd-clinical-card')];
+  cards[1].click();
+  assert(doc.querySelectorAll('.nd-reader-tab').length===2,'Second article adds a tab');
+  const afterPositions=[...doc.querySelectorAll('.nd-clinical-card')].slice(0,3).map(card=>card.getBoundingClientRect().top);
+  assert(afterPositions.every((value,index)=>Math.abs(value-initialPositions[index])<2),'Catalog cards do not move while opening articles');
+  const tabButtons=[...doc.querySelectorAll('[data-clinical-tab]')];
+  tabButtons[0].click();
+  assert(doc.querySelector('.nd-reader-tab.is-active [data-clinical-tab]')===tabButtons[0],'Tabs switch active article');
+  doc.querySelector('[data-clinical-tab-close]').click();
+  assert(doc.querySelectorAll('.nd-reader-tab').length===1,'One tab closes independently');
+  doc.getElementById('clinical-reader-close').click();
+  assert(reader.hidden,'Reader dismisses without losing tabs');
+  const reopen=doc.getElementById('clinical-reopen');
+  assert(!reopen.hidden,'Reopen control is available');
+  reopen.click();
+  assert(!reader.hidden&&doc.querySelectorAll('.nd-reader-tab').length===1,'Reopening preserves article state');
+  doc.getElementById('clinical-close-all').click();
+  assert(reader.hidden&&doc.querySelectorAll('.nd-reader-tab').length===0,'Close all clears the workspace');
+  const search=doc.getElementById('clinical-query');
+  search.value='миастения';search.dispatchEvent(new win.Event('input',{bubbles:true}));
+  assert(doc.querySelectorAll('.nd-clinical-card').length>=1,'Search works after closing reader');
+  clinical.frame.remove();
+
+  const deep=await loadFrame('../clinical.html?article=stroke&article=headache&active=stroke',390,844);
+  assert(!deep.doc.getElementById('clinical-reader').hidden,'Mobile deep link opens reader');
+  assert(deep.doc.querySelectorAll('.nd-reader-tab').length===2,'Mobile deep link preserves two tabs');
+  const panel=deep.doc.querySelector('.nd-reader-dialog').getBoundingClientRect();
+  assert(panel.width<=391&&panel.width>=360,'Reader fits mobile width');
+  assert(panel.height>=790,'Reader uses full mobile screen height');
+  deep.frame.remove();
+  document.getElementById('result').textContent='PASS '+checks.length+' browser checks';
+ }catch(error){
+  document.getElementById('result').textContent='FAIL after '+checks.length+' checks: '+error.message;
+  console.error(error);
+ }
+})();
+</script></body></html>
