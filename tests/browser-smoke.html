@@ -74,6 +74,7 @@
 
   const clinical=await loadFrame('../clinical.html');
   const {doc,win}=clinical;
+  await waitUntil(()=>doc.querySelectorAll('.nd-clinical-card').length===31,'expanded clinical library loaded');
   let cards=[...doc.querySelectorAll('.nd-clinical-card')];
   assert(cards.length===31,'All clinical cards render');
   const initialPositions=cards.slice(0,3).map(card=>card.getBoundingClientRect().top);
@@ -120,6 +121,7 @@
   clinical.frame.remove();
 
   const deep=await loadFrame('../clinical.html?article=stroke&article=headache&active=stroke',390,844);
+  await waitUntil(()=>deep.doc.getElementById('clinical-reader')&&!deep.doc.getElementById('clinical-reader').hidden,'clinical mobile deep link ready');
   assert(!deep.doc.getElementById('clinical-reader').hidden,'Mobile deep link opens reader');
   assert(deep.doc.querySelectorAll('.nd-reader-tab').length===2,'Mobile deep link preserves two tabs');
   const panel=deep.doc.querySelector('.nd-reader-dialog').getBoundingClientRect();
