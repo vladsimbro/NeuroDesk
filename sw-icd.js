@@ -1,6 +1,6 @@
 // Offline-only cache for NeuroDesk's ICD-10 workspace.
 // Do not intercept or persist clinical forms, calculator requests, or patient data.
-const CACHE_NAME='neurodesk-icd-v20261110-4';
+const CACHE_NAME='neurodesk-icd-v20261110-5';
 const CACHE_PREFIX='neurodesk-icd-';
 const FILES=[
  './index.html',
