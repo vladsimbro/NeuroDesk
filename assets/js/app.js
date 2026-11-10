@@ -315,7 +315,7 @@ function bindClinical(){
  };
  const render=()=>{
   const q=query.value.trim().toLocaleLowerCase('ru-RU').replace(/ё/g,'е');
-  const tokens=q.split(/[\\s,;]+/u).filter(Boolean);
+  const tokens=q.split(/[\s,;]+/u).filter(Boolean);
   const matches=CLINICAL_LIBRARY.filter(item=>{
    if(category!=='Все'&&item.category!==category)return false;
    if(!tokens.length)return true;
