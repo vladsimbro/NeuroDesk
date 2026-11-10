@@ -249,3 +249,5 @@ body.nd-reader-open{overflow:hidden}
  .nd-article-source-entry strong{font-size:12px}
  .nd-reader-content .nd-article-section li{font-size:13px;line-height:1.75;overflow-wrap:break-word}
 }
+
+.nd-clinical-loading{min-height:48vh;display:flex;align-items:center;justify-content:center;text-align:center;color:#68818a;font:650 14px/1.6 'DM Sans',sans-serif;padding:25px}
