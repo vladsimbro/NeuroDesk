@@ -40,7 +40,7 @@ test('clinical articles support deep links and table of contents', () => {
 });
 
 test('clinical reference supports token search, category filters and expandable articles', () => {
-  for (const feature of ['clinical-query','clinical-filters','clinical-results','data-clinical-filter','data-clinical-open','clinical-article-section','Первоисточники']) {
+  for (const feature of ['clinical-query','clinical-filters','clinical-results','data-clinical-filter','data-clinical-open','clinical-article-section','Российские клинические рекомендации']) {
     assert.ok(app.includes(feature), feature);
   }
   assert.match(app, /tokens\.every\(token=>corpus\.includes\(token\)\)/);
@@ -82,7 +82,7 @@ test('Russian clinical recommendations are the primary local reference where dir
 test('article expansion and collapse use a smooth height transition and an in-article check control', () => {
   assert.match(app, /clinical-article-panel/);
   assert.match(app, /data-clinical-close/);
-  assert.match(app, /icon\\('check',19\\)/);
+  assert.match(app, /icon\('check',19\)/);
   assert.doesNotMatch(app, /data-clinical-close="'\+item\.id\+'">Свернуть/);
   assert.match(css, /grid-template-rows:0fr/);
   assert.match(css, /grid-template-rows:1fr/);
