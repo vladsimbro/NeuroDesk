@@ -64,7 +64,7 @@ function renderOverview() {
   const date = new Intl.DateTimeFormat('ru-RU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
   return '<div class="page-heading"><div><div class="eyebrow">ЦИФРОВОЕ РАБОЧЕЕ ПРОСТРАНСТВО</div><h1>Рабочий стол невролога</h1><p class="lead">Инструменты, справочные материалы и проверяемые источники — в одном пространстве.</p></div><span class="date-chip">' + icon('calendar', 14) + esc(date) + '</span></div>' +
     '<section class="hero-panel"><div class="hero-copy"><div class="hero-kicker"><span class="pulse"></span> NEURODESK · РАННЯЯ ВЕРСИЯ</div><h1>Клиническая ясность начинается с точных данных.</h1><p>Рабочая среда для невролога с фокусом на российские клинические источники, воспроизводимые расчёты и профессиональные визуализации.</p><div class="hero-actions"><a class="button button-primary" href="#calculators">Открыть калькуляторы ' + icon('arrow', 14) + '</a><a class="button button-glass" href="#handbook">Перейти к справочнику</a></div></div><div class="hero-visual"><canvas id="brain-canvas" aria-label="Демонстрационная трёхмерная модель"></canvas><span class="visual-caption">3D · демонстрационная модель</span></div></section>' +
-    '<div class="metric-grid">' + metricCard('calculator', '', '13', 'Расчётных инструментов') + metricCard('book', 'blue', '19', 'Источников и справочников') + metricCard('brain', 'amber', '3D', 'Интерактивная визуализация') + metricCard('shield', 'navy', '0', 'Пациентских данных хранится') + '</div>' +
+    '<div class="metric-grid">' + metricCard('calculator', '', '13', 'Расчётных инструментов') + metricCard('book', 'blue', '22', 'Источников и справочников') + metricCard('brain', 'amber', '3D', 'Интерактивная визуализация') + metricCard('shield', 'navy', '0', 'Пациентских данных хранится') + '</div>' +
     '<div class="content-grid"><section class="card card-pad"><div class="section-head"><h2>Быстрый доступ</h2><a class="text-link" href="#calculators">Все инструменты →</a></div><div class="tool-list">' +
     '<a class="tool-row" href="#calculators"><span class="metric-icon">' + icon('activity') + '</span><span class="tool-row-copy"><strong>Шкала комы Глазго (GCS)</strong><small>Компонентная оценка E / V / M с обработкой NT</small></span><span class="tool-arrow">' + icon('arrow') + '</span></a>' +
     '<a class="tool-row" href="#handbook"><span class="metric-icon blue">' + icon('file-check') + '</span><span class="tool-row-copy"><strong>Клинические рекомендации</strong><small>Официальный рубрикатор Минздрава РФ</small></span><span class="tool-arrow">' + icon('arrow') + '</span></a>' +
@@ -228,7 +228,9 @@ function bindGCS() {
 
 const featuredGuidelines = [
  {title:'Ишемический инсульт и транзиторная ишемическая атака',id:'814_1',year:'2024',codes:'G45 · I63 · I64 · I65 · I66',url:'https://cr.minzdrav.gov.ru/preview-cr/814_1',status:'Действует по метаданным рубрикатора'},
- {title:'Миастения',id:'165_2',year:'2025',codes:'G70.0 · G70.2 · G70.8 · G70.9',url:'https://cr.minzdrav.gov.ru/preview-cr/165_2',status:'Действует по метаданным рубрикатора'}
+ {title:'Миастения',id:'165_2',year:'2025',codes:'G70.0 · G70.2 · G70.8 · G70.9',url:'https://cr.minzdrav.gov.ru/preview-cr/165_2',status:'Действует по метаданным рубрикатора'},
+ {title:'Мигрень',id:'295_4',year:'2024',codes:'G43 · G44.0 · G44.1 · G44.4',url:'https://cr.minzdrav.gov.ru/preview-cr/295_4',status:'Действует · пересмотр не позднее 2026'},
+ {title:'Детский церебральный паралич',id:'1087_1',year:'2026',codes:'G80.0–G80.8 · G81.1',url:'https://cr.minzdrav.gov.ru/preview-cr/1087_1',status:'Действует · пересмотр не позднее 2028'}
 ];
 function renderHandbook() {
   return heading('БАЗА ЗНАНИЙ','Медицинский справочник','Навигация по первичным российским источникам, выбранные клинические рекомендации и встроенные карточки шкал. Полные документы доступны по прямой ссылке у Минздрава РФ.') +
