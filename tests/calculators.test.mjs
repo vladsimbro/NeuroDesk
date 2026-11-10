@@ -108,3 +108,91 @@ test('4AT attribution and adaptation disclosures are included',()=>{
  assert.match(instrument.note,/адаптаци/);
  assert.ok(instrument.sources.some(x=>x[1].includes('the4at.com/attribution')));
 });
+
+
+test('all seven modified Rankin grades explain functional dependence',()=>{
+ const expected=[
+  ['Симптомы отсутствуют','Нет ограничений'],
+  ['Нет значимых ограничений','Полная самостоятельность'],
+  ['Лёгкое нарушение','собственными делами'],
+  ['Умеренное нарушение','ходить без помощи'],
+  ['Умеренно тяжёлое','не способен ходить'],
+  ['Тяжёлое нарушение','постоянного'],
+  ['Смерть','оценке исхода']
+ ];
+ expected.forEach(([title,meaning],grade)=>{
+  const outcome=calculate('mrs',{grade:String(grade)});
+  assert.equal(outcome.value,grade+' / 6');
+  assert.ok(outcome.label.includes(title),'grade '+grade+': '+outcome.label);
+  const report=outcome.summary+' '+outcome.breakdown.map(x=>x.value).join(' ')+' '+outcome.interpretation;
+  assert.ok(report.toLocaleLowerCase('ru-RU').includes(meaning.toLocaleLowerCase('ru-RU')),'grade '+grade+': '+meaning);
+  assert.equal(outcome.breakdown.length,3);
+ });
+});
+
+test('all scales provide complete result explanations and traceable components',()=>{
+ const fixtures={
+  score2:{age:'60',sex:'male',region:'moderate',smoker:'no',sbp:'120',total:'6',hdl:'1.3',ascvd:'no',diabetes:'no',ckd:'no'},
+  gcs:{eye:'4',verbal:'5',motor:'6',pupils:'0'},
+  mrs:{grade:'3'},
+  abcd2:{age:'60',pressure:'yes',symptom:'weakness',duration:'60',diabetes:'yes'},
+  ich:{gcs:'3',age:'80',volume:'30',ivh:'yes',infratentorial:'yes'},
+  fourat:{alertness:'4',orientation:'2',attention:'2',change:'4'},
+  rass:{grade:'-1'},
+  nrs:{value:'7',period:'Сейчас'},
+  mrc:Object.fromEntries(Array.from({length:12},(_,i)=>['m'+i,'5'])),
+  map:{sbp:'120',dbp:'80'},
+  bmi:{weight:'81',height:'180'}
+ };
+ for(const scale of SCALE_DEFS){
+  const data=fixtures[scale.id];
+  assert.ok(data,'No sample input for '+scale.id);
+  const outcome=calculate(scale.id,data);
+  assert.ok(typeof outcome.value==='string'&&outcome.value.length,scale.id+': value');
+  for(const property of ['label','summary','note','interpretation'])assert.ok(typeof outcome[property]==='string'&&outcome[property].length>12,scale.id+': '+property);
+  assert.ok(outcome.breakdown.length>=1,scale.id+': breakdown');
+  assert.ok(outcome.breakdown.every(row=>row.label&&row.value),scale.id+': missing breakdown row');
+ }
+});
+test('selection tampering is rejected rather than accepted as 0 or false',()=>{
+ assert.throws(()=>calculate('mrs',{grade:'7'}),/Недопустимое/);
+ assert.throws(()=>calculate('rass',{grade:'-7'}),/Недопустимое/);
+ assert.throws(()=>calculate('fourat',{alertness:'0',orientation:'0',attention:'3',change:'4'}),/Недопустимое/);
+ assert.throws(()=>calculate('abcd2',{age:'60',pressure:'bogus',symptom:'weakness',duration:'60',diabetes:'yes'}),/Недопустимое/);
+ assert.throws(()=>calculate('nrs',{value:' ',period:'Сейчас'}),/Заполни/);
+});
+test('GCS-P is withheld when pupils are untestable while component GCS stays available',()=>{
+ const outcome=calcGCS({eye:'4',verbal:'5',motor:'6',pupils:'NT'});
+ assert.equal(outcome.total,15);
+ assert.equal(outcome.gcsp,null);
+ const report=calculate('gcs',{eye:'4',verbal:'5',motor:'6',pupils:'NT'});
+ assert.equal(report.value,'15 / 15');
+ assert.match(report.breakdown.at(-1).value,/не вычисляется/);
+ assert.match(report.breakdown.at(-1).value,/реакцию зрачков/);
+});
+test('Score2 category reflects actual age-group thresholds and selected region',()=>{
+ const inputs={age:'49',sex:'female',region:'very_high',smoker:'no',sbp:'120',total:'5.0',hdl:'1.5',ascvd:'no',diabetes:'no',ckd:'no'};
+ for(const [age,phrase] of [['49','<2,5'],['50','<5'],['70','<7,5']]){
+  const o=calculate('score2',{...inputs,age});
+  assert.ok(o.breakdown.some(x=>x.value.includes(phrase)),'Threshold '+age+' -> '+phrase);
+  assert.ok(o.breakdown.some(x=>x.value.includes('очень высокого')));
+ }
+ assert.throws(()=>calculate('score2',{...inputs,diabetes:'yes'}),/диабет/);
+});
+test('decimal comma and numeric bounds are both validated',()=>{
+ assert.match(calculate('bmi',{weight:'81,0',height:'180'}).value,/25\.0/);
+ assert.match(calculate('map',{sbp:'120',dbp:'80,0'}).value,/93\.3/);
+ assert.throws(()=>calculate('map',{sbp:'abc',dbp:'80'}),/диапазон/);
+ assert.throws(()=>calculate('bmi',{weight:'81',height:'0'}),/диапазон/);
+});
+test('calculation guide and evidence disclosure cover all instruments',async()=>{
+ const {CALCULATOR_GUIDES}=await import('../assets/js/calculator-guides.js');
+ for(const scale of SCALE_DEFS)assert.ok(CALCULATOR_GUIDES[scale.id]?.steps?.length>=3,scale.id);
+ const ui=await readFile(new URL('assets/js/calculators.js',root),'utf8');
+ assert.match(ui,/Что означает результат/);
+ assert.match(ui,/Как получено/);
+ assert.match(ui,/Как интерпретировать/);
+ assert.match(ui,/Важные ограничения/);
+ assert.match(ui,/Параметры изменены/);
+ assert.match(ui,/Скопировать результат и расшифровку/);
+});
