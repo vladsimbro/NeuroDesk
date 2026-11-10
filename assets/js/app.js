@@ -290,9 +290,10 @@ function bindClinical(){
  const query=document.getElementById('clinical-query'),results=document.getElementById('clinical-results'),meta=document.getElementById('clinical-meta'),filters=document.getElementById('clinical-filters');
  let category='Все',selected=new URLSearchParams(location.search).get('article');
  if(selected&&!CLINICAL_LIBRARY.some(item=>item.id===selected))selected=null;
+ const articleMarkup=item=>'<article class="clinical-article" id="clinical-article-'+item.id+'"><div class="clinical-article-head"><div><span class="clinical-category">'+esc(item.category)+'</span><h2>'+esc(item.title)+'</h2><p>'+esc(item.summary)+'</p></div><button type="button" class="button button-ghost" data-clinical-close="'+item.id+'">Свернуть</button></div>'+'<nav class="clinical-article-toc" aria-label="Содержание статьи"><strong>Содержание</strong>'+item.sections.map((section,i)=>'<a href="#clinical-section-'+item.id+'-'+i+'">'+String(i+1).padStart(2,'0')+' · '+esc(section.title)+'</a>').join('')+'</nav>'+item.sections.map((section,i)=>'<section class="clinical-article-section" id="clinical-section-'+item.id+'-'+i+'"><h3><span>'+String(i+1).padStart(2,'0')+'</span>'+esc(section.title)+'</h3><ul>'+section.items.map(line=>'<li>'+esc(line)+'</li>').join('')+'</ul></section>').join('')+'<section class="clinical-sources"><h3>Первоисточники</h3>'+item.sources.map(source=>'<a href="'+esc(source.url)+'" target="_blank" rel="noopener noreferrer">'+esc(source.label)+' '+icon('external',13)+'</a>').join('')+'<p>Краткое изложение не заменяет оригинальную рекомендацию. Перед клиническим применением открой источник и проверь действующую редакцию.</p></section></article>';
  const render=()=>{
   const q=query.value.trim().toLocaleLowerCase('ru-RU').replace(/ё/g,'е');
-  const tokens=q.split(/[\\s,;]+/u).filter(Boolean);
+  const tokens=q.split(/[\s,;]+/u).filter(Boolean);
   const matches=CLINICAL_LIBRARY.filter(item=>{
    if(category!=='Все'&&item.category!==category)return false;
    if(!tokens.length)return true;
@@ -303,14 +304,33 @@ function bindClinical(){
    return rank(a)-rank(b);
   });
   meta.textContent='Найдено материалов: '+matches.length+' из '+CLINICAL_LIBRARY.length;
-  results.innerHTML=matches.length?matches.map(item=>'<button type="button" class="clinical-result '+(selected===item.id?'selected':'')+'" data-clinical-open="'+item.id+'"><span class="clinical-result-top"><span class="clinical-category">'+esc(item.category)+'</span><span class="clinical-updated">'+esc(item.updated)+'</span></span><strong>'+esc(item.title)+'</strong><span>'+esc(item.summary)+'</span><span class="clinical-tags">'+item.tags.map(tag=>'<i>'+esc(tag)+'</i>').join('')+'</span><span class="clinical-open-label">'+(selected===item.id?'Материал открыт':'Открыть материал '+icon('arrow',13))+'</span></button>').join(''):'<div class="icd-empty"><strong>Ничего не найдено</strong><span>Попробуй другой термин или переключи категорию.</span></div>';
-  if(selected){const item=CLINICAL_LIBRARY.find(x=>x.id===selected);if(item&&matches.some(x=>x.id===selected)){results.innerHTML+='<article class="clinical-article"><div class="clinical-article-head"><div><span class="clinical-category">'+esc(item.category)+'</span><h2>'+esc(item.title)+'</h2><p>'+esc(item.summary)+'</p></div><button type="button" class="button button-ghost" id="clinical-close">Закрыть</button></div>'+'<nav class="clinical-article-toc" aria-label="Содержание статьи"><strong>Содержание</strong>'+item.sections.map((section,i)=>'<a href="#clinical-section-'+i+'">'+String(i+1).padStart(2,'0')+' · '+esc(section.title)+'</a>').join('')+'</nav>'+item.sections.map((section,i)=>'<section class="clinical-article-section" id="clinical-section-'+i+'"><h3><span>'+String(i+1).padStart(2,'0')+'</span>'+esc(section.title)+'</h3><ul>'+section.items.map(line=>'<li>'+esc(line)+'</li>').join('')+'</ul></section>').join('')+'<section class="clinical-sources"><h3>Первоисточники</h3>'+item.sources.map(source=>'<a href="'+esc(source.url)+'" target="_blank" rel="noopener noreferrer">'+esc(source.label)+' '+icon('external',13)+'</a>').join('')+'<p>Краткое изложение не заменяет оригинальную рекомендацию. Перед клиническим применением открой источник и проверь действующую редакцию.</p></section></article>';}}
-  results.querySelectorAll('[data-clinical-open]').forEach(button=>button.addEventListener('click',()=>{selected=button.dataset.clinicalOpen;history.replaceState(null,'','?article='+encodeURIComponent(selected));render();if(selected)document.querySelector('.clinical-article')?.scrollIntoView({behavior:'smooth',block:'start'});}));
-  document.getElementById('clinical-close')?.addEventListener('click',()=>{selected=null;history.replaceState(null,'',location.pathname);render();});
+  results.innerHTML=matches.length?matches.map(item=>'<div class="clinical-result-wrap"><button type="button" class="clinical-result '+(selected===item.id?'selected':'')+'" data-clinical-open="'+item.id+'" aria-expanded="'+(selected===item.id)+'" aria-controls="clinical-article-'+item.id+'"><span class="clinical-result-top"><span class="clinical-category">'+esc(item.category)+'</span><span class="clinical-updated">'+esc(item.updated)+'</span></span><strong>'+esc(item.title)+'</strong><span>'+esc(item.summary)+'</span><span class="clinical-tags">'+item.tags.map(tag=>'<i>'+esc(tag)+'</i>').join('')+'</span><span class="clinical-open-label">'+(selected===item.id?'Свернуть материал':'Открыть материал '+icon('arrow',13))+'</span></button>'+(selected===item.id?articleMarkup(item):'')+'</div>').join(''):'<div class="icd-empty"><strong>Ничего не найдено</strong><span>Попробуй другой термин или переключи категорию.</span></div>';
+  results.querySelectorAll('[data-clinical-open]').forEach(button=>button.addEventListener('click',()=>{
+   const wasOpen=selected===button.dataset.clinicalOpen;
+   selected=wasOpen?null:button.dataset.clinicalOpen;
+   const url=new URL(location.href);
+   if(selected)url.searchParams.set('article',selected);else url.searchParams.delete('article');
+   history.replaceState(null,'',url.pathname+url.search+url.hash);
+   render();
+   if(selected)document.getElementById('clinical-article-'+selected)?.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }));
+  results.querySelectorAll('[data-clinical-close]').forEach(button=>button.addEventListener('click',()=>{
+   const id=button.dataset.clinicalClose;
+   selected=null;
+   const url=new URL(location.href);url.searchParams.delete('article');
+   history.replaceState(null,'',url.pathname+url.search+url.hash);
+   render();
+   document.querySelector('[data-clinical-open="'+id+'"]')?.focus({preventScroll:true});
+  }));
+  if(selected&&!matches.some(item=>item.id===selected)){
+   selected=null;
+   const url=new URL(location.href);url.searchParams.delete('article');
+   history.replaceState(null,'',url.pathname+url.search+url.hash);
+  }
  };
- query.addEventListener('input',()=>{selected=null;render();});
- document.getElementById('clinical-clear').addEventListener('click',()=>{query.value='';selected=null;render();query.focus();});
- filters.querySelectorAll('[data-clinical-filter]').forEach(button=>button.addEventListener('click',()=>{category=button.dataset.clinicalFilter;selected=null;filters.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===button));render();}));
+ query.addEventListener('input',()=>{selected=null;const url=new URL(location.href);url.searchParams.delete('article');history.replaceState(null,'',url.pathname+url.search+url.hash);render();});
+ document.getElementById('clinical-clear').addEventListener('click',()=>{query.value='';selected=null;const url=new URL(location.href);url.searchParams.delete('article');history.replaceState(null,'',url.pathname+url.search+url.hash);render();query.focus();});
+ filters.querySelectorAll('[data-clinical-filter]').forEach(button=>button.addEventListener('click',()=>{category=button.dataset.clinicalFilter;selected=null;const url=new URL(location.href);url.searchParams.delete('article');history.replaceState(null,'',url.pathname+url.search+url.hash);filters.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===button));render();}));
  render();
 }
 
@@ -322,7 +342,7 @@ function render(){
   app.innerHTML=page.render();
   if(route==='icd')bindICD();
   if(route==='clinical')bindClinical();
-  sidebar.classList.remove('open');
+  closeSidebar();
   document.title=page.title+' — NeuroDesk';
 }
 function navigate(route){location.hash=route;}
@@ -331,7 +351,12 @@ document.addEventListener('click',event=>{
   if(nav){event.preventDefault();navigate(nav.dataset.route);}
 });
 window.addEventListener('hashchange',render);
-document.getElementById('mobile-menu').addEventListener('click',()=>sidebar.classList.toggle('open'));
+function closeSidebar(){sidebar.classList.remove('open');document.body.classList.remove('sidebar-open');document.getElementById('mobile-menu').setAttribute('aria-expanded','false');}
+function toggleSidebar(){const open=!sidebar.classList.contains('open');sidebar.classList.toggle('open',open);document.body.classList.toggle('sidebar-open',open);document.getElementById('mobile-menu').setAttribute('aria-expanded',String(open));}
+document.getElementById('mobile-menu').addEventListener('click',toggleSidebar);
+document.getElementById('sidebar-close')?.addEventListener('click',closeSidebar);
+document.addEventListener('click',event=>{if(document.body.classList.contains('sidebar-open')&&!sidebar.contains(event.target)&&!event.target.closest('#mobile-menu'))closeSidebar();});
+document.addEventListener('keydown',event=>{if(event.key==='Escape')closeSidebar();});
 document.getElementById('theme-toggle').addEventListener('click',()=>{
   document.body.classList.toggle('dark');
   const dark=document.body.classList.contains('dark');
