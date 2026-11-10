@@ -33,8 +33,9 @@ test('clinical library contains 31 neurology articles', () => {
 });
 
 test('clinical articles support deep links and table of contents', () => {
-  assert.match(app, /new URLSearchParams\(location\.search\)\.get\('article'\)/);
-  assert.match(app, /history\.replaceState\(null,'',url\.pathname\+url\.search\+url\.hash\)/);
+  assert.match(app, /new URLSearchParams\(location\.search\)\.getAll\('article'\)/);
+  assert.match(app, /url\.searchParams\.delete\('article'\)/);
+  assert.match(app, /openArticles\)\.forEach\(id=>url\.searchParams\.append\('article',id\)\)/);
   assert.match(app, /clinical-article-toc/);
   assert.match(app, /data-clinical-section-target="clinical-section-'\+item\.id\+'-'\+i/);
   assert.match(app, /\[data-clinical-section-target\]/);
@@ -53,12 +54,16 @@ test('clinical reference supports token search, category filters and expandable 
   assert.match(css, /\.clinical-article-section/);
 });
 
-test('clinical article expands inline below the selected result instead of appending elsewhere', () => {
-  assert.match(app, /clinical-result-wrap/);
-  assert.match(app, /selected===item\.id\?articleMarkup\(item\):''/);
+test('multiple clinical articles can stay open independently of search and filters', () => {
+  assert.match(app, /const openArticles=new Set\(new URLSearchParams\(location\.search\)\.getAll\('article'\)/);
+  assert.match(app, /if\(openArticles\.has\(id\)\)openArticles\.delete\(id\);else openArticles\.add\(id\)/);
+  assert.match(app, /const openMarkup=\[\.\.\.openArticles\]/);
+  assert.match(app, /const cards=matches\.map\(item=>/);
+  assert.match(app, /query\.addEventListener\('input',render\)/);
+  assert.match(app, /category=button\.dataset\.clinicalFilter;filters\.querySelectorAll/);
+  assert.match(app, /data-clinical-close/);
   assert.match(app, /aria-expanded=/);
-  assert.match(app, /scrollIntoView\(\{behavior:'smooth',block:'nearest'\}\)/);
-  assert.doesNotMatch(app, /document\.querySelector\('\.clinical-article'\)\?\.scrollIntoView/);
+  assert.doesNotMatch(app, /selected=null;updateUrl\(\);render\(\)/);
 });
 
 test('mobile sidebar has an explicit close control and backdrop behavior', () => {
@@ -111,12 +116,11 @@ test('clinical route remains clinical when an article section hash changes', () 
   assert.match(home, /data-nav="clinical"/);
 });
 
-test('article links are limited to direct Russian clinical recommendation records', () => {
-  const urls = app.split('https://').slice(1).map(part => 'https://' + part.split("'")[0].split('"')[0].split(')')[0]);
-  assert.ok(urls.every(url => url.startsWith('https://cr.minzdrav.gov.ru/') || url.startsWith('https://nsi.rosminzdrav.ru/')));
-  assert.ok(!app.includes('https://cr.minzdrav.gov.ru/"'));
-  assert.ok(app.includes('view-cr/742_2'));
-  assert.ok(app.includes('view-cr/617_5'));
+test('clinical source links use the stable official Ministry rubricator information page while the registry is unavailable', () => {
+  assert.match(app, /https:\/\/minzdrav\.gov\.ru\/smartphone_apps_rubrikator_kr\./);
+  assert.doesNotMatch(app, /https:\/\/cr\.minzdrav\.gov\.ru\/(?:preview-cr|view-cr)\//);
+  assert.match(app, /временные работы|технические работы/i);
+  for (const id of ['814_1','295_4','810_1','165_2','742_2','617_5']) assert.ok(app.includes(id), id);
 });
 
 test('mobile sidebar backdrop fades smoothly in both directions', () => {
@@ -139,4 +143,22 @@ test('only the navigation item matching the current route receives active state'
   assert.match(app, /active\.setAttribute\('aria-current','page'\)/);
   assert.doesNotMatch(home, /class="nav-item active"/);
   assert.doesNotMatch(clinicalPage, /class="nav-item active"/);
+});
+
+
+test('the site is light-only and the theme switch is removed', () => {
+  assert.doesNotMatch(home, /theme-toggle|Переключить тему/);
+  assert.doesNotMatch(clinicalPage, /theme-toggle|Переключить тему/);
+  assert.doesNotMatch(app, /localStorage\.getItem\('neurodesk-theme'\)|applyTheme\(|body\.classList\.toggle\('dark'/);
+  assert.doesNotMatch(css, /body\.dark/);
+  assert.match(css, /\.sidebar\{background:#fff/);
+});
+
+test('home page presents the two main reference modules clearly', () => {
+  assert.match(app, /home-welcome/);
+  assert.match(app, /home-module-grid/);
+  assert.match(app, /home-module-icd/);
+  assert.match(app, /home-module-clinical/);
+  assert.match(css, /\.home-welcome/);
+  assert.match(css, /\.home-module-grid/);
 });
