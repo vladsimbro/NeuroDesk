@@ -47,3 +47,26 @@ test('clinical reference supports token search, category filters and expandable 
   assert.match(css, /\.clinical-results/);
   assert.match(css, /\.clinical-article-section/);
 });
+
+test('clinical article expands inline below the selected result instead of appending elsewhere', () => {
+  assert.match(app, /clinical-result-wrap/);
+  assert.match(app, /selected===item\.id\?articleMarkup\(item\):''/);
+  assert.match(app, /aria-expanded=/);
+  assert.match(app, /scrollIntoView\(\{behavior:'smooth',block:'nearest'\}\)/);
+  assert.doesNotMatch(app, /document\.querySelector\('\.clinical-article'\)\?\.scrollIntoView/);
+});
+
+test('mobile sidebar has an explicit close control and backdrop behavior', () => {
+  assert.match(home, /id="sidebar-close"/);
+  assert.match(clinicalPage, /id="sidebar-close"/);
+  assert.match(app, /addEventListener\('click',closeSidebar\)/);
+  assert.match(app, /Escape/);
+  assert.match(css, /body\.sidebar-open:before/);
+  assert.match(css, /\.sidebar-close/);
+});
+
+test('clinical mobile layout improves touch targets and reading width', () => {
+  assert.match(css, /clinical-filter\{flex:0 0 auto;min-height:38px/);
+  assert.match(css, /clinical-article-section li\{font-size:13px;line-height:1\.7/);
+  assert.match(css, /clinical-result-wrap\{min-width:0\}/);
+});
