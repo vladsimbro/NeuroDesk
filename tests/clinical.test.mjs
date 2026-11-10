@@ -83,7 +83,7 @@ test('clinical mobile layout improves touch targets and reading width', () => {
 
 test('Russian clinical recommendations are the primary local reference where directly applicable', () => {
   assert.match(app, /Российские клинические рекомендации/);
-  assert.match(app, /cr\.minzdrav\.gov\.ru/);
+  assert.match(app, /minzdrav\.gov\.ru\/smartphone_apps_rubrikator_kr/);
   for (const id of ['814_1','295_4','810_1','165_2','742_2','617_5']) assert.ok(app.includes(id), id);
   assert.doesNotMatch(app, /NICE|NHS|SAEM|ILAE|NINDS|AAO|AAPM&R|nice\\.org\\.uk|nhs\\.uk|saem\\.org|ilae\\.org|ninds\\.nih\\.gov|aao\\.org|ncbi\\.nlm\\.nih\\.gov/);
   assert.match(app, /зарубежные источники не используются/i);
