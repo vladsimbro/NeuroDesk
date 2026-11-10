@@ -1,0 +1,9 @@
+{
+  "name": "neurodesk",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Russian neurology workspace: clinical reference navigation, tested tools and 3D visualization prototype.",
+  "scripts": { "test": "node --test" },
+  "engines": { "node": ">=20" }
+}
