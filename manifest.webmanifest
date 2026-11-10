@@ -1,0 +1,19 @@
+{
+  "name": "NeuroDesk — российская МКБ-10",
+  "short_name": "NeuroDesk",
+  "description": "Локальный справочник российской МКБ-10",
+  "lang": "ru",
+  "start_url": "./index.html#icd",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f7f8",
+  "theme_color": "#f4f7f8",
+  "icons": [
+    {
+      "src": "./assets/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
