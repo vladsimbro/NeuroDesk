@@ -16,5 +16,5 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Run calculator tests
+      - name: Run unit tests and syntax checks
         run: npm test
