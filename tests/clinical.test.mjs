@@ -90,7 +90,7 @@ test('article expansion and collapse use a smooth height transition and an in-ar
 });
 
 test('clinical route remains clinical when an article section hash changes', () => {
-  assert.ok(app.includes("if(location.pathname.endsWith('/clinical.html'))return 'clinical'"));
+  assert.ok(app.includes("if(page==='clinical.html')return 'clinical'"));
   assert.ok(app.includes("window.addEventListener('hashchange',()=>{if(!location.pathname.endsWith('/clinical.html'))render();});"));
   assert.match(clinicalPage, /data-nav="clinical"/);
   assert.match(home, /data-nav="clinical"/);
