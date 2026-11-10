@@ -122,15 +122,16 @@ test('all 31 clinical materials remain present with complete article structure',
   }
 });
 
-test('clinical recommendations use Russian sources and the corrected official information URL', () => {
-  assert.match(app, /Российские клинические рекомендации/);
-  assert.match(app, /https:\/\/minzdrav\.gov\.ru\/smartphone_apps_rubrikator_kr/);
-  assert.doesNotMatch(app, /smartphone_apps_rubrikator_kr\./);
-  assert.doesNotMatch(app, /https:\/\/cr\.minzdrav\.gov\.ru\/(?:preview-cr|view-cr)\//);
-  for (const id of ['814_1','295_4','810_1','165_2','742_2','617_5','741','290_2']) {
-    assert.ok(app.includes(id),id);
+test('clinical recommendations are linked to Russian official source passports', async () => {
+  const evidence=await readFile(new URL('assets/js/clinical-evidence.js',root),'utf8');
+  assert.match(app,/Российские клинические рекомендации/);
+  assert.match(app,/https:\/\/minzdrav\.gov\.ru\/smartphone_apps_rubrikator_kr/);
+  assert.doesNotMatch(app,/smartphone_apps_rubrikator_kr\./);
+  assert.match(evidence,/https:\/\/cr\.minzdrav\.gov\.ru\//);
+  for (const id of ['814_1','295_4','165_2','742_2','617_5','741_1','290_2','739_2']) {
+    assert.ok(evidence.includes(id),id);
   }
-  assert.match(app, /зарубежные источники не используются/i);
+  assert.match(app,/зарубежные источники не используются/i);
 });
 
 test('no removed examination, dark mode or theme switch comes back', () => {

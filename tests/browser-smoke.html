@@ -74,12 +74,22 @@
 
   const clinical=await loadFrame('../clinical.html');
   const {doc,win}=clinical;
+  await waitUntil(()=>doc.querySelectorAll('.nd-clinical-card').length===31,'expanded clinical library loaded');
   let cards=[...doc.querySelectorAll('.nd-clinical-card')];
   assert(cards.length===31,'All clinical cards render');
   const initialPositions=cards.slice(0,3).map(card=>card.getBoundingClientRect().top);
   cards[0].click();
   const reader=doc.getElementById('clinical-reader');
   assert(!reader.hidden,'Reader opens');
+
+  assert(doc.querySelectorAll('.nd-article-section').length>=7,'Clinical article contains expanded long-form sections');
+  assert(doc.querySelectorAll('.nd-article-source-entry').length>=1,'Clinical article shows individual Russian recommendations');
+  assert(doc.querySelector('.nd-article-source-entry a')?.href.includes('cr.minzdrav.gov.ru'),'Russian official source has a direct or registry link');
+  assert(doc.querySelector('.nd-article-review-status')?.textContent.includes('рекомендации'),'Source applicability status is disclosed');
+  const sourceLinks=[...doc.querySelectorAll('.nd-article-source-entry a')];
+  assert(sourceLinks.every(a=>new URL(a.href).host==='cr.minzdrav.gov.ru'),'No non-Russian source links are shown');
+  assert(doc.querySelectorAll('.nd-article-toc button').length===doc.querySelectorAll('.nd-article-section').length,'Long article TOC covers all sections');
+
   assert(win.getComputedStyle(reader).position==='fixed','Reader overlay is fixed');
   assert(doc.querySelectorAll('.nd-reader-tab').length===1,'First article opens one tab');
   cards=[...doc.querySelectorAll('.nd-clinical-card')];
@@ -100,12 +110,18 @@
   assert(!reader.hidden&&doc.querySelectorAll('.nd-reader-tab').length===1,'Reopening preserves article state');
   doc.getElementById('clinical-close-all').click();
   assert(reader.hidden&&doc.querySelectorAll('.nd-reader-tab').length===0,'Close all clears the workspace');
+  doc.querySelector('[data-clinical-open="mnd"]').click();
+  assert(doc.querySelectorAll('.nd-article-section').length>=7,'Article without direct guideline still has full review');
+  assert(doc.querySelector('.nd-article-source-warning')?.textContent.includes('не подтверждена'),'Unverified guideline is not presented as official');
+  doc.getElementById('clinical-close-all').click();
+
   const search=doc.getElementById('clinical-query');
   search.value='миастения';search.dispatchEvent(new win.Event('input',{bubbles:true}));
   assert(doc.querySelectorAll('.nd-clinical-card').length>=1,'Search works after closing reader');
   clinical.frame.remove();
 
   const deep=await loadFrame('../clinical.html?article=stroke&article=headache&active=stroke',390,844);
+  await waitUntil(()=>deep.doc.getElementById('clinical-reader')&&!deep.doc.getElementById('clinical-reader').hidden,'clinical mobile deep link ready');
   assert(!deep.doc.getElementById('clinical-reader').hidden,'Mobile deep link opens reader');
   assert(deep.doc.querySelectorAll('.nd-reader-tab').length===2,'Mobile deep link preserves two tabs');
   const panel=deep.doc.querySelector('.nd-reader-dialog').getBoundingClientRect();
