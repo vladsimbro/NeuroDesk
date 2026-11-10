@@ -107,3 +107,35 @@ export function calculateABCD2(input = {}) {
   };
   return { status: 'complete', total: Object.values(components).reduce((a,b)=>a+b,0), components, maximum: 7 };
 }
+
+
+export function calculateEGFRCKDEPI2021(ageYears, creatinineUmol, sex) {
+  const age = Number(ageYears), scr = Number(creatinineUmol);
+  if (!Number.isFinite(age) || age < 18 || age > 120 || !Number.isFinite(scr) || scr <= 0 || scr > 2000 || !['female','male'].includes(sex)) return { status: 'invalid', value: null };
+  const kappa = sex === 'female' ? 0.7 : 0.9;
+  const alpha = sex === 'female' ? -0.241 : -0.302;
+  const scrMgDl = scr / 88.4;
+  const ratio = scrMgDl / kappa;
+  const value = 142 * Math.pow(Math.min(ratio,1),alpha) * Math.pow(Math.max(ratio,1),-1.2) * Math.pow(0.9938,age) * (sex === 'female' ? 1.012 : 1);
+  return { status: 'complete', value, formula: 'CKD-EPI 2021 creatinine', creatinineMgDl: scrMgDl };
+}
+
+export function calculateCorrectedSodium(sodium, glucose, coefficient = 1.6) {
+  const na = Number(sodium), glu = Number(glucose), factor = Number(coefficient);
+  if (!Number.isFinite(na) || na < 80 || na > 200 || !Number.isFinite(glu) || glu < 0 || glu > 100 || ![1.6,2.4].includes(factor)) return { status: 'invalid', value: null };
+  const value = na + factor * (glu - 5.6) / 5.6;
+  return { status: 'complete', value, coefficient: factor };
+}
+
+export function calculateOsmolarity(sodium, glucose, urea) {
+  const na = Number(sodium), glu = Number(glucose), ure = Number(urea);
+  if (![na,glu,ure].every(Number.isFinite) || na < 80 || na > 200 || glu < 0 || glu > 100 || ure < 0 || ure > 100) return { status: 'invalid', value: null };
+  return { status: 'complete', value: 2 * na + glu + ure, formula: '2 × Na + glucose + urea' };
+}
+
+export function calculateAnionGap(sodium, chloride, bicarbonate, albumin) {
+  const na = Number(sodium), cl = Number(chloride), hco3 = Number(bicarbonate), alb = Number(albumin);
+  if (![na,cl,hco3,alb].every(Number.isFinite) || na < 80 || na > 200 || cl < 40 || cl > 160 || hco3 < 1 || hco3 > 80 || alb < 1 || alb > 80) return { status: 'invalid', value: null };
+  const measured = na - cl - hco3;
+  return { status: 'complete', value: measured, albuminCorrected: measured + 0.25 * (40 - alb), albumin: alb };
+}
