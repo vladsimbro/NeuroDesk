@@ -385,20 +385,16 @@ document.addEventListener('click',(event) => {
       const item = scaleCatalog.find(entry => entry.id === id);
       const preview = document.getElementById('scale-preview');
       if (item && preview) {
-        const restricted = item.status === 'restricted';
-        const source = id === 'nihss' || id === 'four'
-          ? '<a href="https://cr.minzdrav.gov.ru/preview-cr/814_1" target="_blank" rel="noopener noreferrer">КР Минздрава РФ, ID 814_1 · приложения Г1 и Г8 ↗</a>'
-          : id === 'midas'
-            ? '<a href="https://cr.minzdrav.gov.ru/preview-cr/295_4" target="_blank" rel="noopener noreferrer">КР Минздрава РФ по мигрени, ID 295_4 ↗</a>'
-            : id === 'moca'
-              ? '<a href="https://mocacognition.com/" target="_blank" rel="noopener noreferrer">Официальный сайт MoCA ↗</a>'
-              : id === 'updrs'
-                ? '<a href="https://www.movementdisorders.org/" target="_blank" rel="noopener noreferrer">Movement Disorder Society ↗</a>'
-                : '<a href="https://www.nationalmssociety.org/" target="_blank" rel="noopener noreferrer">National MS Society ↗</a>';
-        const explanation = restricted
-          ? 'Это ознакомительная карточка. Содержимое теста, бланки, вопросы и электронный подсчёт здесь не воспроизводятся: сначала необходимо подтвердить условия правообладателя. Кнопка активна для просмотра статуса, а не для прохождения защищённой шкалы.'
-          : 'Это ознакомительный режим, а не работающий калькулятор. В текущей версии нет полного набора критериев и проверенного алгоритма подсчёта. Я не стал подменять их выдуманными вопросами или приблизительными баллами. Здесь можно посмотреть статус и первоисточник.';
-        preview.innerHTML = '<div class="section-head"><div><div class="eyebrow">БЫСТРЫЙ ПРОСМОТР · '+(restricted?'ОГРАНИЧЕНИЯ ПРАВ':'НЕ ЗАВЕРШЕНО')+'</div><h2>'+esc(item.title)+'</h2></div><button type="button" class="button button-outline" data-close-scale-preview>Закрыть</button></div><p>'+esc(item.description)+'</p><div class="notice '+(restricted?'warning':'')+'"><div>'+explanation+'</div></div><p class="source-citation">Источник для дальнейшей сверки: '+source+'</p>';
+        const sourceMap = {
+          nihss: {url:'https://www.ninds.nih.gov/sites/default/files/documents/NIH_Stroke_Scale_508C_0.pdf',label:'Оригинальный бланк NIHSS · NINDS (PDF)',note:'NINDS указывает, что подготовленные институтом материалы находятся в общественном достоянии. В NeuroDesk не встроен перевод или электронная копия: открой оригинал у издателя.'},
+          four: {url:'https://cr.minzdrav.gov.ru/preview-cr/814_1',label:'КР Минздрава РФ · ID 814_1, приложение Г8',note:'В рекомендации шкала упомянута в приложении Г8. Отдельная электронная форма в NeuroDesk пока не реализована.'},
+          moca: {url:'https://www.mocacognition.com/permission',label:'MoCA · официальные условия использования',note:'Правообладатель требует стандартизированное обучение и сертификацию для проведения, подсчёта и интерпретации. Разработка электронной версии и связанных материалов прямо запрещена без соответствующего разрешения.'},
+          updrs: {url:'https://mds.movementdisorders.org/publications/rating_scales/request_form.php',label:'MDS · форма запроса разрешения',note:'MDS требует предварительного письменного разрешения на каждое использование. Электронная реализация, перевод и модификация отдельно должны быть прямо согласованы.'},
+          edss: {url:'https://www.neurostatus-uhb.com/neurostatus-edss/',label:'Neurostatus-EDSS · официальный владелец материалов',note:'Neurostatus-EDSS защищена авторским правом; для клинического или академического исследования требуется лицензионное соглашение. Официальные учебные и сертификационные материалы доступны у правообладателя.'},
+          midas: {url:'https://cr.minzdrav.gov.ru/preview-cr/295_4',label:'КР Минздрава РФ по мигрени · ID 295_4',note:'Официальная рекомендация — клинический контекст и источник. Полный оригинальный опросник MIDAS и его электронную форму здесь не воспроизводим до отдельной проверки прав.'}
+        };
+        const source = sourceMap[id] || {url:'https://cr.minzdrav.gov.ru/preview-cr/814_1',label:'КР Минздрава РФ · ID 814_1',note:'Открой первоисточник для просмотра официального материала.'};
+        preview.innerHTML = '<div class="section-head"><div><div class="eyebrow">ПЕРВОИСТОЧНИК · '+(id==='nihss'?'ОФИЦИАЛЬНЫЙ МАТЕРИАЛ':id==='moca'||id==='updrs'||id==='edss'?'УСЛОВИЯ ПРАВООБЛАДАТЕЛЯ':'ОФИЦИАЛЬНАЯ РЕКОМЕНДАЦИЯ')+'</div><h2>'+esc(item.title)+'</h2></div><button type="button" class="button button-outline" data-close-scale-preview>Закрыть</button></div><p>'+esc(item.description)+'</p><div class="notice '+(id==='nihss'?'':'warning')+'"><div><strong>Что можно посмотреть:</strong> '+esc(source.note)+'</div></div><div class="hero-actions" style="margin-top:14px"><a class="button button-primary" href="'+source.url+'" target="_blank" rel="noopener noreferrer">Открыть оригинал / официальный источник '+icon('external',14)+'</a>'+(id==='nihss'?'<a class="button button-outline" href="https://www.ninds.nih.gov/health-information/disorders/stroke" target="_blank" rel="noopener noreferrer">Материалы NINDS о stroke '+icon('external',14)+'</a>':'')+'</div><p class="source-citation" style="margin-top:14px">Важно: ссылка ведёт на ресурс правообладателя или официальный первоисточник. Она не означает, что NeuroDesk получил лицензию на копирование или электронное воспроизведение.</p>';
         preview.hidden = false;
         toolLink.setAttribute('aria-expanded','true');
         preview.scrollIntoView({behavior:'smooth',block:'nearest'});
