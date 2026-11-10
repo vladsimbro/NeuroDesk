@@ -74,9 +74,9 @@
 
   const clinical=await loadFrame('../clinical.html');
   const {doc,win}=clinical;
-  await waitUntil(()=>doc.querySelectorAll('.nd-clinical-card').length===31,'expanded clinical library loaded');
+  await waitUntil(()=>doc.querySelectorAll('.nd-clinical-card').length===51,'51-item clinical library loaded');
   let cards=[...doc.querySelectorAll('.nd-clinical-card')];
-  assert(cards.length===31,'All clinical cards render');
+  assert(cards.length===51,'All 51 clinical cards render');
   const initialPositions=cards.slice(0,3).map(card=>card.getBoundingClientRect().top);
   cards[0].click();
   const reader=doc.getElementById('clinical-reader');
@@ -84,10 +84,10 @@
 
   assert(doc.querySelectorAll('.nd-article-section').length>=7,'Clinical article contains expanded long-form sections');
   assert(doc.querySelectorAll('.nd-article-source-entry').length>=1,'Clinical article shows individual Russian recommendations');
-  assert(doc.querySelector('.nd-article-source-entry a')?.href.includes('cr.minzdrav.gov.ru'),'Russian official source has a direct or registry link');
+  assert(doc.querySelector('.nd-article-source-entry a')?.href.includes('minzdrav.gov.ru/special/'),'Russian official source has a direct or registry link');
   assert(doc.querySelector('.nd-article-review-status')?.textContent.includes('рекомендации'),'Source applicability status is disclosed');
   const sourceLinks=[...doc.querySelectorAll('.nd-article-source-entry a')];
-  assert(sourceLinks.every(a=>new URL(a.href).host==='cr.minzdrav.gov.ru'),'No non-Russian source links are shown');
+  assert(sourceLinks.every(a=>new URL(a.href).host==='minzdrav.gov.ru'),'No non-Russian source links are shown');
   assert(doc.querySelectorAll('.nd-article-toc button').length===doc.querySelectorAll('.nd-article-section').length,'Long article TOC covers all sections');
 
   assert(win.getComputedStyle(reader).position==='fixed','Reader overlay is fixed');
