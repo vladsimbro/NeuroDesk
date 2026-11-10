@@ -13,6 +13,7 @@ const ICONS = {
   sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2"/>',
   moon:'<path d="M20.9 13A8.5 8.5 0 0 1 11 3.1 8.5 8.5 0 1 0 20.9 13Z"/>',
   menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',
+  close:'<path d="m18 6-12 12M6 6l12 12"/>',
   info:'<circle cx="12" cy="12" r="10"/><path d="M12 11v5m0-8h.01"/>'
 };
 function icon(name,size=18){
