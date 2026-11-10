@@ -34,7 +34,7 @@ test('clinical library contains 31 sourced neurology articles', () => {
 
 test('clinical articles support deep links and table of contents', () => {
   assert.match(app, /new URLSearchParams\(location\.search\)\.get\('article'\)/);
-  assert.match(app, /history\.replaceState\(null,'','\?article='/);
+  assert.match(app, /history\\.replaceState\\(null,'',url\\.pathname\\+url\\.search\\+url\\.hash\\)/);
   assert.match(app, /clinical-article-toc/);
   assert.ok(app.includes('clinical-section-\'+item.id+\'-\'+i));
 });
