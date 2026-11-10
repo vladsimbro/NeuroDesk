@@ -307,9 +307,17 @@ function bindClinical(){
     '</div>';
   }).join('');
   const sourceSummary=sources.length?sources.some(x=>x.kind==='по заболеванию')?'Есть профильные российские клинические рекомендации':'Приведены смежные российские КР; они не охватывают тему целиком':'Профильная российская КР для всей темы не подтверждена';
+  const keywords=new Set(item.tags.map(normalizeSearch));
+  const related=CLINICAL_LIBRARY.filter(other=>other.id!==item.id).map(other=>{
+   const shared=other.tags.filter(tag=>keywords.has(normalizeSearch(tag))).length;
+   return {article:other,shared,score:shared*3+(shared>0&&item.category===other.category?1:0)};
+  }).filter(result=>result.shared>0).sort((a,b)=>b.score-a.score||a.article.title.localeCompare(b.article.title,'ru')).slice(0,4);
+  const relatedMarkup=related.length?'<section class="nd-article-related" aria-label="Материалы по смежным темам"><h3>Читайте также</h3><p>Другие обзоры с общими темами или клиническими терминами.</p><div>'+related.map(entry=>'<button type="button" data-clinical-related="'+esc(entry.article.id)+'">'+esc(entry.article.title)+'</button>').join('')+'</div></section>':'';
+
   return '<article class="nd-article" id="clinical-article-'+item.id+'"><header class="nd-article-head"><span class="nd-article-category">'+esc(item.category)+'</span><h2>'+esc(item.title)+'</h2><p>'+esc(item.summary)+'</p><span class="nd-article-meta">Клинический обзор · Российские источники · '+sections.length+' разделов</span><p class="nd-article-review-status">'+esc(sourceSummary)+'</p></header>'+
    '<div class="nd-article-layout"><nav class="nd-article-toc" aria-label="Содержание статьи"><strong>В этой статье</strong>'+sections.map((section,i)=>'<button type="button" data-clinical-section-target="clinical-section-'+item.id+'-'+i+'"><span>'+String(i+1).padStart(2,'0')+'</span>'+esc(section.title)+'</button>').join('')+'</nav>'+
    '<div class="nd-article-text">'+sections.map((section,i)=>'<section class="nd-article-section clinical-article-section" id="clinical-section-'+item.id+'-'+i+'"><h3><span>'+String(i+1).padStart(2,'0')+'</span>'+esc(section.title)+'</h3><ul>'+section.items.map(line=>'<li>'+esc(line)+'</li>').join('')+'</ul></section>').join('')+
+   relatedMarkup+
    '<section class="nd-article-sources"><h3>Российские клинические рекомендации и границы применения</h3><p class="nd-article-source-intro">Проверено: '+RUS_SOURCE_REVIEW_DATE+'. Прямые страницы отдельных КР сейчас возвращают 404, Рубрикатор сообщает о технических работах. Поэтому ссылка ведёт на работающую официальную страницу Минздрава о приложении «Рубрикатор КР», а ID можно скопировать для поиска в приложении. Год, возрастную категорию и действующий статус необходимо перепроверять в официальном источнике. Текст статьи — авторский обзор, не инструкция по назначению лечения.</p>'+
    (sources.length?'<div class="nd-article-source-list">'+bibliography+'</div>':'<p class="nd-article-source-warning">Отдельная российская КР, непосредственно охватывающая весь синдром, пока не подтверждена. Не воспринимай обзор как официальный алгоритм обследования или лечения.</p>')+
    '<p class="nd-article-source-general"><a href="'+RUS_CLINICAL_REGISTRY+'" target="_blank" rel="noopener noreferrer">Официальная страница Минздрава с приложением «Рубрикатор КР» ↗</a> · <a href="'+RUS_CLINICAL_PORTAL+'" target="_blank" rel="noopener noreferrer">Проверить доступность Рубрикатора ↗</a></p><p class="nd-article-source-caution">Медицинские сведения предназначены для РФ, зарубежные источники не используются. Материал не заменяет действующие российские КР и клиническое решение врача.</p></section></div></div></article>';
@@ -388,6 +396,8 @@ function bindClinical(){
   if(button){activeArticle=button.dataset.clinicalTab;updateUrl();syncReader();document.getElementById('clinical-tab-'+activeArticle)?.focus();}
  });
  body.addEventListener('click',async event=>{
+  const relatedButton=event.target.closest('[data-clinical-related]');
+  if(relatedButton){openArticle(relatedButton.dataset.clinicalRelated,relatedButton);return;}
   const copy=event.target.closest('[data-clinical-copy-id]');
   if(copy){
    const id=copy.dataset.clinicalCopyId;
