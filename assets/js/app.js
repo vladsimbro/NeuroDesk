@@ -22,7 +22,8 @@ function esc(value){
   return String(value).replace(/[&<>"']/g,(char)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 }
 function routeName(){
-  const route=(location.hash||'#overview').slice(1);
+  const fallback=location.pathname.endsWith('/clinical.html')?'#clinical':'#overview';
+  const route=(location.hash||fallback).slice(1);
   return ['icd','exam','clinical'].includes(route)?route:'overview';
 }
 
@@ -32,6 +33,7 @@ function setActiveNav(route){
 function renderOverview(){
   return '<div class="page-heading"><div><div class="eyebrow">NEURODESK · СПРАВОЧНИК</div><h1>МКБ-10 без лишнего поиска</h1><p class="lead">Быстрый доступ к российской Международной классификации болезней: найди код по названию диагноза или проверь расшифровку по коду.</p></div></div>'+
   '<section class="icd-home-hero"><div class="icd-home-copy"><span class="hero-kicker">РОССИЙСКАЯ КЛАССИФИКАЦИЯ</span><h2>Нужный код — за несколько секунд.</h2><p>Поиск по коду, названию и формулировке диагноза. Каталог включает классы, блоки, рубрики и подрубрики классификации.</p><a class="button button-primary" href="#icd">Открыть справочник '+icon('arrow',14)+'</a></div><div class="icd-home-mark" aria-hidden="true"><span>МКБ</span><strong>10</strong><small>ICD · RU</small></div></section>'+
+  '<section class="card card-pad clinical-home-entry"><div class="resource-mark">'+icon('book',20)+'</div><div><div class="eyebrow">КЛИНИЧЕСКАЯ БАЗА ЗНАНИЙ</div><h2>Клинический справочник</h2><p>27 материалов по неврологическим симптомам, синдромам, заболеваниям и неотложным состояниям.</p><a class="button button-primary" href="./clinical.html">Открыть клинические статьи '+icon('arrow',14)+'</a></div></section>'+
   '<div class="icd-home-grid"><article class="card card-pad"><div class="resource-mark">'+icon('search')+'</div><h3>Поиск по названию</h3><p>Например: мигрень, радикулопатия, эпилепсия или инсульт.</p></article><article class="card card-pad"><div class="resource-mark">'+icon('clipboard')+'</div><h3>Поиск по коду</h3><p>Введи полный код или его часть: G43, I63.9, M54.16.</p></article><article class="card card-pad"><div class="resource-mark">'+icon('book')+'</div><h3>Вся классификация</h3><p>22 класса с переходом к нужному разделу и поиском по диагнозам.</p></article></div>'+
   '<p class="source-citation">Справочник помогает находить классификационные формулировки. Выбор кода для медицинской документации требует проверки клинического контекста и действующих нормативных правил.</p>';
 }
