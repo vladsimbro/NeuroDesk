@@ -35,7 +35,7 @@ test('clinical library contains 31 neurology articles', () => {
 test('clinical articles support deep links and table of contents', () => {
   assert.match(app, /new URLSearchParams\(location\.search\)\.getAll\('article'\)/);
   assert.match(app, /url\.searchParams\.delete\('article'\)/);
-  assert.match(app, /openArticles\)\.forEach\(id=>url\.searchParams\.append\('article',id\)\)/);
+  assert.match(app, /\[\.\.\.openArticles\]\.forEach\(id=>url\.searchParams\.append\('article',id\)\)/);
   assert.match(app, /clinical-article-toc/);
   assert.match(app, /data-clinical-section-target="clinical-section-'\+item\.id\+'-'\+i/);
   assert.match(app, /\[data-clinical-section-target\]/);
@@ -119,7 +119,7 @@ test('clinical route remains clinical when an article section hash changes', () 
 test('clinical source links use the stable official Ministry rubricator information page while the registry is unavailable', () => {
   assert.match(app, /https:\/\/minzdrav\.gov\.ru\/smartphone_apps_rubrikator_kr\./);
   assert.doesNotMatch(app, /https:\/\/cr\.minzdrav\.gov\.ru\/(?:preview-cr|view-cr)\//);
-  assert.match(app, /временные работы|технические работы/i);
+  assert.match(app, /техническ.{0,20}работ/i);
   for (const id of ['814_1','295_4','810_1','165_2','742_2','617_5']) assert.ok(app.includes(id), id);
 });
 
