@@ -73,7 +73,7 @@ test('clinical mobile layout improves touch targets and reading width', () => {
 
 test('Russian clinical recommendations are the primary local reference where directly applicable', () => {
   assert.match(app, /Российские клинические рекомендации/);
-  assert.match(app, /cr\\.minzdrav\\.gov\\.ru/);
+  assert.match(app, /cr\.minzdrav\.gov\.ru/);
   for (const id of ['814_1','295_4','741_1','716_1','739_2','165_2']) assert.ok(app.includes(id), id);
   assert.match(app, /Дополнительные международные источники/);
   assert.match(app, /не заменяют российские клинические рекомендации/);
