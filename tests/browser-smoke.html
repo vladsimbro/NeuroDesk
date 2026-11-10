@@ -66,7 +66,7 @@
 
   const calcs=await loadFrame('../calculators.html?tool=score2');
   const cdoc=calcs.doc,cwin=calcs.win;
-  assert(cdoc.querySelectorAll('.calc-card').length===9,'Nine clinical calculator cards render');
+  assert(cdoc.querySelectorAll('.calc-card').length===11,'Eleven clinical calculator cards render');
   assert(cdoc.querySelector('.calc-tool-header h2')?.textContent.includes('SCORE2'),'SCORE2 opens from deep link');
   const fill=(key,value)=>{
    const element=cdoc.querySelector('[name="'+key+'"]');
@@ -90,6 +90,12 @@
   cdoc.getElementById('calc-search').value='МИО';
   cdoc.getElementById('calc-search').dispatchEvent(new cwin.Event('input',{bubbles:true}));
   assert(cdoc.querySelectorAll('.calc-card').length===0,'Calculator search filters cards');
+  cdoc.getElementById('calc-search').value='';
+  cdoc.getElementById('calc-search').dispatchEvent(new cwin.Event('input',{bubbles:true}));
+  cdoc.querySelector('[data-tool="fourat"]').click();
+  fill('alertness','4');fill('orientation','2');fill('attention','2');fill('change','4');
+  cdoc.getElementById('calc-form').dispatchEvent(new cwin.Event('submit',{bubbles:true,cancelable:true}));
+  assert(cdoc.querySelector('.calc-result-value')?.textContent.includes('12 / 12'),'4AT totals all four domains');
   calcs.frame.remove();
 
   const mobileCalc=await loadFrame('../calculators.html?tool=abcd2',390,844);
