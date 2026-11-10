@@ -68,3 +68,9 @@ body.dark .scale-result-copy p{color:#a2b4bd}
 .case-feedback.correct{background:#edf7f2;color:#21684e}
 .case-feedback.review{background:#fff5e8;color:#865d20}
 @media(max-width:760px){.nerve-grid{grid-template-columns:1fr}.case-grid{grid-template-columns:1fr}.neuro-case p{min-height:0}}
+
+.segment-table{width:100%;border-collapse:collapse;font-size:11px;min-width:620px}
+.segment-table th,.segment-table td{padding:11px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.segment-table th{font-size:10px;color:var(--muted);font-weight:700;background:var(--canvas)}
+.segment-table td:first-child{color:var(--teal-dark);white-space:nowrap}
+.table-scroll{overflow-x:auto;margin-top:12px;border:1px solid var(--line);border-radius:13px}
