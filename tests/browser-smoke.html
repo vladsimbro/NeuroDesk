@@ -68,6 +68,17 @@
   assert(icd.doc.getElementById('icd-search-suggestions').textContent.includes('не рекомендации'),'Search hints avoid automatic medical coding');
   assert(!!icd.doc.getElementById('icd-offline-state'),'ICD offline state is accessible');
 
+  if(icd.win.navigator.serviceWorker){
+    await waitUntil(()=>/подготовлена|не удалось/.test(icd.doc.getElementById('icd-offline-state').textContent),'offline cache initialization');
+    assert(icd.doc.getElementById('icd-offline-state').textContent.includes('подготовлена'),'ICD service worker prepared offline assets');
+    const cache=await icd.win.caches.open('neurodesk-icd-v20261110-2');
+    const saved=await cache.match(new URL('./assets/data/icd10-v2.27.json',icd.win.location.href).href);
+    assert(!!saved,'ICD dataset available in offline cache');
+    const cachedJson=await saved.json();
+    assert(cachedJson.records?.length===15038,'Offline cache includes all 15 038 records');
+  }
+
+
   const width=icd.doc.documentElement.scrollWidth;
   assert(width<=icd.win.innerWidth+1,'ICD mobile view has no horizontal page overflow');
   icd.frame.remove();
