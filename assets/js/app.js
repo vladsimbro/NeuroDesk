@@ -1,6 +1,3 @@
-import { GCS_COMPONENTS, calculateGCS, formatGCSResult, MRS_OPTIONS, GOS_OPTIONS, RASS_OPTIONS, calculateMRS, calculateGOS, calculateRASS, calculateBMI, calculateBSA, calculateMAP, calculateABCD2, calculateEGFRCKDEPI2021, calculateCorrectedSodium, calculateOsmolarity, calculateAnionGap, calculateCPP } from './calculators.js';
-import { officialResources, scaleCatalog } from './resources.js';
-import { initBrainScene, disposeBrainScene } from './brain-scene.js';
 
 const app = document.getElementById('app-content');
 const breadcrumb = document.getElementById('breadcrumb-current');
@@ -42,7 +39,7 @@ function esc(value) {
 }
 function routeName() {
   const value = (location.hash || '#overview').slice(1);
-  return ['overview','calculators','handbook','anatomy','pharmacology','diagnostics','quality'].includes(value) ? value : 'overview';
+  return ['overview','icd'].includes(value) ? value : 'overview';
 }
 function setActiveNav(route) {
   document.querySelectorAll('[data-route]').forEach((item) => item.classList.toggle('active', item.dataset.route === route));
@@ -61,17 +58,96 @@ function metricCard(ic, color, value, label) {
 }
 
 function renderOverview() {
-  const date = new Intl.DateTimeFormat('ru-RU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
-  return '<div class="page-heading"><div><div class="eyebrow">ЦИФРОВОЕ РАБОЧЕЕ ПРОСТРАНСТВО</div><h1>Рабочий стол невролога</h1><p class="lead">Инструменты, справочные материалы и проверяемые источники — в одном пространстве.</p></div><span class="date-chip">' + icon('calendar', 14) + esc(date) + '</span></div>' +
-    '<section class="hero-panel"><div class="hero-copy"><div class="hero-kicker"><span class="pulse"></span> NEURODESK · РАННЯЯ ВЕРСИЯ</div><h1>Клиническая ясность начинается с точных данных.</h1><p>Рабочая среда для невролога с фокусом на российские клинические источники, воспроизводимые расчёты и профессиональные визуализации.</p><div class="hero-actions"><a class="button button-primary" href="#calculators">Открыть калькуляторы ' + icon('arrow', 14) + '</a><a class="button button-glass" href="#handbook">Перейти к справочнику</a></div></div><div class="hero-visual"><canvas id="brain-canvas" aria-label="Демонстрационная трёхмерная модель"></canvas><span class="visual-caption">3D · демонстрационная модель</span></div></section>' +
-    '<div class="metric-grid">' + metricCard('calculator', '', '13', 'Расчётных инструментов') + metricCard('book', 'blue', '22', 'Источников и справочников') + metricCard('brain', 'amber', '3D', 'Интерактивная визуализация') + metricCard('shield', 'navy', '0', 'Пациентских данных хранится') + '</div>' +
-    '<div class="content-grid"><section class="card card-pad"><div class="section-head"><h2>Быстрый доступ</h2><a class="text-link" href="#calculators">Все инструменты →</a></div><div class="tool-list">' +
-    '<a class="tool-row" href="#calculators"><span class="metric-icon">' + icon('activity') + '</span><span class="tool-row-copy"><strong>Шкала комы Глазго (GCS)</strong><small>Компонентная оценка E / V / M с обработкой NT</small></span><span class="tool-arrow">' + icon('arrow') + '</span></a>' +
-    '<a class="tool-row" href="#handbook"><span class="metric-icon blue">' + icon('file-check') + '</span><span class="tool-row-copy"><strong>Клинические рекомендации</strong><small>Официальный рубрикатор Минздрава РФ</small></span><span class="tool-arrow">' + icon('arrow') + '</span></a>' +
-    '<a class="tool-row" href="#anatomy"><span class="metric-icon amber">' + icon('brain') + '</span><span class="tool-row-copy"><strong>3D-анатомия</strong><small>Интерактивная демонстрационная модель</small></span><span class="tool-arrow">' + icon('arrow') + '</span></a>' +
-    '</div></section><section class="card card-pad"><div class="section-head"><h2>Проверенные источники</h2><a class="text-link" href="#handbook">Справочник →</a></div><div class="resource-list">' +
-    officialResources.slice(0,4).map((item) => '<a class="resource-row" href="' + esc(item.url) + '" target="_blank" rel="noopener noreferrer"><span class="resource-mark">' + icon(item.icon) + '</span><span><strong>' + esc(item.title) + '</strong><small>' + esc(item.domain) + '</small></span></a>').join('') +
-    '</div></section></div><div class="notice warning" style="margin-top:17px">' + icon('info') + '<div><strong>О назначении платформы.</strong> NeuroDesk — справочный и расчётный инструмент, а не система постановки диагноза или назначения лечения. Клиническое решение принимает медицинский специалист с учётом полной картины пациента и действующих документов.</div></div>';
+  return '<div class="page-heading"><div><div class="eyebrow">NEURODESK · СПРАВОЧНИК</div><h1>МКБ-10 без лишнего поиска</h1><p class="lead">Быстрый доступ к российской Международной классификации болезней: найди код по названию диагноза или проверь расшифровку по коду.</p></div></div>' +
+    '<section class="icd-home-hero"><div class="icd-home-copy"><span class="hero-kicker">РОССИЙСКАЯ КЛАССИФИКАЦИЯ</span><h2>Нужный код — за несколько секунд.</h2><p>Поиск по коду, названию и формулировке диагноза. Полный каталог содержит рубрики и подрубрики классификации.</p><a class="button button-primary" href="#icd">Открыть справочник ' + icon('arrow',14) + '</a></div><div class="icd-home-mark" aria-hidden="true"><span>МКБ</span><strong>10</strong><small>ICD · WHO</small></div></section>' +
+    '<div class="icd-home-grid"><article class="card card-pad"><div class="resource-mark">' + icon('search') + '</div><h3>Поиск по названию</h3><p>Например: мигрень, радикулопатия, эпилепсия или инсульт.</p></article><article class="card card-pad"><div class="resource-mark">' + icon('clipboard') + '</div><h3>Поиск по коду</h3><p>Введи полный код или его часть: G43, I63.9, M54.16.</p></article><article class="card card-pad"><div class="resource-mark">' + icon('book') + '</div><h3>Иерархия рубрик</h3><p>Классы, блоки, трёхзначные рубрики и уточняющие подрубрики.</p></article></div>' +
+    '<p class="source-citation">Справочник предназначен для навигации по классификации. Выбор кода для медицинской документации требует проверки клинического контекста и действующих нормативных правил.</p>';
+}
+
+function renderICD() {
+  const chapters = [
+    ['I','A00–B99','Некоторые инфекционные и паразитарные болезни'],
+    ['II','C00–D48','Новообразования'],
+    ['III','D50–D89','Болезни крови и отдельные нарушения иммунного механизма'],
+    ['IV','E00–E90','Болезни эндокринной системы, расстройства питания и нарушения обмена веществ'],
+    ['V','F00–F99','Психические расстройства и расстройства поведения'],
+    ['VI','G00–G99','Болезни нервной системы'],
+    ['VII','H00–H59','Болезни глаза и его придаточного аппарата'],
+    ['VIII','H60–H95','Болезни уха и сосцевидного отростка'],
+    ['IX','I00–I99','Болезни системы кровообращения'],
+    ['X','J00–J99','Болезни органов дыхания'],
+    ['XI','K00–K93','Болезни органов пищеварения'],
+    ['XII','L00–L99','Болезни кожи и подкожной клетчатки'],
+    ['XIII','M00–M99','Болезни костно-мышечной системы и соединительной ткани'],
+    ['XIV','N00–N99','Болезни мочеполовой системы'],
+    ['XV','O00–O99','Беременность, роды и послеродовой период'],
+    ['XVI','P00–P96','Отдельные состояния перинатального периода'],
+    ['XVII','Q00–Q99','Врождённые аномалии, деформации и хромосомные нарушения'],
+    ['XVIII','R00–R99','Симптомы, признаки и отклонения от нормы'],
+    ['XIX','S00–T98','Травмы, отравления и другие последствия воздействия внешних причин'],
+    ['XX','V01–Y98','Внешние причины заболеваемости и смертности'],
+    ['XXI','Z00–Z99','Факторы, влияющие на состояние здоровья и обращения за медицинской помощью'],
+    ['XXII','U00–U99','Коды для специальных целей']
+  ];
+  return '<div class="page-heading"><div><div class="eyebrow">ПОИСКОВЫЙ КАТАЛОГ</div><h1>Международная классификация болезней · 10-й пересмотр</h1><p class="lead">Ищи по коду, названию или части формулировки. Результаты загружаются из российского нормативно-справочного набора МКБ-10.</p></div><span class="date-chip">15 038 записей в исходном наборе</span></div>' +
+    '<section class="card card-pad icd-search-card"><label class="icd-search-label" for="icd-query">Что ищем?</label><div class="icd-search-row"><span class="icd-search-icon">' + icon('search',20) + '</span><input id="icd-query" type="search" autocomplete="off" placeholder="Например, G43.1 или мигрень" aria-describedby="icd-search-help"><button id="icd-clear" class="button button-outline" type="button">Очистить</button></div><p id="icd-search-help" class="source-citation">Вводи минимум 2 символа. Поиск поддерживает русские названия и коды с точкой.</p><div id="icd-status" class="icd-status" role="status" aria-live="polite">Начни вводить запрос — результаты появятся здесь.</div><div id="icd-results" class="icd-results"></div></section>' +
+    '<section class="icd-chapters-section"><div class="section-head"><div><div class="eyebrow">СТРУКТУРА КЛАССИФИКАЦИИ</div><h2>Классы МКБ-10</h2></div><span class="soft-chip">22 класса</span></div><div class="icd-chapters-grid">' +
+    chapters.map((c)=>'<button class="icd-chapter" type="button" data-icd-chapter="'+c[1].split('–')[0][0]+'"><span class="icd-chapter-number">'+c[0]+'</span><span class="icd-chapter-copy"><strong>'+esc(c[2])+'</strong><small>'+c[1]+'</small></span>'+icon('arrow',15)+'</button>').join('') +
+    '</div></section>' +
+    '<section class="icd-source-note"><strong>Источник и версия данных</strong><p>Российский нормативно-справочный набор МКБ-10 (OID 1.2.643.5.1.13.13.11.1005), 15 038 записей. Опубликованное обновление набора датировано 25.10.2021; версия содержит изменения по письму Минздрава РФ от 12.11.2020 № 13-2/753. Перед применением в документации проверяй действующую редакцию.</p><a href="https://data.apicrafter.ru/tables/nsimz/3720" target="_blank" rel="noopener noreferrer">Паспорт набора и происхождение данных ' + icon('external',13) + '</a></section>';
+}
+
+function bindICD() {
+  const input=document.getElementById('icd-query');
+  const status=document.getElementById('icd-status');
+  const results=document.getElementById('icd-results');
+  const clear=document.getElementById('icd-clear');
+  let timer=null, controller=null, sequence=0;
+  const api='https://api.crftr.net/open/rawapi/v3/nsimz/3720';
+  function renderItems(payload) {
+    const items=Array.isArray(payload)?payload:(payload?._items||payload?.items||payload?.results||[]);
+    return items.map((item)=>{
+      const code=item.table_field_MKB_CODE||item.MKB_CODE||item.code||'';
+      const name=item.table_field_MKB_NAME||item.MKB_NAME||item.name||item.title||'';
+      const parent=item.table_field_ID_PARENT||'';
+      const actual=String(item.table_field_ACTUAL??'');
+      return {code:String(code),name:String(name),parent:String(parent),actual};
+    }).filter(x=>x.code||x.name);
+  }
+  function show(items) {
+    if(!items.length){results.innerHTML='';status.textContent='По этому запросу ничего не найдено. Попробуй другую формулировку или проверь код.';return;}
+    status.textContent='Найдено записей: '+items.length+'. Показаны результаты из российского справочника.';
+    results.innerHTML=items.slice(0,100).map((item)=>'<article class="icd-result"><div class="icd-result-code">'+esc(item.code||'—')+'</div><div class="icd-result-main"><strong>'+esc(item.name||'Без названия')+'</strong>'+(item.parent?'<small>Родительская запись: '+esc(item.parent)+'</small>':'')+'</div>'+(item.actual==='0'?'<span class="icd-old-tag">Неактуальная запись</span>':'')+'</article>').join('');
+  }
+  async function search() {
+    const q=input.value.trim();
+    const current=++sequence;
+    if(q.length<2){if(controller)controller.abort();results.innerHTML='';status.textContent='Начни вводить минимум 2 символа.';return;}
+    if(controller)controller.abort();
+    controller=new AbortController();
+    status.textContent='Ищем в российском справочнике…';
+    try {
+      const url=api+'?searchInput='+encodeURIComponent(q);
+      const response=await fetch(url,{headers:{Accept:'application/json'},signal:controller.signal});
+      if(!response.ok)throw new Error('HTTP '+response.status);
+      const payload=await response.json();
+      if(current!==sequence)return;
+      show(renderItems(payload));
+    } catch(error) {
+      if(error.name==='AbortError')return;
+      if(current!==sequence)return;
+      results.innerHTML='<div class="icd-api-fallback"><strong>Не удалось получить ответ от сервиса данных.</strong><p>Проверь подключение или открой официальный браузер ВОЗ. Поиск внутри него работает по коду и названию.</p><a href="https://icd.who.int/browse10/2019/en" target="_blank" rel="noopener noreferrer">Открыть браузер МКБ-10 ВОЗ '+icon('external',13)+'</a></div>';
+      status.textContent='Внешний источник временно недоступен.';
+    }
+  }
+  input.addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(search,260);});
+  clear.addEventListener('click',()=>{input.value='';results.innerHTML='';status.textContent='Начни вводить минимум 2 символа.';input.focus();});
+  document.querySelectorAll('[data-icd-chapter]').forEach(button=>button.addEventListener('click',()=>{
+    const prefix=button.dataset.icdChapter;
+    input.value=prefix;
+    search();
+    input.focus();
+  }));
 }
 
 function renderGCSCalculator() {
@@ -347,25 +423,16 @@ function renderQuality() {
 }
 
 const PAGES = {
-  overview:{title:'Обзор',render:renderOverview},
-  calculators:{title:'Калькуляторы',render:renderCalculatorCatalog},
-  handbook:{title:'Справочник',render:renderHandbook},
-  anatomy:{title:'3D-анатомия',render:renderAnatomy},
-  pharmacology:{title:'Фармакология',render:renderPharmacology},
-  diagnostics:{title:'Диагностика',render:renderDiagnostics},
-  quality:{title:'Контроль качества',render:renderQuality}
+  overview:{title:'Главная',render:renderOverview},
+  icd:{title:'МКБ-10',render:renderICD}
 };
 function render() {
-  disposeBrainScene();
   const route = routeName();
   const page = PAGES[route];
   setActiveNav(route);
   breadcrumb.textContent = page.title;
   app.innerHTML = page.render();
-  if (route === 'calculators') { bindGCS(); bindScaleTools(); bindCalculatorFilter(); bindDerivedCalculators(); }
-  if (route === 'handbook') bindResourceFilter();
-  if (route === 'diagnostics') bindNeuroLab();
-  if (route === 'anatomy' || route === 'overview') initBrainScene('brain-canvas');
+  if (route === 'icd') bindICD();
   sidebar.classList.remove('open');
   document.title = page.title + ' — NeuroDesk';
 }
@@ -424,11 +491,9 @@ if (localStorage.getItem('neurodesk-theme') === 'dark') {
 function searchItems(query) {
   const text = query.trim().toLowerCase();
   if (!text) return [];
-  const routes = Object.entries(PAGES).map(([id,page]) => ({id,title:page.title,detail:'Раздел NeuroDesk'}));
-  const resources = officialResources.map((item) => ({id:'handbook',title:item.title,detail:item.category + ' · ' + item.domain}));
-  const scales = scaleCatalog.map((item) => ({id:item.status === 'ready' ? 'calculators' : 'quality',title:item.title,detail:item.label + ' · шкала'}));
-  return [...routes,...resources,...scales].filter((item) => (item.title + ' ' + item.detail).toLowerCase().includes(text)).slice(0,7);
+  return Object.entries(PAGES).map(([id,page]) => ({id,title:page.title,detail:'Раздел NeuroDesk'})).filter((item) => item.title.toLowerCase().includes(text)).slice(0,7);
 }
+
 function drawSearch() {
   const results = searchItems(searchInput.value);
   if (!searchInput.value.trim()) { searchPopover.hidden = true; return; }
