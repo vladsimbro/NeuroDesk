@@ -63,6 +63,40 @@
   assert(panel.width<=391&&panel.width>=360,'Reader fits mobile width');
   assert(panel.height>=790,'Reader uses full mobile screen height');
   deep.frame.remove();
+
+  const calcs=await loadFrame('../calculators.html?tool=score2');
+  const cdoc=calcs.doc,cwin=calcs.win;
+  assert(cdoc.querySelectorAll('.calc-card').length===9,'Nine clinical calculator cards render');
+  assert(cdoc.querySelector('.calc-tool-header h2')?.textContent.includes('SCORE2'),'SCORE2 opens from deep link');
+  const fill=(key,value)=>{
+   const element=cdoc.querySelector('[name="'+key+'"]');
+   assert(!!element,'Calculator form field '+key+' exists');
+   element.value=value;
+  };
+  fill('age','60');fill('sex','male');fill('region','moderate');fill('smoker','no');
+  fill('sbp','120');fill('total','6');fill('hdl','1.3');
+  fill('ascvd','no');fill('diabetes','no');fill('ckd','no');
+  cdoc.getElementById('calc-form').dispatchEvent(new cwin.Event('submit',{bubbles:true,cancelable:true}));
+  assert(!!cdoc.querySelector('.calc-result-value'),'SCORE2 shows computed probability');
+  assert(cdoc.querySelector('.calc-result-value').textContent.includes('%'),'SCORE2 value contains percent');
+  fill('diabetes','yes');
+  cdoc.getElementById('calc-form').dispatchEvent(new cwin.Event('submit',{bubbles:true,cancelable:true}));
+  assert(cdoc.getElementById('calc-result').classList.contains('is-error'),'SCORE2 blocks diabetes input');
+  cdoc.querySelector('[data-tool="gcs"]').click();
+  assert(cdoc.querySelector('.calc-tool-header h2')?.textContent.includes('GCS'),'GCS opens from catalog');
+  fill('eye','4');fill('verbal','5');fill('motor','6');fill('pupils','0');
+  cdoc.getElementById('calc-form').dispatchEvent(new cwin.Event('submit',{bubbles:true,cancelable:true}));
+  assert(cdoc.querySelector('.calc-result-value')?.textContent.includes('15 / 15'),'GCS totals correctly');
+  cdoc.getElementById('calc-search').value='МИО';
+  cdoc.getElementById('calc-search').dispatchEvent(new cwin.Event('input',{bubbles:true}));
+  assert(cdoc.querySelectorAll('.calc-card').length===0,'Calculator search filters cards');
+  calcs.frame.remove();
+
+  const mobileCalc=await loadFrame('../calculators.html?tool=abcd2',390,844);
+  assert(mobileCalc.doc.querySelector('.calc-tool-header h2')?.textContent.includes('ABCD'),'Mobile calculator deep link loads');
+  const bounds=mobileCalc.doc.querySelector('.calc-detail').getBoundingClientRect();
+  assert(bounds.width>250&&bounds.width<=390,'Calculator fits mobile viewport');
+  mobileCalc.frame.remove();
   document.getElementById('result').textContent='PASS '+checks.length+' browser checks';
  }catch(error){
   document.getElementById('result').textContent='FAIL after '+checks.length+' checks: '+error.message;
