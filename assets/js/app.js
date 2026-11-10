@@ -338,12 +338,13 @@ function bindClinical(){
   meta.textContent='Найдено материалов: '+matches.length+' из '+CLINICAL_LIBRARY.length+(openArticles.size?' · открыто статей: '+openArticles.size:'');
   const openMarkup=[...openArticles].map(id=>CLINICAL_LIBRARY.find(item=>item.id===id)).filter(Boolean).map(articleMarkup).join('');
   const cards=matches.map(item=>'<div class="clinical-result-wrap"><button type="button" class="clinical-result '+(openArticles.has(item.id)?'selected':'')+'" data-clinical-open="'+item.id+'" aria-expanded="'+openArticles.has(item.id)+'" aria-controls="clinical-article-'+item.id+'"><span class="clinical-result-top"><span class="clinical-category">'+esc(item.category)+'</span><span class="clinical-updated">'+esc(item.updated)+'</span></span><strong>'+esc(item.title)+'</strong><span>'+esc(item.summary)+'</span><span class="clinical-tags">'+item.tags.map(tag=>'<i>'+esc(tag)+'</i>').join('')+'</span><span class="clinical-open-label">'+(openArticles.has(item.id)?'Статья открыта':'Открыть материал '+icon('arrow',13))+'</span></button></div>').join('');
-  results.innerHTML=(openMarkup?'<div class="clinical-open-articles">'+openMarkup+'</div>':'')+(cards||(!openMarkup?'<div class="icd-empty"><strong>Ничего не найдено</strong><span>Попробуй другой термин или переключи категорию.</span></div>':''));
+  const emptyState='<div class="icd-empty"><strong>Ничего не найдено</strong><span>Попробуй другой термин или переключи категорию.</span></div>';
+  results.innerHTML='<div class="clinical-layout'+(openMarkup?' has-open-articles':'')+'"><div class="clinical-results-list">'+(cards||emptyState)+'</div>'+(openMarkup?'<aside class="clinical-open-articles" aria-label="Открытые статьи">'+openMarkup+'</aside>':'')+'</div>';
   results.querySelectorAll('[data-clinical-open]').forEach(button=>button.addEventListener('click',()=>{
    const id=button.dataset.clinicalOpen;
    if(openArticles.has(id))openArticles.delete(id);else openArticles.add(id);
    updateUrl();render();
-   if(openArticles.has(id))results.querySelector('[data-clinical-panel="'+id+'"]')?.scrollIntoView({behavior:'smooth',block:'nearest'});
+   if(openArticles.has(id)&&window.matchMedia('(max-width: 800px)').matches)results.querySelector('[data-clinical-panel="'+id+'"]')?.scrollIntoView({behavior:'smooth',block:'nearest'});
   }));
   results.querySelectorAll('[data-clinical-close]').forEach(button=>button.addEventListener('click',()=>{
    openArticles.delete(button.dataset.clinicalClose);updateUrl();render();
@@ -382,4 +383,4 @@ document.getElementById('sidebar-close')?.addEventListener('click',closeSidebar)
 document.addEventListener('click',event=>{if(document.body.classList.contains('sidebar-open')&&!sidebar.contains(event.target)&&!event.target.closest('#mobile-menu'))closeSidebar();});
 document.addEventListener('keydown',event=>{if(event.key==='Escape')closeSidebar();});
 document.querySelectorAll('[data-icon]').forEach(node=>node.innerHTML=icon(node.dataset.icon));
-render();
+try{render();}catch(error){console.error('NeuroDesk initialization failed:',error);app.innerHTML='<section class="startup-fallback"><h1>Не удалось загрузить раздел</h1><p>Основные страницы доступны по навигации. Обнови страницу; если ошибка повторяется, проверь подключение к файлам сайта.</p><a href="./index.html#overview">Вернуться на главную</a></section>';}
