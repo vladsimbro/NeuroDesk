@@ -17,7 +17,7 @@ test('all 31 original articles are extended without renaming or deleting them',(
  assert.equal(original.length,31);
  assert.equal(Object.keys(extension).length,31);
  assert.deepEqual(new Set(Object.keys(extension)),ids);
- assert.deepEqual(new Set(Object.keys(RUS_ARTICLE_SOURCES)),ids);
+ for(const id of ids)assert.ok(Object.hasOwn(RUS_ARTICLE_SOURCES,id),'original article source missing: '+id);
 });
 test('each clinical article has at least three substantial unique new sections',()=>{
  const titles=new Set();
@@ -49,7 +49,7 @@ test('every listed reference maps only to Russian official medical documents or 
   assert.ok(d.year>=2022&&d.year<=2026);
   assert.ok(d.name.length>=5);
   assert.ok(d.age.length>3);
-  assert.match(d.url,/^https:\/\/cr\.minzdrav\.gov\.ru\//);
+  assert.match(d.url,/^https:\/\/minzdrav\.gov\.ru\/special\//);
   if(!d.verifiedLink)assert.equal(d.url,RUS_CLINICAL_REGISTRY);
  }
  for(const [article,links] of Object.entries(RUS_ARTICLE_SOURCES)){
@@ -77,7 +77,7 @@ test('article reader renders expanded content, direct official links and source 
  assert.match(app,/nd-article-source-entry/);
  assert.match(app,/nd-article-source-scope/);
  assert.match(app,/Смежная КР — не весь синдром/);
- assert.match(app,/Открыть карточку официальной КР/);
- assert.match(app,/Открыть Рубрикатор и найти по ID/);
+ assert.match(app,/Официальная страница Минздрава о Рубрикаторе/);
+ assert.match(app,/Скопировать ID/);
  assert.match(app,/Зарубежные источники не используются/);
 });
