@@ -209,3 +209,64 @@
   .calc-report .calc-result .calc-result-main{padding:17px 14px}
   .calc-report .calc-result .calc-result-section,.calc-report .calc-result .calc-result-caution{padding:15px 14px}
 }
+
+
+/* Clinical calculator UX: large native radio answers, grouped muscle testing, completion */
+.calc-form-progress{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 15px;margin:-5px 0 24px;border:1px solid #e0eae9;border-radius:11px;background:#f8faf9;color:#526c72;font-size:12px;font-weight:650}
+.calc-form-progress strong{color:#2c6f67}
+.calc-form-progress progress{width:min(180px,45%);height:9px;border:0;border-radius:99px;background:#e2ece8;overflow:hidden}
+.calc-form-progress progress::-webkit-progress-bar{background:#e2ece8;border-radius:99px}
+.calc-form-progress progress::-webkit-progress-value{background:#64ac98;border-radius:99px}
+.calc-form-progress progress::-moz-progress-bar{background:#64ac98;border-radius:99px}
+.calc-form-progress.is-complete{background:#eff9f4;border-color:#bbdccc}
+.calc-input-section{padding:0 0 23px;margin:0 0 25px;border-bottom:1px solid #e7eded}
+.calc-input-section:last-of-type{margin-bottom:0}
+.calc-input-section>h3{font:800 15px/1.45 'Manrope',sans-serif;color:#294e58;margin:0 0 6px}
+.calc-input-section>p{font-size:12px;line-height:1.65;color:#70878f;margin:0 0 16px}
+.calc-fields--single{grid-template-columns:minmax(0,1fr)}
+.calc-field--choice{border:0;padding:0;margin:0;min-width:0}
+.calc-field--choice legend{padding:0;max-width:100%}
+.calc-choice-group{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.calc-choice-item{position:relative;display:block;min-width:0}
+.calc-choice-item input[type="radio"]{position:absolute;width:1px;height:1px;left:15px;top:50%;opacity:0;z-index:0;padding:0;margin:0}
+.calc-choice-label{position:relative;display:flex;align-items:flex-start;gap:9px;height:100%;min-height:52px;padding:12px 11px;border:1px solid #dae6e4;border-radius:10px;background:#fbfdfc;cursor:pointer;color:#47656c;font-size:12px;line-height:1.45;font-weight:650;overflow-wrap:anywhere;transition:background .14s,border-color .14s,box-shadow .14s}
+.calc-choice-label:hover{border-color:#a8d3c6;background:#f1faf6}
+.calc-choice-mark{display:block;flex:none;width:17px;height:17px;border:1.5px solid #bacdcc;border-radius:50%;background:#fff;margin-top:1px}
+.calc-choice-item input:checked+.calc-choice-label{background:#e9f5ef;border-color:#67b09c;color:#245e56;box-shadow:0 0 0 1px #87c7b5}
+.calc-choice-item input:checked+.calc-choice-label .calc-choice-mark{background:#257d71;border-color:#257d71;box-shadow:inset 0 0 0 4px #fff}
+.calc-choice-item input:focus-visible+.calc-choice-label{outline:3px solid #7dc9b6;outline-offset:2px}
+.calc-field--invalid .calc-choice-label{border-color:#c78373}
+.calc-field--invalid .calc-field-title{color:#a85943}
+.calc-choice-group--long{grid-template-columns:minmax(0,1fr)}
+.calc-choice-group--long .calc-choice-label{min-height:44px}
+.calc-choice-group--nrs{grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.calc-choice-group--nrs .calc-choice-label{justify-content:center;align-items:center;min-height:49px;padding:8px 5px;font-size:15px;font-weight:800}
+.calc-choice-group--nrs .calc-choice-mark{display:none}
+.calc-fields .calc-field:has(.calc-choice-group--nrs){grid-column:1 / -1}
+.calc-mrc-list{display:grid;gap:11px}
+.calc-mrc-group{border:1px solid #e0e9e7;border-radius:11px;padding:14px 16px 16px;margin:0;min-width:0;background:#fcfefd}
+.calc-mrc-group legend{font:800 13px/1.45 'Manrope',sans-serif;color:#32625b;padding:0 7px}
+.calc-mrc-sides{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.calc-mrc-sides .calc-field-title{margin-bottom:6px}
+.calc-mrc-sides .calc-field select{background:#fff}
+.calc-score-visual{padding:17px 27px 18px;border-top:1px solid #e1ece7;background:#fafcfb}
+.calc-score-track{height:11px;width:100%;border-radius:99px;background:#e4eceb;overflow:hidden}
+.calc-score-track>span{display:block;height:100%;background:#6cae9d;border-radius:99px}
+.calc-score-bounds{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:7px 0 2px;font-size:11px;color:#72848a;font-variant-numeric:tabular-nums}
+.calc-score-bounds strong{color:#2c6b61;font-size:12px}
+.calc-score-visual p{margin:8px 0 0;font-size:10.5px;line-height:1.5;color:#7d9094}
+@media(max-width:1150px){.calc-choice-group{grid-template-columns:minmax(0,1fr)}.calc-choice-group--nrs{grid-template-columns:repeat(6,minmax(0,1fr))}}
+@media(min-width:901px){.calc-choice-group--long{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:900px){.calc-choice-group{grid-template-columns:repeat(2,minmax(0,1fr))}.calc-choice-group--long{grid-template-columns:minmax(0,1fr)}.calc-choice-group--nrs{grid-template-columns:repeat(6,minmax(0,1fr))}}
+@media(max-width:600px){
+ .calc-input-section>h3{font-size:14px}
+ .calc-choice-group{grid-template-columns:1fr}
+ .calc-choice-group--nrs{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .calc-choice-label{min-height:48px}
+ .calc-mrc-group{padding:12px}
+ .calc-mrc-sides{gap:9px}
+ .calc-mrc-sides select{font-size:11px;padding-left:7px}
+ .calc-score-visual{padding:15px 18px}
+ .calc-form-progress{margin-top:0}
+}
+@media(max-width:350px){.calc-mrc-sides{grid-template-columns:1fr}.calc-choice-group--nrs{grid-template-columns:repeat(4,minmax(0,1fr))}}
