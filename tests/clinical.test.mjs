@@ -10,7 +10,7 @@ const css = await readFile(new URL('../assets/css/styles.css', import.meta.url),
 test('clinical reference is directly reachable from home and has a standalone page', () => {
   assert.match(home, /href="\.\/clinical\.html"/);
   assert.match(clinicalPage, /Клинический справочник/);
-  assert.match(app, /location\.pathname\.endsWith\('\/clinical\.html'\)/);
+  assert.match(app, /if\(page==='clinical\.html'\)return 'clinical'/);
 });
 
 test('neurological examination feature and navigation are fully removed', () => {
@@ -36,14 +36,19 @@ test('clinical articles support deep links and table of contents', () => {
   assert.match(app, /new URLSearchParams\(location\.search\)\.get\('article'\)/);
   assert.match(app, /history\.replaceState\(null,'',url\.pathname\+url\.search\+url\.hash\)/);
   assert.match(app, /clinical-article-toc/);
-  assert.match(app, /id="clinical-section-'\+item\.id\+'-'\+i/);
+  assert.match(app, /data-clinical-section-target="clinical-section-'\+item\.id\+'-'\+i/);
+  assert.match(app, /\[data-clinical-section-target\]/);
+  assert.match(app, /section\.scrollIntoView\(\{behavior:'smooth',block:'start'\}\)/);
+  assert.doesNotMatch(app, /<a href="#clinical-section-/);
 });
 
 test('clinical reference supports token search, category filters and expandable articles', () => {
   for (const feature of ['clinical-query','clinical-filters','clinical-results','data-clinical-filter','data-clinical-open','clinical-article-section','Российские клинические рекомендации']) {
     assert.ok(app.includes(feature), feature);
   }
-  assert.match(app, /tokens\.every\(token=>corpus\.includes\(token\)\)/);
+  assert.match(app, /const normalizeSearch=value=>String\(value\?\?''\)\.normalize\('NFKC'\)/);
+  assert.match(app, /words\.some\(word=>word\.startsWith\(stem\)/);
+  assert.match(app, /item\.sections\.flatMap\(section=>\[section\.title,\.\.\.section\.items\]\)/);
   assert.match(css, /\.clinical-results/);
   assert.match(css, /\.clinical-article-section/);
 });
@@ -79,10 +84,20 @@ test('Russian clinical recommendations are the primary local reference where dir
   assert.match(app, /зарубежные источники не используются/i);
 });
 
-test('article expansion and collapse use a smooth height transition and an in-article check control', () => {
+test('clinical article navigation and search stay inside the reference and support Russian word forms', () => {
+  assert.match(app, /data-clinical-section-target=/);
+  assert.match(app, /section\.scrollIntoView\(\{behavior:'smooth',block:'start'\}\)/);
+  assert.doesNotMatch(app, /<a href="#clinical-section-/);
+  assert.match(app, /normalizeSearch=value=>String\(value\?\?''\)/);
+  assert.match(app, /const stem=token\.length>5\?token\.slice\(0,-2\):token/);
+  assert.match(app, /words\.some\(word=>word\.startsWith\(stem\)/);
+});
+
+test('article expansion and collapse use a smooth height transition and a close control', () => {
   assert.match(app, /clinical-article-panel/);
   assert.match(app, /data-clinical-close/);
-  assert.match(app, /icon\('check',19\)/);
+  assert.match(app, /icon\('close',19\)/);
+  assert.doesNotMatch(app, /clinical-collapse[^\n]*icon\('check'/);
   assert.doesNotMatch(app, /data-clinical-close="'\+item\.id\+'">Свернуть/);
   assert.match(css, /grid-template-rows:0fr/);
   assert.match(css, /grid-template-rows:1fr/);
