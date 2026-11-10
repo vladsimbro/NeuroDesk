@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "description": "Russian neurology workspace: clinical reference navigation, tested tools and 3D visualization prototype.",
-  "scripts": { "test": "node --test" },
+  "scripts": {
+    "test": "node --test && node --check assets/js/app.js && node --check assets/js/brain-scene.js"
+  },
   "engines": { "node": ">=20" }
 }
