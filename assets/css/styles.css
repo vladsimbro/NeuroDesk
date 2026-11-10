@@ -150,3 +150,8 @@ body.dark .clinical-filter.active,body.dark .clinical-category{background:#203f3
 .clinical-home-entry{display:flex;align-items:center;gap:16px;margin:18px 0}.clinical-home-entry .resource-mark{width:46px;height:46px;flex:0 0 auto}.clinical-home-entry h2{margin-bottom:6px}.clinical-home-entry p{color:#83919b;font-size:12px;line-height:1.6;margin:0 0 12px}.clinical-home-entry .eyebrow{margin-bottom:6px}
 @media(max-width:560px){.clinical-home-entry{align-items:flex-start;gap:12px;padding:17px}.clinical-home-entry .resource-mark{width:38px;height:38px}}
 
+
+.clinical-article-toc{display:grid;gap:7px;padding:15px 17px;margin:16px 0 4px;border:1px solid var(--line);border-radius:12px;background:var(--canvas)}
+.clinical-article-toc strong{font-size:11px;margin-bottom:3px}
+.clinical-article-toc a{font-size:11px;line-height:1.5;color:#267b72;text-decoration:none}
+.clinical-article-toc a:hover{text-decoration:underline}
