@@ -36,7 +36,7 @@ test('clinical articles support deep links and table of contents', () => {
   assert.match(app, /new URLSearchParams\(location\.search\)\.get\('article'\)/);
   assert.match(app, /history\.replaceState\(null,'','\?article='/);
   assert.match(app, /clinical-article-toc/);
-  assert.match(app, /id="clinical-section-/);
+  assert.ok(app.includes('clinical-section-\'+item.id+\'-\'+i));
 });
 
 test('clinical reference supports token search, category filters and expandable articles', () => {
