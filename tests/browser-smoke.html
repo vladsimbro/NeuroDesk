@@ -23,6 +23,33 @@
   assert(gateways.getBoundingClientRect().height>150,'Home cards have usable geometry');
   home.frame.remove();
 
+  const icd=await loadFrame('../index.html?code=G43.1#icd',390,844);
+  const waitUntil=async(condition,label)=>{
+   for(let attempt=0;attempt<80;attempt++){
+    if(condition())return;
+    await new Promise(resolve=>setTimeout(resolve,50));
+   }
+   throw Error('ICD waiting for '+label);
+  };
+  await waitUntil(()=>icd.doc.getElementById('icd-count-label')?.textContent.includes('15 038'),'data loading');
+  assert(icd.doc.querySelectorAll('.icd-chapter').length===22,'ICD has 22 chapter buttons');
+  assert(icd.doc.querySelector('[data-icd-chapter="V01-Y98"] .icd-chapter-number')?.textContent==='XX','Chapter XX is external causes');
+  assert(icd.doc.querySelector('[data-icd-chapter="Z00-Z99"] .icd-chapter-number')?.textContent==='XXI','Chapter XXI is Z codes');
+  assert(icd.doc.querySelector('[data-icd-chapter="U00-U85"] .icd-chapter-number')?.textContent==='XXII','Chapter XXII is U codes');
+  const icdDetail=icd.doc.getElementById('icd-entry-detail');
+  assert(!icdDetail.hidden&&icdDetail.textContent.includes('G43.1'),'Direct ICD code link opens details');
+  assert(icdDetail.querySelectorAll('[data-icd-open]').length>=1,'ICD detail has navigable parent/subcategory links');
+  const queryIcd=icd.doc.getElementById('icd-query');
+  queryIcd.value='ми';
+  queryIcd.dispatchEvent(new icd.win.Event('input',{bubbles:true}));
+  await waitUntil(()=>icd.doc.querySelectorAll('#icd-results [data-icd-open]').length>0,'short-fragment search');
+  assert(icd.doc.querySelector('#icd-results [data-icd-open]')!==null,'ICD supports short Russian fragments');
+  icd.doc.querySelector('[data-icd-chapter="G00-G99"]').click();
+  assert(icd.doc.getElementById('icd-class-toolbar').textContent.includes('Болезни нервной системы'),'ICD opens selected chapter');
+  const width=icd.doc.documentElement.scrollWidth;
+  assert(width<=icd.win.innerWidth+1,'ICD mobile view has no horizontal page overflow');
+  icd.frame.remove();
+
   const clinical=await loadFrame('../clinical.html');
   const {doc,win}=clinical;
   let cards=[...doc.querySelectorAll('.nd-clinical-card')];
