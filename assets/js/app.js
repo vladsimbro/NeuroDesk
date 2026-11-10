@@ -45,7 +45,7 @@ function bindICD(){
  const input=document.getElementById('icd-query'),status=document.getElementById('icd-status'),results=document.getElementById('icd-results'),clear=document.getElementById('icd-clear'),includeInactive=document.getElementById('icd-include-inactive'),moreWrap=document.getElementById('icd-more-wrap'),countLabel=document.getElementById('icd-count-label');
  const DATA_URL=new URL('../data/icd10-v2.27.json',import.meta.url).href,PAGE_SIZE=100;
  let timer=null,allRecords=[],byId=new Map(),lastMatches=[],visibleCount=PAGE_SIZE,chapterRange='',dataPromise=null;
- const normalize=v=>String(v??'').normalize('NFKC').toLocaleLowerCase('ru-RU').replace(/ё/g,'е').match(/[\\p{L}\\p{N}]+/gu)?.join(' ')||'';
+ const normalize=v=>String(v??'').normalize('NFKC').toLocaleLowerCase('ru-RU').replace(/ё/g,'е').match(/[\p{L}\p{N}]+/gu)?.join(' ')||'';
  const normalizeCode=v=>String(v??'').toUpperCase().replace(/[^A-ZА-Я0-9.]/g,'');
  async function loadData(){
   if(allRecords.length)return allRecords;
