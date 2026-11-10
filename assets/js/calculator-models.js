@@ -67,9 +67,9 @@ export function calcGCS({eye,verbal,motor,pupils}){
  const e=pick(eye,4,'Глаза'),v=pick(verbal,5,'Речь'),m=pick(motor,6,'Движение');
  if(e!==null&& !Number.isInteger(e)||v!==null&&!Number.isInteger(v)||m!==null&&!Number.isInteger(m))throw Error('Компоненты GCS должны быть целыми.');
  const sum=[e,v,m].some(x=>x===null)?null:e+v+m;
- const p=assertNumber(pupils,0,2,'Отсутствующие реакции зрачков');
- if(!Number.isInteger(p))throw Error('Зрачковый показатель должен быть целым.');
- return {total:sum,gcsp:sum===null?null:sum-p,components:'E'+(e??'NT')+' V'+(v??'NT')+' M'+(m??'NT'),pupils:p};
+ const p=pupils==='NT'?null:assertNumber(pupils,0,2,'Отсутствующие реакции зрачков');
+ if(p!==null&&!Number.isInteger(p))throw Error('Зрачковый показатель должен быть целым.');
+ return {total:sum,gcsp:sum===null||p===null?null:sum-p,components:'E'+(e??'NT')+' V'+(v??'NT')+' M'+(m??'NT'),pupils:p};
 }
 export function calcABCD2({age,pressure,weakness,speech,duration,diabetes}){
  let score=0;
@@ -102,7 +102,7 @@ export const SCALE_DEFS=[
   {key:'eye',label:'Открывание глаз (E)',type:'select',options:[['','Выбери'],['4','Спонтанно · 4'],['3','На звук · 3'],['2','На давление · 2'],['1','Отсутствует · 1'],['NT','Невозможно проверить (NT)']]},
   {key:'verbal',label:'Речевой ответ (V)',type:'select',options:[['','Выбери'],['5','Ориентирован · 5'],['4','Спутанная речь · 4'],['3','Отдельные слова · 3'],['2','Звуки · 2'],['1','Нет ответа · 1'],['NT','Невозможно проверить (NT)']]},
   {key:'motor',label:'Двигательный ответ (M)',type:'select',options:[['','Выбери'],['6','Выполняет команды · 6'],['5','Локализует боль · 5'],['4','Нормальное сгибание · 4'],['3','Патологическое сгибание · 3'],['2','Разгибание · 2'],['1','Нет ответа · 1'],['NT','Невозможно проверить (NT)']]},
-  {key:'pupils',label:'Сколько зрачков не реагируют на свет? (GCS-P)',type:'select',options:[['','Выбери'],['0','Ни один · 0'],['1','Один · 1'],['2','Оба · 2']]}
+  {key:'pupils',label:'Сколько зрачков не реагируют на свет? (GCS-P)',type:'select',options:[['','Выбери'],['0','Ни один · 0'],['1','Один · 1'],['2','Оба · 2'],['NT','Невозможно проверить зрачки (GCS-P — NT)']]}
  ],note:'Компонентная запись важнее одной суммы. NT не заменяют значением 1.'},
  {id:'mrs',group:'Инсульт',title:'mRS — Рэнкин',subtitle:'Функциональная независимость после инсульта',detail:'Выбор одной из категорий модифицированной шкалы Рэнкина. Балл — это клиническое описание функционального состояния, а не сумма отдельных симптомов.',sources:[['Модифицированная шкала Рэнкина, таблица с описанием уровней (CC BY 4.0)','https://www.ncbi.nlm.nih.gov/books/NBK597508/table/ch29.Tab1/']],fields:[
   {key:'grade',label:'Функциональное состояние',type:'select',options:[['','Выбери'],['0','0 — нет симптомов'],['1','1 — симптомы без значимых ограничений'],['2','2 — не может выполнять все прежние дела, но независим'],['3','3 — требуется помощь, ходит самостоятельно'],['4','4 — не ходит самостоятельно, нуждается в помощи для личных потребностей'],['5','5 — тяжёлая зависимость, постоянный уход'],['6','6 — смерть']]}
@@ -196,7 +196,7 @@ export function calculate(id,values){
  if(id==='gcs'){
   const o=calcGCS({eye:values.eye,verbal:values.verbal,motor:values.motor,pupils:values.pupils});
   const full=o.total!==null;
-  const gcsP=full?'GCS-P '+o.gcsp+' (GCS '+o.total+' − '+o.pupils+' нереагирующих зрачков)':'GCS-P не вычисляется, поскольку суммарный GCS отсутствует';
+  const gcsP=!full?'GCS-P не вычисляется, поскольку суммарный GCS отсутствует':o.gcsp===null?'GCS-P не вычисляется: реакцию зрачков проверить не удалось':'GCS-P '+o.gcsp+' (GCS '+o.total+' − '+o.pupils+' нереагирующих зрачков)';
   return build(full?o.total+' / 15':'NT — не вычисляется',o.components,
    full?'Суммарная оценка сознания по глазной, речевой и двигательной реакциям: '+o.total+' из 15.':'Один или несколько компонентов невозможно проверить (NT). Их нельзя подменять минимальными баллами — суммарный GCS не определяется.',
    [item('Открывание глаз (E)',named(id,values,'eye')),
