@@ -55,3 +55,22 @@ test('clinical reference supports full-text search, category filters and expanda
   assert.match(css, /\.clinical-article-section/);
   assert.match(css, /body\.dark \.clinical-notice/);
 });
+
+test('clinical reference now includes a broad set of sourced neurology topics', () => {
+  const start = app.indexOf('const CLINICAL_LIBRARY=');
+  const end = app.indexOf('function renderClinical()', start);
+  const library = app.slice(start, end);
+  const entries = library.match(/\{id:'[^']+'/g) || [];
+  assert.equal(entries.length, 19);
+  for (const topic of ['Острый инсульт','Транзиторная ишемическая атака','Первый эпилептический приступ','Эпилептический статус','Паркинсонизм','Рассеянный склероз','Делирий','Когнитивное снижение','Нейропатическая боль','Невралгия тройничного нерва','Болезнь двигательного нейрона','Острая слабость мимических мышц','радикулопатия','Атаксия','Тремор']) {
+    assert.ok(library.toLocaleLowerCase('ru-RU').includes(topic.toLocaleLowerCase('ru-RU')), topic);
+  }
+  assert.match(app, /data-clinical-filter="Заболевания"/);
+  assert.match(app, /data-clinical-filter="Неотложные состояния"/);
+});
+
+test('clinical search matches separate partial tokens across the material and ranks title matches first', () => {
+  assert.match(app, /const tokens=q\.split\(\/\[\\\\s,;\]\+\/u\)/);
+  assert.match(app, /tokens\.every\(token=>corpus\.includes\(token\)\)/);
+  assert.match(app, /title\.startsWith\(q\)/);
+});
