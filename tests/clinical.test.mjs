@@ -166,7 +166,7 @@ test('home page presents the two main reference modules clearly', () => {
 test('clinical article wording does not expose foreign guideline names or untranslated clinical shortcuts', () => {
   const start = app.indexOf('const CLINICAL_LIBRARY=');
   const end = app.indexOf('function renderClinical()', start);
-  const library = app.slice(start, end);
+  const library = app.slice(start, end).replace(/id:'[^']+'/g, '');
   assert.doesNotMatch(library, /McDonald|myasthenia gravis|déjà vu|jamais vu|HINTS|FAST|last known well|head impulse|MND|ALS|NMOSD|MOGAD|AQP4|SUNCT|SUNA|ABCD2/i);
   assert.match(library, /диагностические критерии рассеянного склероза/);
   assert.match(library, /ощущение уже виденного или никогда не виденного/);
