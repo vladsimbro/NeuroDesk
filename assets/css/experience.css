@@ -213,3 +213,11 @@ body.nd-reader-open{overflow:hidden}
  .nd-reader-dialog{animation:none}
  .nd-home-gateway,.nd-home-topic-grid>a,.nd-clinical-card{transition:none}
 }
+
+/* Calculator destination on the redesigned homepage */
+.nd-calculator-home-link{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:22px 25px;margin-top:15px;background:linear-gradient(110deg,#ecf6f2,#f7fbfa);border:1px solid #cae2da;border-radius:15px}
+.nd-calculator-home-link strong{display:block;color:#26584f;font:800 17px/1.4 'Manrope',sans-serif;margin-top:7px}
+.nd-calculator-home-link p{font-size:11px;color:#698982;line-height:1.65;margin:6px 0 0}
+.nd-calculator-home-link>a{white-space:nowrap;text-decoration:none;font-size:12px;font-weight:800;color:#fff;background:#23796f;padding:14px 17px;border-radius:10px}
+.nd-calculator-home-link>a:hover{background:#165c55}
+@media(max-width:600px){.nd-calculator-home-link{align-items:flex-start;flex-direction:column;padding:20px}.nd-calculator-home-link>a{width:100%;text-align:center}}
