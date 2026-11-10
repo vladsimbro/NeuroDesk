@@ -1,4 +1,4 @@
-import {ICD_CHAPTERS,createICDIndex,getICDByCode,getAncestors,getChildren,chapterItems,chapterOf,searchICD,isCurrent} from './icd-core.js';
+import {ICD_CHAPTERS,createICDIndex,getICDByCode,getAncestors,getChildren,chapterItems,chapterGroups,chapterOf,searchICD,isCurrent} from './icd-core.js';
 import {getICDSearchHints,suggestICDQueries,getICDTreeRoots,getICDTreeChildren,getICDTreeLineage,ICD_FAVORITES_KEY,ICD_RECENTS_KEY,readCodeList,writeCodeList} from './icd-enhancements.js';
 
 const DATA_URL=new URL('../data/icd10-v2.27.json',import.meta.url).href;
@@ -158,10 +158,13 @@ export function bindICD(){
    results.innerHTML=found.slice(0,shown).map(item=>itemButton(item)).join('');
    more.innerHTML=shown<found.length?'<button class="button button-outline icd-more-button" type="button" id="icd-more">Показать ещё '+Math.min(PAGE_SIZE,found.length-shown)+' из '+formatCount(found.length-shown)+' оставшихся</button>':'';
   }
-  if(filtered)status.textContent='Найдено '+formatCount(found.length)+(scope?' в классе '+scope[0]:'')+'.'+(found.length>'0'?' Показано '+formatCount(Math.min(found.length,shown))+'.':'');
+  if(filtered)status.textContent='Найдено '+formatCount(found.length)+(scope?' в классе '+scope[0]:'')+'.'+(found.length>0?' Показано '+formatCount(Math.min(found.length,shown))+'.':'');
   else if(scope)status.textContent='Класс '+scope[0]+' · '+scope[2]+' · '+formatCount(chapterItems(index,scope[1],inactive.checked).length)+' записей. Ниже показаны основные рубрики.';
   else status.textContent='База загружена. Доступно '+formatCount(index.records.length)+' записей. Выбери класс или введи запрос.';
   renderChapterToolbar();
+  renderSuggestions(q,found.length);
+  renderTree();
+  updateCollections();
  }
  function renderChapterToolbar(){
   if(!chapterRange){classToolbar.hidden=true;classToolbar.innerHTML='';chapters.querySelectorAll('button').forEach(b=>b.classList.remove('is-active'));return;}
@@ -185,7 +188,7 @@ export function bindICD(){
   const parent=ancestors.at(-1),siblings=parent?getChildren(index,parent,inactive.checked).filter(x=>x.id!==item.id).slice(0,12):[];
   detail.hidden=false;
   detail.innerHTML='<div class="icd-detail-heading"><div><span class="icd-class-eyebrow">КАРТОЧКА ЗАПИСИ · МКБ-10 РФ</span><h2><span>'+esc(item.code)+'</span> '+esc(item.name)+'</h2></div><button class="icd-detail-dismiss" type="button" id="icd-hide-detail" aria-label="Закрыть карточку">×</button></div>'+
-   '<div class="icd-detail-tools"><button type="button" id="icd-copy-code" class="button button-outline">Скопировать код</button><button type="button" id="icd-copy-entry" class="button button-outline">Скопировать код и название</button><button type="button" id="icd-copy-link" class="button button-outline">Ссылка на запись</button></div>'+
+   '<div class="icd-detail-tools"><button type="button" id="icd-toggle-favorite" class="button button-outline" aria-pressed="'+favorites.includes(item.code)+'">'+(favorites.includes(item.code)?'★ В избранном':'☆ В избранное')+'</button><button type="button" id="icd-copy-code" class="button button-outline">Скопировать код</button><button type="button" id="icd-copy-entry" class="button button-outline">Скопировать код и название</button><button type="button" id="icd-copy-link" class="button button-outline">Ссылка на запись</button></div>'+
    '<div id="icd-copy-feedback" class="icd-copy-feedback" role="status" aria-live="polite"></div>'+
    '<div class="icd-detail-facts"><span><b>Статус:</b> '+(isCurrent(item)?'актуальна в версии 2.27':'неактуальна в версии 2.27')+'</span>'+(item.date?'<span><b>Дата в источнике:</b> '+esc(item.date)+'</span>':'')+(item.addlCode==='1'||item.addlCode==='2'?'<span><b>Признак дополнительного кодирования:</b> '+(item.addlCode==='1'?'+':'*')+'</span>':'')+'</div>'+
    (chapter?'<div class="icd-detail-section"><h3>Класс МКБ-10</h3><button type="button" data-icd-chapter="'+esc(chapter[1])+'" class="icd-path-code"><b>'+esc(chapter[0]+' · '+chapter[1])+'</b> '+esc(chapter[2])+'</button></div>':'')+
@@ -193,12 +196,14 @@ export function bindICD(){
    '<div class="icd-detail-section"><h3>Подрубрики <span>'+formatCount(children.length)+'</span></h3>'+(children.length?'<div class="icd-related-list">'+children.slice(0,120).map(x=>itemButton(x,{compact:true})).join('')+'</div>'+(children.length>120?'<p>Показаны первые 120 записей. Для полного списка используй поиск по коду.</p>':''):'<p>В текущей выгрузке дочерних рубрик нет. Это не подтверждает допустимость кода как окончательного диагноза.</p>')+'</div>'+
    (siblings.length?'<div class="icd-detail-section"><h3>Соседние коды</h3><div class="icd-related-list">'+siblings.map(x=>itemButton(x,{compact:true})).join('')+'</div></div>':'')+
    '<p class="icd-detail-caution">Наименования и признаки получены из справочника НСИ. Этот набор не содержит полных примечаний «включено», «исключено» и всех правил кодирования. Для медицинской документации сверяй официальный классификатор и действующие инструкции.</p>'+
-   '<a class="icd-detail-source" href="'+SOURCE_URL+'" target="_blank" rel="noopener noreferrer">Открыть паспорт версии 2.27 в НСИ Минздрава ↗</a>';
+   '<div class="icd-detail-source-links"><a class="icd-detail-source" href="'+SOURCE_URL+'" target="_blank" rel="noopener noreferrer">Российская база МКБ-10 · версия 2.27 ↗</a><a class="icd-detail-source" href="https://icd.who.int/browse10/2019/en" target="_blank" rel="noopener noreferrer">МКБ-10 ВОЗ 2019 (другая редакция) ↗</a></div>';
  }
  function selectCode(code,{push=true,scroll=true}={}){
   const item=index&&getICDByCode(index,code);
   if(!item)return false;
   selected=item.code;
+  recordVisit(selected);
+  revealInTree(item);
   renderDetail();
   updateAddress({push});
   if(scroll)detail.scrollIntoView({behavior:'smooth',block:'start'});
@@ -208,14 +213,12 @@ export function bindICD(){
   if(!ICD_CHAPTERS.some(ch=>ch[1]===range))return;
   chapterRange=range;
   shown=PAGE_SIZE;
-  input.value='';
   renderList();
-  updateAddress();
-  card.scrollIntoView({behavior:'smooth',block:'start'});
+  updateAddress({push:true});
+  treePanel.scrollIntoView({behavior:'smooth',block:'start'});
  }
  function performSearch(){
   if(!index)return;
-  chapterRange='';
   shown=PAGE_SIZE;
   renderList();
   updateAddress();
@@ -230,6 +233,8 @@ export function bindICD(){
    chapterRange=ICD_CHAPTERS.some(ch=>ch[1]===classValue)?classValue:'';
    shown=PAGE_SIZE;
    renderList();
+   updateCollections();
+   initOffline();
    const code=address.searchParams.get('code')||initialCode;
    if(code){
     const ok=selectCode(code,{push:false,scroll:false});
@@ -253,6 +258,7 @@ export function bindICD(){
   if(open){selectCode(open.dataset.icdOpen);return;}
   const chapterButton=event.target.closest('[data-icd-chapter]');
   if(chapterButton){setChapter(chapterButton.dataset.icdChapter);return;}
+  if(event.target.closest('#icd-toggle-favorite')){toggleFavorite();return;}
   if(event.target.closest('#icd-hide-detail')){
    selected='';renderDetail();updateAddress({push:true});input.focus();return;
   }
@@ -270,7 +276,7 @@ export function bindICD(){
  });
  classToolbar.addEventListener('click',event=>{
   if(!event.target.closest('#icd-reset-chapter'))return;
-  chapterRange='';input.value='';shown=PAGE_SIZE;renderList();updateAddress();
+  chapterRange='';shown=PAGE_SIZE;renderList();updateAddress({push:true});
  });
  input.addEventListener('input',()=>{
   clearTimeout(timer);
@@ -285,6 +291,45 @@ export function bindICD(){
  inactive.addEventListener('change',()=>{
   shown=PAGE_SIZE;renderList();renderDetail();
  });
+ suggestions.addEventListener('click',event=>{
+  const open=event.target.closest('[data-icd-open]');
+  if(open){selectCode(open.dataset.icdOpen);return;}
+  const suggested=event.target.closest('[data-icd-suggest]');
+  if(suggested){
+   input.value=suggested.dataset.icdSuggest;
+   performSearch();input.focus();
+  }
+ });
+ treePanel.addEventListener('click',event=>{
+  const toggle=event.target.closest('[data-icd-expand]');
+  if(toggle){
+   const id=toggle.dataset.icdExpand;
+   if(treeExpanded.has(id))treeExpanded.delete(id);
+   else treeExpanded.add(id);
+   renderTree();
+   treePanel.querySelector('[data-icd-expand="'+CSS.escape(id)+'"]')?.focus({preventScroll:true});
+   return;
+  }
+  const open=event.target.closest('[data-icd-open]');
+  if(open)selectCode(open.dataset.icdOpen);
+ });
+ const personalActions=document.querySelector('.icd-personal-actions');
+ personalActions.addEventListener('click',event=>{
+  const favorite=event.target.closest('#icd-show-favorites');
+  const recent=event.target.closest('#icd-show-recent');
+  if(favorite)personalMode=personalMode==='favorites'?'':'favorites';
+  else if(recent)personalMode=personalMode==='recent'?'':'recent';
+  else return;
+  updateCollections();
+ });
+ personal.addEventListener('click',event=>{
+  const open=event.target.closest('[data-icd-open]');
+  if(open){selectCode(open.dataset.icdOpen);return;}
+  if(!event.target.closest('#icd-clear-personal'))return;
+  if(personalMode==='favorites'){favorites=[];persist(ICD_FAVORITES_KEY,favorites);}
+  if(personalMode==='recent'){recents=[];persist(ICD_RECENTS_KEY,recents);}
+  updateCollections();renderDetail();
+ });
  window.addEventListener('popstate',()=>{
   if(!input.isConnected||!index)return;
   const url=new URL(location.href);
@@ -292,7 +337,9 @@ export function bindICD(){
   const range=url.searchParams.get('chapter')||'';
   chapterRange=ICD_CHAPTERS.some(ch=>ch[1]===range)?range:'';
   selected=getICDByCode(index,url.searchParams.get('code')||'')?.code||'';
-  shown=PAGE_SIZE;renderList();renderDetail();
+  shown=PAGE_SIZE;renderList();
+  if(selected)revealInTree(getICDByCode(index,selected));
+  renderDetail();
  });
  startup();
 }
