@@ -335,6 +335,12 @@ function bindClinical(){
   results.querySelectorAll('[data-clinical-open]').forEach(button=>button.addEventListener('click',()=>{
    const id=button.dataset.clinicalOpen;
    if(selected===id){closeSelected(id);return;}
+   if(selected){
+    const previous=selected;
+    closeSelected(previous);
+    window.setTimeout(()=>{selected=id;updateUrl();render();results.querySelector('[data-clinical-panel="'+id+'"]')?.scrollIntoView({behavior:'smooth',block:'nearest'});},380);
+    return;
+   }
    selected=id;updateUrl();render();
    results.querySelector('[data-clinical-panel="'+id+'"]')?.scrollIntoView({behavior:'smooth',block:'nearest'});
   }));
