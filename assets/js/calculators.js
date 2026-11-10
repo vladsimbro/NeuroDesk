@@ -45,6 +45,7 @@ function resultMarkup(outcome){
  '<button type="button" class="calc-copy" id="calc-copy">Скопировать результат и расшифровку</button>';
 }
 function showError(result,message,form){
+ result.classList.remove('has-result');
  result.classList.add('is-error');
  result.innerHTML='<strong class="calc-error-title">Результат не рассчитан</strong><p>'+escapeHtml(message)+'</p>';
  if(form){
@@ -63,7 +64,7 @@ function openTool(id,focus=true){
   '<div class="calc-tool-notice"><strong>Границы применения</strong><p>'+escapeHtml(tool.note)+'</p></div>'+
   '<div class="calc-tool-sources"><strong>Первоисточники и методика</strong>'+tool.sources.map(s=>'<a href="'+escapeHtml(s[1])+'" target="_blank" rel="noopener noreferrer">'+escapeHtml(s[0])+' ↗</a>').join('')+'</div>';
  const form=document.getElementById('calc-form'),result=document.getElementById('calc-result');
- const pending=()=>{result.classList.remove('is-error');result.innerHTML='<span>Параметры изменены. Нажми «Рассчитать результат», чтобы обновить интерпретацию.</span>';};
+ const pending=()=>{result.classList.remove('has-result');result.classList.remove('is-error');result.innerHTML='<span>Параметры изменены. Нажми «Рассчитать результат», чтобы обновить интерпретацию.</span>';};
  form.addEventListener('input',event=>{event.target.removeAttribute('aria-invalid');pending();});
  form.addEventListener('change',event=>{event.target.removeAttribute('aria-invalid');pending();});
  form.addEventListener('submit',event=>{
@@ -72,12 +73,13 @@ function openTool(id,focus=true){
   try{
    const outcome=calculate(id,data);
    result.classList.remove('is-error');
+   result.classList.add('has-result');
    result.innerHTML=resultMarkup(outcome);
    document.getElementById('calc-copy').addEventListener('click',()=>copyResult(tool,outcome));
    if(window.matchMedia('(max-width:900px)').matches)result.scrollIntoView({behavior:'smooth',block:'nearest'});
   }catch(error){showError(result,error.message,form);}
  });
- form.addEventListener('reset',()=>{queueMicrotask(()=>{form.querySelectorAll('[aria-invalid]').forEach(n=>n.removeAttribute('aria-invalid'));result.classList.remove('is-error');result.innerHTML='<span>Заполни параметры и нажми «Рассчитать результат».</span>';});});
+ form.addEventListener('reset',()=>{queueMicrotask(()=>{form.querySelectorAll('[aria-invalid]').forEach(n=>n.removeAttribute('aria-invalid'));result.classList.remove('has-result');result.classList.remove('is-error');result.innerHTML='<span>Заполни параметры и нажми «Рассчитать результат».</span>';});});
  const url=new URL(location.href);url.searchParams.set('tool',id);history.replaceState(null,'',url.pathname+url.search+url.hash);
  if(focus){
   if(window.matchMedia('(max-width:900px)').matches)details.scrollIntoView({behavior:'smooth',block:'start'});
