@@ -109,8 +109,8 @@ test('CKD-EPI 2021 gives expected adult eGFR for reference examples', () => {
   const female = calculateEGFRCKDEPI2021(60, 88.4, 'female');
   const male = calculateEGFRCKDEPI2021(60, 88.4, 'male');
   assert.equal(female.status, 'complete');
-  assert.ok(Math.abs(female.value - 74.9) < 0.2);
-  assert.ok(Math.abs(male.value - 90.1) < 0.2);
+  assert.ok(Math.abs(female.value - 64.5) < 0.2);
+  assert.ok(Math.abs(male.value - 86.2) < 0.2);
   assert.equal(calculateEGFRCKDEPI2021(17, 80, 'female').status, 'invalid');
   assert.equal(calculateEGFRCKDEPI2021(60, 80, 'other').status, 'invalid');
 });
@@ -118,6 +118,7 @@ test('Corrected sodium exposes both Katz and Hillier coefficients', () => {
   assert.ok(Math.abs(calculateCorrectedSodium(130, 16.7, 1.6).value - 133.1714) < 0.01);
   assert.ok(Math.abs(calculateCorrectedSodium(130, 16.7, 2.4).value - 134.7571) < 0.01);
   assert.equal(calculateCorrectedSodium(130, 5.6, 1.6).value, 130);
+  assert.equal(calculateCorrectedSodium(130, 3, 2.4).value, 130);
   assert.equal(calculateCorrectedSodium(130, 16, 2).status, 'invalid');
 });
 test('Calculated osmolarity uses SI mmol/L values', () => {
