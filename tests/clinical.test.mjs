@@ -116,3 +116,12 @@ test('project literature policy lists Russian official sources only', async () =
   assert.match(literature, /Минздрава России/);
   assert.doesNotMatch(literature, /NICE|NHS|NCBI|PubMed|McGraw Hill|Oxford University Press|LWW/);
 });
+
+test('only the navigation item matching the current route receives active state', () => {
+  assert.match(app, /const page=location\.pathname\.split\('\/'\)\.filter\(Boolean\)\.at\(-1\)\|\|''/);
+  assert.match(app, /links\.forEach\(node=>\{\s*node\.classList\.remove\('active'\)/);
+  assert.match(app, /node\.removeAttribute\('aria-current'\)/);
+  assert.match(app, /active\.setAttribute\('aria-current','page'\)/);
+  assert.doesNotMatch(home, /class="nav-item active"/);
+  assert.doesNotMatch(clinicalPage, /class="nav-item active"/);
+});
