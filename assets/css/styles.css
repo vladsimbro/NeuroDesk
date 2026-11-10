@@ -155,3 +155,54 @@ body.dark .clinical-filter.active,body.dark .clinical-category{background:#203f3
 .clinical-article-toc strong{font-size:11px;margin-bottom:3px}
 .clinical-article-toc a{font-size:11px;line-height:1.5;color:#267b72;text-decoration:none}
 .clinical-article-toc a:hover{text-decoration:underline}
+
+/* Mobile navigation and clinical reading layout */
+.sidebar-close{display:none}
+@media(max-width:800px){
+ body.sidebar-open{overflow:hidden}
+ body.sidebar-open:before{content:"";position:fixed;inset:0;background:rgba(8,18,28,.48);z-index:29}
+ .sidebar{z-index:30;padding-top:64px}
+ .sidebar-close{display:inline-flex;position:absolute;right:14px;top:14px;width:38px;height:38px;color:#dce6ed;border-color:rgba(220,230,237,.2);background:rgba(255,255,255,.06)}
+ .sidebar-close:active{background:rgba(255,255,255,.14)}
+ .mobile-menu{min-width:42px;min-height:42px}
+ .topbar-actions{gap:6px}
+ .topbar-link{font-size:11px;white-space:nowrap}
+ .page-content{min-width:0;overflow-x:clip}
+ .clinical-search-card{padding:14px}
+ .clinical-filter-row{flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;padding:12px 0 9px;scrollbar-width:thin}
+ .clinical-filter{flex:0 0 auto;min-height:38px}
+ .clinical-results{grid-template-columns:minmax(0,1fr);gap:9px}
+ .clinical-result-wrap{min-width:0}
+ .clinical-result{width:100%;padding:15px;gap:9px}
+ .clinical-result-top{align-items:flex-start}
+ .clinical-updated{max-width:55%;line-height:1.45}
+ .clinical-result>strong{font-size:15px}
+ .clinical-result>span:not(.clinical-result-top){font-size:12px;line-height:1.6}
+ .clinical-tags{gap:5px}
+ .clinical-tags i{font-size:10px}
+ .clinical-article{margin:0;padding:17px 15px;border-radius:0 0 13px 13px;border-top:0;scroll-margin-top:76px}
+ .clinical-article-head{gap:10px}
+ .clinical-article-head h2{font-size:20px;line-height:1.3}
+ .clinical-article-head .button{min-height:40px;align-self:flex-start}
+ .clinical-article-toc{padding:13px;gap:9px}
+ .clinical-article-toc a{font-size:12px;padding:3px 0}
+ .clinical-article-section{padding:16px 0}
+ .clinical-article-section h3{font-size:14px;line-height:1.45;align-items:flex-start}
+ .clinical-article-section li{font-size:13px;line-height:1.7;padding-left:2px}
+ .clinical-article-section ul{padding-left:19px;gap:10px}
+ .clinical-sources a{font-size:12px;overflow-wrap:anywhere}
+ .clinical-notice{padding:13px;font-size:12px}
+ .clinical-notice p{font-size:12px;line-height:1.65}
+ .clinical-method{padding:15px}
+ .clinical-method-grid{gap:12px}
+}
+@media(max-width:420px){
+ .topbar{padding:0 10px}
+ .topbar-link{max-width:115px;overflow:hidden;text-overflow:ellipsis}
+ .page-content{padding:20px 12px 24px}
+ .clinical-search-card{padding:12px}
+ .clinical-result{padding:13px}
+ .clinical-article{padding:15px 12px}
+ .clinical-method-grid{grid-template-columns:1fr 1fr}
+ .clinical-updated{max-width:48%;font-size:8px}
+}
