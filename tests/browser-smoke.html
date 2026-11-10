@@ -40,7 +40,7 @@
   assert(afterPositions.every((value,index)=>Math.abs(value-initialPositions[index])<2),'Catalog cards do not move while opening articles');
   const tabButtons=[...doc.querySelectorAll('[data-clinical-tab]')];
   tabButtons[0].click();
-  assert(doc.querySelector('.nd-reader-tab.is-active [data-clinical-tab]')===tabButtons[0],'Tabs switch active article');
+  assert(doc.querySelector('.nd-reader-tab.is-active [data-clinical-tab]')?.dataset.clinicalTab===tabButtons[0].dataset.clinicalTab,'Tabs switch active article');
   doc.querySelector('[data-clinical-tab-close]').click();
   assert(doc.querySelectorAll('.nd-reader-tab').length===1,'One tab closes independently');
   doc.getElementById('clinical-reader-close').click();
