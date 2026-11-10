@@ -22,7 +22,8 @@ export const RUS_CLINICAL_DOCUMENTS = Object.freeze({
  toxic:{id:'998_1',name:'Токсические и метаболические поражения нервной системы',year:2025,age:'Взрослые',url:RUS_CLINICAL_REGISTRY,verifiedLink:false},
  inflammatory:{id:'358_3',name:'Хроническая воспалительная демиелинизирующая полирадикулонейропатия',year:2024,age:'Дети',url:RUS_CLINICAL_REGISTRY,verifiedLink:false},
  amyloid:{id:'1077_1',name:'Транстиретиновая семейная амилоидная полинейропатия',year:2026,age:'Взрослые',url:RUS_CLINICAL_REGISTRY,verifiedLink:false},
- tickEncephalitis:{id:'567_2',name:'Клещевой вирусный энцефалит у взрослых',year:2025,age:'Взрослые',url:RUS_CLINICAL_REGISTRY,verifiedLink:false}
+ tickEncephalitis:{id:'567_2',name:'Клещевой вирусный энцефалит у взрослых',year:2025,age:'Взрослые',url:RUS_CLINICAL_REGISTRY,verifiedLink:false},
+ cerebralPalsy:{id:'1087_1',name:'Детский церебральный паралич (Церебральный паралич)',year:2026,age:'Дети и взрослые',url:RUS_CLINICAL_REGISTRY,verifiedLink:false}
 });
 const link=(doc,kind,scope)=>({doc,kind,scope});
 export const RUS_ARTICLE_SOURCES={
@@ -80,7 +81,31 @@ Object.assign(RUS_ARTICLE_SOURCES,{
  dystonia:[],
  huntington:[],
  'normal-pressure-hydrocephalus':[link('dementia','смежная','Только когнитивный компонент у пожилых; не КР по гидроцефалии')],
- concussion:[]
+ concussion:[],
+ 'cervical-artery-dissection':[link('stroke','смежная','Только инсульт или ТИА как осложнения диссекции, не полный протокол диссекции')],
+ rcvs:[],
+ pres:[],
+ 'cerebral-small-vessel':[link('stroke','смежная','Лакунарные инсульты и сосудистые факторы риска, не все МРТ-находки'),link('dementia','смежная','Только когнитивные нарушения у лиц пожилого возраста')],
+ 'myopathic-syndrome':[],
+ 'inflammatory-myopathies':[],
+ 'multifocal-motor-neuropathy':[],
+ 'hereditary-neuropathies':[link('amyloid','смежная','Только наследственная транстиретиновая амилоидная форма')],
+ 'lambert-eaton':[link('myasthenia','смежная','Нервно-мышечная передача: отличия от миастении, не рекомендации по синдрому Ламберта–Итона')],
+ nmosd:[link('ms','смежная','Только дифференциальная диагностика с РС, не протокол NMOSD')],
+ mogad:[link('ms','смежная','Только дифференциальная диагностика с РС, не протокол MOGAD')],
+ 'autoimmune-encephalitis':[],
+ 'tick-encephalitis-rf':[link('tickEncephalitis','по заболеванию','Российская КР по клещевому вирусному энцефалиту у взрослых; актуальность ID перепроверить')],
+ psp:[link('parkinson','смежная','Только дифференциальная диагностика, не лечение прогрессирующего надъядерного паралича')],
+ msa:[link('parkinson','смежная','Только дифференциальная диагностика, не полный протокол мультисистемной атрофии')],
+ 'vascular-parkinsonism':[link('parkinson','смежная','Разграничение паркинсонических синдромов'),link('stroke','смежная','Сосудистые поражения и профилактика инсульта, не все формы паркинсонизма')],
+ 'frontotemporal-dementia':[link('dementia','смежная','Когнитивные расстройства пожилого возраста, не специфическая КР по ЛВД')],
+ 'lewy-body-dementia':[link('dementia','смежная','Когнитивные нарушения пожилых, не отдельный протокол ДТЛ')],
+ 'idiopathic-intracranial-hypertension':[],
+ 'spontaneous-intracranial-hypotension':[],
+ 'tics-tourette':[],
+ 'cerebral-palsy':[link('cerebralPalsy','по заболеванию','Российская КР по детскому церебральному параличу; ID из индекса Рубрикатора 2026, требуется повторная проверка')],
+ pppd:[],
+ narcolepsy:[]
 });
 Object.freeze(RUS_ARTICLE_SOURCES);
 export const RUS_SOURCE_REVIEW_DATE='10.11.2026';
