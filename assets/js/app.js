@@ -1,18 +1,146 @@
-const app=document.getElementById('app-content'),breadcrumb=document.getElementById('breadcrumb-current'),sidebar=document.getElementById('sidebar');
-const API='https://xkt-10.vena.uz/api/mkb10',WHO='https://icd.who.int/browse10/2019/en',MINZDRAV='https://cr.minzdrav.gov.ru/';
-const I={grid:'<rect x="3" y="3" width="7" height="7" rx="1.4"/><rect x="14" y="3" width="7" height="7" rx="1.4"/><rect x="3" y="14" width="7" height="7" rx="1.4"/><rect x="14" y="14" width="7" height="7" rx="1.4"/>',book:'<path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v18H6.5A2.5 2.5 0 0 0 4 22.5zM4 4.5v18M8 6h8M8 10h7"/>',menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4m0-14.2-1.4 1.4M6.3 17.7l-1.4 1.4"/>',search:'<circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/>',arrow:'<path d="M5 12h14m-6-6 6 6-6 6"/>',external:'<path d="M14 3h7v7m-11 4L21 3"/><path d="M19 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h6"/>',info:'<circle cx="12" cy="12" r="10"/><path d="M12 11v5m0-8h.01"/>'};
-const icon=(n,z=18)=>'<svg viewBox="0 0 24 24" width="'+z+'" height="'+z+'" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(I[n]||I.info)+'</svg>';
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const route=()=>location.hash==='#icd'?'icd':'overview';
-function home(){return '<div class="page-heading"><div><div class="eyebrow">NEURODESK · СПРАВОЧНИК</div><h1>Медицинская классификация — без перелистывания книги.</h1><p class="lead">Быстрый поиск по коду МКБ-10 или названию заболевания. Открой нужную рубрику, посмотри дочерние коды и иерархию.</p></div></div><section class="icd-home-hero"><div class="icd-home-copy"><span class="hero-kicker"><span class="pulse"></span> МЕЖДУНАРОДНАЯ КЛАССИФИКАЦИЯ БОЛЕЗНЕЙ</span><h2>Найди код за несколько секунд.</h2><p>Поиск по русскому названию или коду. Полный список классов и переход к вложенным рубрикам.</p><a class="button button-primary" href="#icd">Открыть справочник '+icon('arrow',15)+'</a></div><div class="icd-home-art"><div class="icd-orbit orbit-a"></div><div class="icd-orbit orbit-b"></div><div class="icd-big-mark">МКБ<small>10</small></div><span class="icd-float f-a">A00–B99</span><span class="icd-float f-b">G00–G99</span><span class="icd-float f-c">I00–I99</span></div></section><div class="icd-home-grid"><article class="card card-pad"><div class="metric-icon">'+icon('search')+'</div><h3>Поиск по коду и названию</h3><p>Например: I63.9, мигрень, полинейропатия, гастрит.</p></article><article class="card card-pad"><div class="metric-icon blue">'+icon('book')+'</div><h3>Иерархия рубрик</h3><p>Класс → блок → трёхзначная рубрика → уточняющий код.</p></article><article class="card card-pad"><div class="metric-icon amber">'+icon('external')+'</div><h3>Первоисточники</h3><p>Отдельные ссылки на браузер ВОЗ и официальный рубрикатор Минздрава РФ.</p></article></div><div class="notice warning">'+icon('info')+'<div><strong>Важно.</strong> Справочник помогает найти код, но не выбирает диагноз за врача. Перед кодированием сверяй национальную редакцию, включения, исключения и правила применения.</div></div>'}
-function icdPage(){return '<div class="page-heading"><div><div class="eyebrow">ПОИСКОВЫЙ СПРАВОЧНИК</div><h1>МКБ-10</h1><p class="lead">Ищи по коду или названию диагноза. Минимум два символа.</p></div><span class="date-chip">10-й пересмотр</span></div><section class="card icd-search-card"><label class="icd-searchbox">'+icon('search',21)+'<input id="icd-query" type="search" autocomplete="off" placeholder="Например: G20, болезнь Паркинсона, инсульт…"><kbd>Enter</kbd></label><div class="icd-search-meta"><span id="icd-status">Введи код или название заболевания</span><button class="text-button" id="icd-clear" type="button">Очистить</button></div><div id="icd-results" class="icd-results"><div class="icd-empty"><div class="empty-symbol">МКБ</div><strong>Начни с поиска</strong><span>Можно вводить код целиком или часть названия</span></div></div></section><section class="icd-browse"><div class="section-head"><div><div class="eyebrow">СТРУКТУРА КЛАССИФИКАЦИИ</div><h2>Классы МКБ-10</h2></div><span class="soft-chip" id="icd-class-count">Загрузка…</span></div><div id="icd-classes" class="icd-class-grid"><div class="loading-state">Загружаем классы…</div></div></section><div class="icd-sources"><span>Источники и проверка</span><a href="'+WHO+'" target="_blank" rel="noopener noreferrer">Браузер МКБ-10 ВОЗ (2019) '+icon('external',13)+'</a><a href="'+MINZDRAV+'" target="_blank" rel="noopener noreferrer">Рубрикатор Минздрава РФ '+icon('external',13)+'</a></div><div class="notice warning">'+icon('info')+'<div><strong>Статус данных.</strong> Встроенный поиск использует открытый сторонний русскоязычный API-каталог, а не официальный сервис Минздрава РФ. Он удобен для навигации, но не является юридически значимым источником кодирования. Для клинической документации сверяй код с действующей российской нормативно-справочной версией и первоисточником.</div></div>'}
-async function api(params){const u=new URL(API);Object.entries(params).forEach(([k,v])=>u.searchParams.set(k,v));const r=await fetch(u,{headers:{Accept:'application/json'}});if(!r.ok)throw new Error('Сервис справочника ответил '+r.status);const j=await r.json();if(j.success===false)throw new Error(j.error||'Ошибка справочника');return j.data}
-let timer=null,activeQuery='';
-function renderResults(data,q){const root=document.getElementById('icd-results');if(!root)return;const items=data.results||[];document.getElementById('icd-status').textContent='По запросу «'+q+'» найдено: '+(data.total??items.length);root.innerHTML=items.length?items.map(x=>'<button class="icd-result" type="button" data-code="'+esc(x.code)+'"><span class="icd-code">'+esc(x.code)+'</span><span class="icd-result-copy"><strong>'+esc(x.name_ru||x.name||'Без названия')+'</strong><small>'+esc(x.parent_code||'Рубрика МКБ-10')+'</small></span><span class="icd-result-arrow">'+icon('arrow',16)+'</span></button>').join(''):'<div class="icd-empty"><strong>Ничего не найдено</strong><span>Попробуй другое название или код</span></div>'}
-async function search(q){const root=document.getElementById('icd-results');if(!root)return;const query=q.trim();activeQuery=query;if(query.length<2){root.innerHTML='<div class="icd-empty"><div class="empty-symbol">МКБ</div><strong>Начни с поиска</strong><span>Можно вводить код целиком или часть названия</span></div>';document.getElementById('icd-status').textContent='Введи код или название заболевания';return}root.innerHTML='<div class="loading-state">Ищем совпадения…</div>';try{const data=await api({action:'search',q:query,limit:100,min_similarity:20});if(activeQuery===query)renderResults(data,query)}catch(e){root.innerHTML='<div class="icd-error"><strong>Не удалось загрузить результаты</strong><span>'+esc(e.message)+'</span><small>Проверь подключение или открой браузер ВОЗ.</small></div>';document.getElementById('icd-status').textContent='Поиск временно недоступен'}}
-async function showCode(code){const root=document.getElementById('icd-results');if(!root)return;root.innerHTML='<div class="loading-state">Загружаем карточку '+esc(code)+'…</div>';try{const [d,h]=await Promise.all([api({action:'code',code}),api({action:'hierarchy',code})]);const path=h.hierarchy||[],children=d.children||[];root.innerHTML='<article class="icd-detail"><div class="icd-detail-head"><div><span class="eyebrow">КАРТОЧКА КОДА</span><div class="icd-detail-code">'+esc(d.code)+'</div></div><button type="button" class="button button-outline" id="icd-back">← К результатам</button></div><h2>'+esc(d.name_ru||d.name||'')+'</h2><div class="icd-hierarchy"><span class="eyebrow">ПОЛОЖЕНИЕ В КЛАССИФИКАЦИИ</span>'+path.map((p,i)=>'<div class="hierarchy-row"><span>'+String(i+1).padStart(2,'0')+'</span><strong>'+esc(p.code)+'</strong><div>'+esc(p.name_ru||p.name||'')+'</div></div>').join('')+'</div>'+(children.length?'<div class="icd-children"><span class="eyebrow">УТОЧНЯЮЩИЕ ПОДРУБРИКИ</span>'+children.map(c=>'<button type="button" class="icd-child" data-code="'+esc(c.code)+'"><strong>'+esc(c.code)+'</strong><span>'+esc(c.name_ru||c.name||'')+'</span>'+icon('arrow',14)+'</button>').join('')+'</div>':'<p class="source-citation">Для этого кода дочерние подрубрики не перечислены в источнике.</p>')+'<p class="source-citation">Данные карточки получены из стороннего каталога МКБ-10. Проверяй официальную редакцию и правила применения перед использованием в документации.</p></article>'}catch(e){root.innerHTML='<div class="icd-error"><strong>Не удалось открыть код</strong><span>'+esc(e.message)+'</span></div>'}}
-async function showClass(code){const root=document.getElementById('icd-results');if(!root)return;root.innerHTML='<div class="loading-state">Открываем раздел…</div>';try{const d=await api({action:'category',code}),c=d.category||{},items=d.items||[];root.innerHTML='<article class="icd-detail"><div class="icd-detail-head"><div><span class="eyebrow">РАЗДЕЛ КЛАССИФИКАЦИИ</span><div class="icd-detail-code">'+esc(c.code||code)+'</div></div><button type="button" class="button button-outline" id="icd-back">Закрыть</button></div><h2>'+esc(c.name_ru||c.name||'')+'</h2><div class="icd-children">'+items.map(x=>'<button type="button" class="icd-child" data-code="'+esc(x.code)+'"><strong>'+esc(x.code)+'</strong><span>'+esc(x.name_ru||x.name||'')+'</span>'+icon('arrow',14)+'</button>').join('')+'</div></article>'}catch(e){root.innerHTML='<div class="icd-error">'+esc(e.message)+'</div>'}}
-async function loadClasses(){const root=document.getElementById('icd-classes');if(!root)return;try{const [d,stats]=await Promise.all([api({action:'categories'}),api({action:'stats'})]);const rows=d.categories||[];document.getElementById('icd-class-count').textContent=(stats.total_codes?Number(stats.total_codes).toLocaleString('ru-RU')+' кодов · ':'')+rows.length+' классов';root.innerHTML=rows.map((x,i)=>'<button class="icd-class" type="button" data-class-code="'+esc(x.code)+'"><span class="class-number">'+String(i+1).padStart(2,'0')+'</span><strong>'+esc(x.name_ru||x.name)+'</strong><small>'+esc(x.code)+'</small>'+icon('arrow',15)+'</button>').join('')}catch(e){root.innerHTML='<div class="icd-error">Не удалось загрузить список классов. Используй поиск или браузер ВОЗ.</div>'}}
-function bindICD(){const input=document.getElementById('icd-query');input.addEventListener('input',()=>{clearTimeout(timer);const v=input.value;timer=setTimeout(()=>search(v),250)});input.addEventListener('keydown',e=>{if(e.key==='Enter'){clearTimeout(timer);search(input.value)}});document.getElementById('icd-clear').addEventListener('click',()=>{input.value='';search('');input.focus()});document.getElementById('icd-results').addEventListener('click',e=>{const code=e.target.closest('[data-code]')?.dataset.code;if(code){showCode(code);return}if(e.target.closest('#icd-back'))search(input.value)});document.getElementById('icd-classes').addEventListener('click',e=>{const b=e.target.closest('[data-class-code]');if(b)showClass(b.dataset.classCode)});loadClasses()}
-function render(){const r=route();document.querySelectorAll('[data-route]').forEach(n=>n.classList.toggle('active',n.dataset.route===r));breadcrumb.textContent=r==='icd'?'МКБ-10':'Главная';app.innerHTML=r==='icd'?icdPage():home();sidebar.classList.remove('open');if(r==='icd')bindICD();document.title=(r==='icd'?'МКБ-10':'Главная')+' — NeuroDesk'}
-window.addEventListener('hashchange',render);document.getElementById('mobile-menu').addEventListener('click',()=>sidebar.classList.toggle('open'));document.getElementById('theme-toggle').addEventListener('click',()=>{document.body.classList.toggle('dark');localStorage.setItem('neurodesk-theme',document.body.classList.contains('dark')?'dark':'light')});if(localStorage.getItem('neurodesk-theme')==='dark')document.body.classList.add('dark');document.querySelectorAll('[data-icon]').forEach(n=>n.innerHTML=icon(n.dataset.icon));render();
+const app = document.getElementById('app-content');
+const breadcrumb = document.getElementById('breadcrumb-current');
+const sidebar = document.getElementById('sidebar');
+
+const ICONS = {
+  grid:'<rect x="3" y="3" width="7" height="7" rx="1.4"/><rect x="14" y="3" width="7" height="7" rx="1.4"/><rect x="3" y="14" width="7" height="7" rx="1.4"/><rect x="14" y="14" width="7" height="7" rx="1.4"/>',
+  book:'<path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v18H6.5A2.5 2.5 0 0 0 4 22.5z"/><path d="M4 4.5v18M8 6h8M8 10h7"/>',
+  search:'<circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/>',
+  calendar:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 9h18"/>',
+  clipboard:'<rect x="5" y="4" width="14" height="18" rx="2"/><path d="M9 4.5V3h6v1.5M9 10h6m-6 4h6m-6 4h3"/>',
+  arrow:'<path d="M5 12h14m-6-6 6 6-6 6"/>',
+  external:'<path d="M14 3h7v7m-11 4L21 3"/><path d="M19 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h6"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2"/>',
+  moon:'<path d="M20.9 13A8.5 8.5 0 0 1 11 3.1 8.5 8.5 0 1 0 20.9 13Z"/>',
+  menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',
+  info:'<circle cx="12" cy="12" r="10"/><path d="M12 11v5m0-8h.01"/>'
+};
+function icon(name,size=18){
+  return '<svg viewBox="0 0 24 24" width="'+size+'" height="'+size+'" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(ICONS[name]||ICONS.info)+'</svg>';
+}
+function esc(value){
+  return String(value).replace(/[&<>"']/g,(char)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+}
+function routeName(){
+  const route=(location.hash||'#overview').slice(1);
+  return route==='icd'?'icd':'overview';
+}
+function setActiveNav(route){
+  document.querySelectorAll('[data-route]').forEach(node=>node.classList.toggle('active',node.dataset.route===route));
+}
+function renderOverview(){
+  return '<div class="page-heading"><div><div class="eyebrow">NEURODESK · СПРАВОЧНИК</div><h1>МКБ-10 без лишнего поиска</h1><p class="lead">Быстрый доступ к российской Международной классификации болезней: найди код по названию диагноза или проверь расшифровку по коду.</p></div></div>'+
+  '<section class="icd-home-hero"><div class="icd-home-copy"><span class="hero-kicker">РОССИЙСКАЯ КЛАССИФИКАЦИЯ</span><h2>Нужный код — за несколько секунд.</h2><p>Поиск по коду, названию и формулировке диагноза. Каталог включает классы, блоки, рубрики и подрубрики классификации.</p><a class="button button-primary" href="#icd">Открыть справочник '+icon('arrow',14)+'</a></div><div class="icd-home-mark" aria-hidden="true"><span>МКБ</span><strong>10</strong><small>ICD · RU</small></div></section>'+
+  '<div class="icd-home-grid"><article class="card card-pad"><div class="resource-mark">'+icon('search')+'</div><h3>Поиск по названию</h3><p>Например: мигрень, радикулопатия, эпилепсия или инсульт.</p></article><article class="card card-pad"><div class="resource-mark">'+icon('clipboard')+'</div><h3>Поиск по коду</h3><p>Введи полный код или его часть: G43, I63.9, M54.16.</p></article><article class="card card-pad"><div class="resource-mark">'+icon('book')+'</div><h3>Вся классификация</h3><p>22 класса с переходом к нужному разделу и поиском по диагнозам.</p></article></div>'+
+  '<p class="source-citation">Справочник помогает находить классификационные формулировки. Выбор кода для медицинской документации требует проверки клинического контекста и действующих нормативных правил.</p>';
+}
+function renderICD(){
+  const chapters=[
+    ['I','A00–B99','Некоторые инфекционные и паразитарные болезни','A00'],
+    ['II','C00–D48','Новообразования','C00'],
+    ['III','D50–D89','Болезни крови и отдельные нарушения иммунного механизма','D50'],
+    ['IV','E00–E90','Болезни эндокринной системы, расстройства питания и нарушения обмена веществ','E00'],
+    ['V','F00–F99','Психические расстройства и расстройства поведения','F00'],
+    ['VI','G00–G99','Болезни нервной системы','G00'],
+    ['VII','H00–H59','Болезни глаза и его придаточного аппарата','H00'],
+    ['VIII','H60–H95','Болезни уха и сосцевидного отростка','H60'],
+    ['IX','I00–I99','Болезни системы кровообращения','I00'],
+    ['X','J00–J99','Болезни органов дыхания','J00'],
+    ['XI','K00–K93','Болезни органов пищеварения','K00'],
+    ['XII','L00–L99','Болезни кожи и подкожной клетчатки','L00'],
+    ['XIII','M00–M99','Болезни костно-мышечной системы и соединительной ткани','M00'],
+    ['XIV','N00–N99','Болезни мочеполовой системы','N00'],
+    ['XV','O00–O99','Беременность, роды и послеродовой период','O00'],
+    ['XVI','P00–P96','Отдельные состояния перинатального периода','P00'],
+    ['XVII','Q00–Q99','Врождённые аномалии, деформации и хромосомные нарушения','Q00'],
+    ['XVIII','R00–R99','Симптомы, признаки и отклонения от нормы','R00'],
+    ['XIX','S00–T98','Травмы, отравления и другие последствия воздействия внешних причин','S00'],
+    ['XX','V01–Y98','Внешние причины заболеваемости и смертности','V01'],
+    ['XXI','Z00–Z99','Факторы, влияющие на состояние здоровья и обращения за медицинской помощью','Z00'],
+    ['XXII','U00–U99','Коды для специальных целей','U00']
+  ];
+  return '<div class="page-heading"><div><div class="eyebrow">ПОИСКОВЫЙ КАТАЛОГ</div><h1>Международная классификация болезней · 10-й пересмотр</h1><p class="lead">Ищи по коду, названию или части формулировки. Результаты загружаются из российского нормативно-справочного набора МКБ-10.</p></div><span class="date-chip">15 038 записей в исходном наборе</span></div>'+
+  '<section class="card card-pad icd-search-card"><label class="icd-search-label" for="icd-query">Что ищем?</label><div class="icd-search-row"><span class="icd-search-icon">'+icon('search',20)+'</span><input id="icd-query" type="search" autocomplete="off" placeholder="Например, G43.1 или мигрень" aria-describedby="icd-search-help"><button id="icd-clear" class="button button-outline" type="button">Очистить</button></div><p id="icd-search-help" class="source-citation">Вводи минимум 2 символа. Поиск поддерживает русские названия и коды с точкой.</p><div id="icd-status" class="icd-status" role="status" aria-live="polite">Начни вводить запрос — результаты появятся здесь.</div><div id="icd-results" class="icd-results"></div></section>'+
+  '<section class="icd-chapters-section"><div class="section-head"><div><div class="eyebrow">СТРУКТУРА КЛАССИФИКАЦИИ</div><h2>Классы МКБ-10</h2></div><span class="soft-chip">22 класса</span></div><div class="icd-chapters-grid">'+
+  chapters.map(c=>'<button class="icd-chapter" type="button" data-icd-chapter="'+c[3]+'"><span class="icd-chapter-number">'+c[0]+'</span><span class="icd-chapter-copy"><strong>'+esc(c[2])+'</strong><small>'+c[1]+'</small></span>'+icon('arrow',15)+'</button>').join('')+
+  '</div></section><section class="icd-source-note"><strong>Источник и версия данных</strong><p>Российский нормативно-справочный набор МКБ-10 (OID 1.2.643.5.1.13.13.11.1005), 15 038 записей. Опубликованное обновление набора датировано 25.10.2021; версия содержит изменения по письму Минздрава РФ от 12.11.2020 № 13-2/753. Перед применением в документации проверяй действующую редакцию.</p><a href="https://data.apicrafter.ru/tables/nsimz/3720" target="_blank" rel="noopener noreferrer">Паспорт набора и происхождение данных '+icon('external',13)+'</a></section>';
+}
+function bindICD(){
+  const input=document.getElementById('icd-query');
+  const status=document.getElementById('icd-status');
+  const results=document.getElementById('icd-results');
+  const clear=document.getElementById('icd-clear');
+  let timer=null,controller=null,sequence=0;
+  const api='https://api.crftr.net/open/rawapi/v3/nsimz/3720';
+  function normalize(payload){
+    const items=Array.isArray(payload)?payload:(payload?._items||payload?.items||payload?.results||[]);
+    return items.map(item=>({
+      code:String(item.table_field_MKB_CODE||item.MKB_CODE||item.code||''),
+      name:String(item.table_field_MKB_NAME||item.MKB_NAME||item.name||item.title||''),
+      parent:String(item.table_field_ID_PARENT||''),
+      actual:String(item.table_field_ACTUAL??'')
+    })).filter(item=>item.code||item.name);
+  }
+  function show(items){
+    if(!items.length){results.innerHTML='';status.textContent='По этому запросу ничего не найдено. Попробуй другую формулировку или проверь код.';return;}
+    status.textContent='Найдено записей: '+items.length+'. Показаны совпадения из российского справочника.';
+    results.innerHTML=items.slice(0,100).map(item=>'<article class="icd-result"><div class="icd-result-code">'+esc(item.code||'—')+'</div><div class="icd-result-main"><strong>'+esc(item.name||'Без названия')+'</strong>'+(item.parent?'<small>Родительская запись: '+esc(item.parent)+'</small>':'')+'</div>'+(item.actual==='0'?'<span class="icd-old-tag">Неактуальная запись</span>':'')+'</article>').join('');
+  }
+  async function search(){
+    const query=input.value.trim();
+    const current=++sequence;
+    if(query.length<2){if(controller)controller.abort();results.innerHTML='';status.textContent='Начни вводить минимум 2 символа.';return;}
+    if(controller)controller.abort();
+    controller=new AbortController();
+    status.textContent='Ищем в российском справочнике…';
+    try{
+      const response=await fetch(api+'?searchInput='+encodeURIComponent(query),{headers:{Accept:'application/json'},signal:controller.signal});
+      if(!response.ok)throw new Error('HTTP '+response.status);
+      const payload=await response.json();
+      if(current!==sequence)return;
+      show(normalize(payload));
+    }catch(error){
+      if(error.name==='AbortError'||current!==sequence)return;
+      results.innerHTML='<div class="icd-api-fallback"><strong>Сервис данных сейчас не ответил.</strong><p>Можно открыть официальный браузер ВОЗ: в нём доступен поиск по коду и названию. Российские формулировки и национальные дополнения могут отличаться.</p><a href="https://icd.who.int/browse10/2019/en" target="_blank" rel="noopener noreferrer">Открыть браузер МКБ-10 ВОЗ '+icon('external',13)+'</a></div>';
+      status.textContent='Внешний источник временно недоступен.';
+    }
+  }
+  input.addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(search,260);});
+  clear.addEventListener('click',()=>{input.value='';results.innerHTML='';status.textContent='Начни вводить минимум 2 символа.';input.focus();});
+  document.querySelectorAll('[data-icd-chapter]').forEach(button=>button.addEventListener('click',()=>{
+    input.value=button.dataset.icdChapter;
+    search();
+    input.focus();
+  }));
+}
+const PAGES={overview:{title:'Главная',render:renderOverview},icd:{title:'МКБ-10',render:renderICD}};
+function render(){
+  const route=routeName(),page=PAGES[route];
+  setActiveNav(route);
+  breadcrumb.textContent=page.title;
+  app.innerHTML=page.render();
+  if(route==='icd')bindICD();
+  sidebar.classList.remove('open');
+  document.title=page.title+' — NeuroDesk';
+}
+function navigate(route){location.hash=route;}
+document.addEventListener('click',event=>{
+  const nav=event.target.closest('[data-route]');
+  if(nav){event.preventDefault();navigate(nav.dataset.route);}
+});
+window.addEventListener('hashchange',render);
+document.getElementById('mobile-menu').addEventListener('click',()=>sidebar.classList.toggle('open'));
+document.getElementById('theme-toggle').addEventListener('click',()=>{
+  document.body.classList.toggle('dark');
+  const dark=document.body.classList.contains('dark');
+  localStorage.setItem('neurodesk-theme',dark?'dark':'light');
+  document.getElementById('theme-toggle').innerHTML=icon(dark?'moon':'sun');
+});
+function applyTheme(){
+  const dark=localStorage.getItem('neurodesk-theme')==='dark';
+  document.body.classList.toggle('dark',dark);
+  document.getElementById('theme-toggle').innerHTML=icon(dark?'moon':'sun');
+}
+document.querySelectorAll('[data-icon]').forEach(node=>node.innerHTML=icon(node.dataset.icon));
+applyTheme();
+render();
