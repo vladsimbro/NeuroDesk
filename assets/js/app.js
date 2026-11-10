@@ -5,6 +5,9 @@ const sidebar = document.getElementById('sidebar');
 const ICONS = {
   grid:'<rect x="3" y="3" width="7" height="7" rx="1.4"/><rect x="14" y="3" width="7" height="7" rx="1.4"/><rect x="3" y="14" width="7" height="7" rx="1.4"/><rect x="14" y="14" width="7" height="7" rx="1.4"/>',
   book:'<path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v18H6.5A2.5 2.5 0 0 0 4 22.5z"/><path d="M4 4.5v18M8 6h8M8 10h7"/>',
+  'book-open':'<path d="M12 7v14M3 5.5A2.5 2.5 0 0 1 5.5 3H12v18H5.5A2.5 2.5 0 0 0 3 23zM21 5.5A2.5 2.5 0 0 0 18.5 3H12v18h6.5A2.5 2.5 0 0 1 21 23z"/>',
+  'file-text':'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8"/>',
+  activity:'<path d="M3 12h4l3-8 4 16 3-8h4"/>',
   search:'<circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/>',
   calendar:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 9h18"/>',
   clipboard:'<rect x="5" y="4" width="14" height="18" rx="2"/><path d="M9 4.5V3h6v1.5M9 10h6m-6 4h6m-6 4h3"/>',
@@ -333,7 +336,7 @@ function bindClinical(){
   });
   meta.textContent='Найдено материалов: '+matches.length+' из '+CLINICAL_LIBRARY.length+(openArticles.size?' · открыто статей: '+openArticles.size:'');
   const openMarkup=[...openArticles].map(id=>CLINICAL_LIBRARY.find(item=>item.id===id)).filter(Boolean).map(articleMarkup).join('');
-  const cards=matches.map(item=>'<div class="clinical-result-wrap"><button type="button" class="clinical-result '+(openArticles.has(item.id)?'selected':'')+'" data-clinical-open="'+item.id+'" aria-expanded="'+openArticles.has(item.id)+'" aria-controls="clinical-article-'+item.id+'"><span class="clinical-result-top"><span class="clinical-category">'+esc(item.category)+'</span><span class="clinical-updated">'+esc(item.updated)+'</span></span><strong>'+esc(item.title)+'</strong><span>'+esc(item.summary)+'</span><span class="clinical-tags">'+item.tags.map(tag=>'<i>'+esc(tag)+'</i>').join('')+'</span><span class="clinical-open-label">'+(openArticles.has(item.id)?'Статья открыта '+icon('check',13):'Открыть материал '+icon('arrow',13))+'</span></button></div>').join('');
+  const cards=matches.map(item=>'<div class="clinical-result-wrap"><button type="button" class="clinical-result '+(openArticles.has(item.id)?'selected':'')+'" data-clinical-open="'+item.id+'" aria-expanded="'+openArticles.has(item.id)+'" aria-controls="clinical-article-'+item.id+'"><span class="clinical-result-top"><span class="clinical-category">'+esc(item.category)+'</span><span class="clinical-updated">'+esc(item.updated)+'</span></span><strong>'+esc(item.title)+'</strong><span>'+esc(item.summary)+'</span><span class="clinical-tags">'+item.tags.map(tag=>'<i>'+esc(tag)+'</i>').join('')+'</span><span class="clinical-open-label">'+(openArticles.has(item.id)?'Статья открыта:'Открыть материал '+icon('arrow',13))+'</span></button></div>').join('');
   results.innerHTML=(openMarkup?'<div class="clinical-open-articles">'+openMarkup+'</div>':'')+(cards||(!openMarkup?'<div class="icd-empty"><strong>Ничего не найдено</strong><span>Попробуй другой термин или переключи категорию.</span></div>':''));
   results.querySelectorAll('[data-clinical-open]').forEach(button=>button.addEventListener('click',()=>{
    const id=button.dataset.clinicalOpen;
