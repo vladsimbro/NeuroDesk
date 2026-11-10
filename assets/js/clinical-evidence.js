@@ -25,7 +25,7 @@ export const RUS_CLINICAL_DOCUMENTS = Object.freeze({
  tickEncephalitis:{id:'567_2',name:'Клещевой вирусный энцефалит у взрослых',year:2025,age:'Взрослые',url:RUS_CLINICAL_REGISTRY,verifiedLink:false}
 });
 const link=(doc,kind,scope)=>({doc,kind,scope});
-export const RUS_ARTICLE_SOURCES=Object.freeze({
+export const RUS_ARTICLE_SOURCES={
  headache:[link('migraine','по заболеванию','КР по мигрени у взрослых'),link('tension','по заболеванию','КР по головной боли напряжения у взрослых')],
  dizziness:[link('stroke','смежная','Применима к оценке подозрения на сосудистую причину; не руководство по всем головокружениям')],
  weakness:[link('stroke','смежная','Только внезапный очаговый дефицит'),link('myasthenia','смежная','Только подозрение на миастенический процесс')],
@@ -57,7 +57,7 @@ export const RUS_ARTICLE_SOURCES=Object.freeze({
  ptosis:[link('myasthenia','смежная','Флюктуирующий птоз при миастении'),link('cranial','смежная','Мононейропатии черепных нервов у взрослых')],
  gait:[link('parkinson','смежная','Паркинсоническая походка'),link('dementia','смежная','Когнитивный и функциональный вклад у пожилых')],
  dysphagia:[link('stroke','смежная','Дисфагия в контексте инсульта'),link('myasthenia','смежная','Бульбарные проявления миастении')]
-});
+};
 // Additional original reviews. Empty mappings deliberately mean that no suitable
 // official Russian recommendation has been confirmed for the complete topic.
 Object.assign(RUS_ARTICLE_SOURCES,{
@@ -82,4 +82,5 @@ Object.assign(RUS_ARTICLE_SOURCES,{
  'normal-pressure-hydrocephalus':[link('dementia','смежная','Только когнитивный компонент у пожилых; не КР по гидроцефалии')],
  concussion:[]
 });
+Object.freeze(RUS_ARTICLE_SOURCES);
 export const RUS_SOURCE_REVIEW_DATE='10.11.2026';
