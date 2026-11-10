@@ -44,3 +44,56 @@ import {calculateMRS,calculateGOS,calculateRASS,MRS_OPTIONS,GOS_OPTIONS,RASS_OPT
 test('mRS accepts all defined grades and rejects invalid values',()=>{for(const o of MRS_OPTIONS)assert.equal(calculateMRS(o.value).score,o.value);assert.equal(calculateMRS(7).status,'invalid');assert.equal(calculateMRS(2.5).status,'invalid');assert.equal(calculateMRS(null).status,'incomplete');});
 test('GOS accepts all five outcome categories and rejects invalid values',()=>{for(const o of GOS_OPTIONS)assert.equal(calculateGOS(o.value).score,o.value);assert.equal(calculateGOS(0).status,'invalid');assert.equal(calculateGOS(6).status,'invalid');});
 test('RASS covers the complete +4 to -5 range',()=>{assert.equal(RASS_OPTIONS.length,10);for(const o of RASS_OPTIONS)assert.equal(calculateRASS(o.value).score,o.value);assert.equal(calculateRASS(-6).status,'invalid');assert.equal(calculateRASS(4.5).status,'invalid');assert.equal(calculateRASS(undefined).status,'incomplete');});
+
+
+import { calculateBMI, calculateBSA, calculateMAP, calculateABCD2 } from '../assets/js/calculators.js';
+
+test('BMI uses kg and centimetres and rejects impossible input', () => {
+  const result = calculateBMI(70, 175);
+  assert.equal(result.status, 'complete');
+  assert.ok(Math.abs(result.value - 22.8571428571) < 1e-9);
+  assert.equal(calculateBMI(70, 0).status, 'invalid');
+  assert.equal(calculateBMI(70, 251).status, 'invalid');
+});
+test('Mosteller BSA returns square metres', () => {
+  const result = calculateBSA(70, 175);
+  assert.equal(result.status, 'complete');
+  assert.ok(Math.abs(result.value - Math.sqrt(175 * 70 / 3600)) < 1e-12);
+  assert.equal(result.formula, 'Mosteller');
+  assert.equal(calculateBSA(0, 175).status, 'invalid');
+});
+test('MAP computes the conventional approximation and validates pressure order', () => {
+  const result = calculateMAP(120, 80);
+  assert.equal(result.status, 'complete');
+  assert.ok(Math.abs(result.value - 93.3333333333) < 1e-9);
+  assert.equal(calculateMAP(80, 120).status, 'invalid');
+  assert.equal(calculateMAP(120, '').status, 'invalid');
+});
+test('ABCD2 minimum score is zero', () => {
+  const result = calculateABCD2({age:59,systolic:139,diastolic:89,features:'other',duration:'lt10',diabetes:'no'});
+  assert.equal(result.status, 'complete');
+  assert.equal(result.total, 0);
+  assert.deepEqual(result.components, {age:0,bloodPressure:0,clinicalFeatures:0,duration:0,diabetes:0});
+});
+test('ABCD2 maximum score is seven', () => {
+  const result = calculateABCD2({age:60,systolic:140,diastolic:90,features:'unilateral_weakness',duration:'ge60',diabetes:'yes'});
+  assert.equal(result.status, 'complete');
+  assert.equal(result.total, 7);
+  assert.deepEqual(result.components, {age:1,bloodPressure:1,clinicalFeatures:2,duration:2,diabetes:1});
+});
+test('ABCD2 awards one point for speech disturbance without weakness', () => {
+  const result = calculateABCD2({age:30,systolic:120,diastolic:80,features:'speech_without_weakness',duration:'10to59',diabetes:'no'});
+  assert.equal(result.total, 2);
+  assert.equal(result.components.clinicalFeatures, 1);
+  assert.equal(result.components.duration, 1);
+});
+test('ABCD2 treats either systolic or diastolic threshold as elevated blood pressure', () => {
+  assert.equal(calculateABCD2({age:30,systolic:140,diastolic:80,features:'other',duration:'lt10',diabetes:'no'}).components.bloodPressure, 1);
+  assert.equal(calculateABCD2({age:30,systolic:130,diastolic:90,features:'other',duration:'lt10',diabetes:'no'}).components.bloodPressure, 1);
+});
+test('ABCD2 requires every field and rejects unsupported categories or invalid pressure', () => {
+  assert.equal(calculateABCD2({}).status, 'incomplete');
+  assert.equal(calculateABCD2({age:30,systolic:120,diastolic:80,features:'unknown',duration:'lt10',diabetes:'no'}).status, 'invalid');
+  assert.equal(calculateABCD2({age:30,systolic:120,diastolic:80,features:'other',duration:'lt10',diabetes:'maybe'}).status, 'invalid');
+  assert.equal(calculateABCD2({age:30,systolic:80,diastolic:90,features:'other',duration:'lt10',diabetes:'no'}).status, 'invalid');
+});
