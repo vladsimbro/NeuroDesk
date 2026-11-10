@@ -31,7 +31,8 @@
    }
    throw Error('ICD waiting for '+label);
   };
-  await waitUntil(()=>icd.doc.getElementById('icd-count-label')?.textContent.includes('15 038'),'data loading');
+  await waitUntil(()=>icd.doc.getElementById('icd-status')?.textContent.includes('База загружена'),'data loading');
+  await waitUntil(()=>!icd.doc.getElementById('icd-entry-detail')?.hidden,'deep-link details');
   assert(icd.doc.querySelectorAll('.icd-chapter').length===22,'ICD has 22 chapter buttons');
   assert(icd.doc.querySelector('[data-icd-chapter="V01-Y98"] .icd-chapter-number')?.textContent==='XX','Chapter XX is external causes');
   assert(icd.doc.querySelector('[data-icd-chapter="Z00-Z99"] .icd-chapter-number')?.textContent==='XXI','Chapter XXI is Z codes');
