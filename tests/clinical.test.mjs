@@ -70,3 +70,21 @@ test('clinical mobile layout improves touch targets and reading width', () => {
   assert.match(css, /clinical-article-section li\{font-size:13px;line-height:1\.7/);
   assert.match(css, /clinical-result-wrap\{min-width:0\}/);
 });
+
+test('Russian clinical recommendations are the primary local reference where directly applicable', () => {
+  assert.match(app, /Российские клинические рекомендации/);
+  assert.match(app, /cr\\.minzdrav\\.gov\\.ru/);
+  for (const id of ['814_1','295_4','741_1','716_1','739_2','165_2']) assert.ok(app.includes(id), id);
+  assert.match(app, /Дополнительные международные источники/);
+  assert.match(app, /не заменяют российские клинические рекомендации/);
+});
+
+test('article expansion and collapse use a smooth height transition and an in-article check control', () => {
+  assert.match(app, /clinical-article-panel/);
+  assert.match(app, /data-clinical-close/);
+  assert.match(app, /icon\\('check',19\\)/);
+  assert.doesNotMatch(app, /data-clinical-close="'\+item\.id\+'">Свернуть/);
+  assert.match(css, /grid-template-rows:0fr/);
+  assert.match(css, /grid-template-rows:1fr/);
+  assert.match(css, /prefers-reduced-motion:reduce/);
+});
