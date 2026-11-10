@@ -59,7 +59,7 @@ function openTool(id,focus=true){
  active=id;list();
  details.innerHTML='<div class="calc-tool-header"><span class="calc-tool-category">'+escapeHtml(tool.group)+'</span><h2>'+escapeHtml(tool.title)+'</h2><p>'+escapeHtml(tool.detail)+'</p></div>'+
   guideMarkup(tool)+
-  '<form id="calc-form" novalidate aria-label="Параметры для '+escapeHtml(tool.title)+'"><div class="calc-form-progress" id="calc-form-progress" role="status" aria-live="polite"><span>Заполнено <strong id="calc-progress-label">0 из '+tool.fields.length+'</strong> полей</span><progress id="calc-completion" max="'+tool.fields.length+'" value="0" aria-label="Прогресс заполнения"></progress></div>'+renderCalculatorFields(tool,CALCULATOR_GUIDES[tool.id],escapeHtml)+'<div class="calc-form-actions"><button type="submit" class="calc-primary-button">Рассчитать результат</button><button type="reset" class="calc-secondary-button">Очистить форму</button></div></form>'+
+  '<form id="calc-form" novalidate aria-label="Параметры для '+escapeHtml(tool.title)+'"><div class="calc-form-progress" id="calc-form-progress" role="status" aria-live="polite"><span>Заполнено <strong id="calc-progress-label">0 из '+tool.fields.length+'</strong> полей</span><progress id="calc-completion" max="'+tool.fields.length+'" value="0" aria-label="Прогресс заполнения"></progress></div>'+(tool.id==='score2'?'<div class="calc-eligibility" id="calc-eligibility" role="status" aria-live="polite">Модель будет выбрана по возрасту; если есть ССЗ, диабет или ХБП, обычный расчёт не применяется.</div>':'')+renderCalculatorFields(tool,CALCULATOR_GUIDES[tool.id],escapeHtml)+'<div class="calc-form-actions"><button type="submit" class="calc-primary-button">Рассчитать результат</button><button type="reset" class="calc-secondary-button">Очистить форму</button></div></form>'+
   '<section class="calc-report"><h3 class="calc-report-title">Результат и расшифровка</h3><div class="calc-result" id="calc-result" role="status" aria-live="polite"><span>Заполни параметры и нажми «Рассчитать результат».</span></div></section>'+
   '<div class="calc-tool-notice"><strong>Границы применения</strong><p>'+escapeHtml(tool.note)+'</p></div>'+
   '<div class="calc-tool-sources"><strong>Первоисточники и методика</strong>'+tool.sources.map(s=>'<a href="'+escapeHtml(s[1])+'" target="_blank" rel="noopener noreferrer">'+escapeHtml(s[0])+' ↗</a>').join('')+'</div>';
@@ -70,6 +70,21 @@ function openTool(id,focus=true){
   document.getElementById('calc-completion').value=complete;
   const box=document.getElementById('calc-form-progress');
   box.classList.toggle('is-complete',complete===total);
+  if(tool.id==='score2'){
+   const eligibility=document.getElementById('calc-eligibility');
+   const ageText=form.elements.namedItem('age').value.trim().replace(',','.');
+   const age=Number(ageText);
+   const model=ageText!==''&&Number.isInteger(age)&&age>=40&&age<=89?(age<70?'SCORE2':'SCORE2-OP'):null;
+   const exclusions=[['ascvd','установленное атеросклеротическое ССЗ'],['diabetes','сахарный диабет'],['ckd','хроническая болезнь почек']].filter(([key])=>form.elements.namedItem(key).value==='yes').map(([,name])=>name);
+   if(exclusions.length){
+    eligibility.textContent='Обычные SCORE2/SCORE2-OP не предназначены для такого профиля: '+exclusions.join(', ')+'. Итоговый расчёт будет заблокирован; требуется другой клинический подход.';
+    eligibility.classList.add('is-excluded');
+   }else{
+    eligibility.classList.remove('is-excluded');
+    eligibility.textContent=model?'Будет использована модель '+model+' для возраста '+age+' лет. Это оценка риска первичной профилактики, а не назначение лечения.':
+     'Укажи целый возраст от 40 до 89 лет — модель SCORE2 или SCORE2-OP выберется автоматически.';
+   }
+  }
  };
  const pending=()=>{result.classList.remove('has-result');result.classList.remove('is-error');result.innerHTML='<span>Параметры изменены. Нажми «Рассчитать результат», чтобы обновить интерпретацию.</span>';};
  const inputChanged=event=>{
