@@ -180,7 +180,7 @@ test('clinical articles open in a separate reading pane without shifting the res
   assert.match(css, /\.clinical-layout\.has-open-articles\{grid-template-columns:/);
   assert.match(css, /\.clinical-open-articles\{display:flex/);
   assert.match(css, /max-height:calc\(100vh - 110px\)/);
-  assert.match(css, /@media\(max-width:800px\)[\s\S]*?\.clinical-layout\.has-open-articles\{grid-template-columns:minmax\(0,1fr\)\}/);
+  assert.match(css, /@media\(max-width:800px\)[\s\S]*?\.clinical-layout,\.clinical-layout\.has-open-articles\{grid-template-columns:minmax\(0,1fr\)\}/);
   assert.match(app, /window\.matchMedia\('\(max-width: 800px\)'\)\.matches/);
 });
 
