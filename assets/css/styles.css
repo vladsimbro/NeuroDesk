@@ -153,8 +153,8 @@ body.dark .clinical-filter.active,body.dark .clinical-category{background:#203f3
 
 .clinical-article-toc{display:grid;gap:7px;padding:15px 17px;margin:16px 0 4px;border:1px solid var(--line);border-radius:12px;background:var(--canvas)}
 .clinical-article-toc strong{font-size:11px;margin-bottom:3px}
-.clinical-article-toc a{font-size:11px;line-height:1.5;color:#267b72;text-decoration:none}
-.clinical-article-toc a:hover{text-decoration:underline}
+.clinical-article-toc button{border:0;padding:0;background:transparent;text-align:left;font:inherit;font-size:11px;line-height:1.5;color:#267b72;text-decoration:none;cursor:pointer}
+.clinical-article-toc button:hover{text-decoration:underline}
 
 /* Mobile navigation and clinical reading layout */
 .sidebar-close{display:none}
@@ -184,7 +184,7 @@ body.dark .clinical-filter.active,body.dark .clinical-category{background:#203f3
  .clinical-article-head h2{font-size:20px;line-height:1.3}
  .clinical-article-head .button{min-height:40px;align-self:flex-start}
  .clinical-article-toc{padding:13px;gap:9px}
- .clinical-article-toc a{font-size:12px;padding:3px 0}
+ .clinical-article-toc button{font-size:12px;padding:3px 0}
  .clinical-article-section{padding:16px 0}
  .clinical-article-section h3{font-size:14px;line-height:1.45;align-items:flex-start}
  .clinical-article-section li{font-size:13px;line-height:1.7;padding-left:2px}
