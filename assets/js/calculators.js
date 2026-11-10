@@ -139,3 +139,9 @@ export function calculateAnionGap(sodium, chloride, bicarbonate, albumin) {
   const measured = na - cl - hco3;
   return { status: 'complete', value: measured, albuminCorrected: measured + 0.25 * (40 - alb), albumin: alb };
 }
+
+export function calculateCPP(meanArterialPressure, intracranialPressure) {
+  const map = Number(meanArterialPressure), icp = Number(intracranialPressure);
+  if (!Number.isFinite(map) || map <= 0 || map > 250 || !Number.isFinite(icp) || icp < 0 || icp > 150) return { status: 'invalid', value: null };
+  return { status: 'complete', value: map - icp, formula: 'CPP = MAP − ICP' };
+}
