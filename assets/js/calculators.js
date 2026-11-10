@@ -31,7 +31,13 @@ function guideMarkup(tool){
 }
 function resultMarkup(outcome){
  const rows=outcome.breakdown.map(row=>'<div class="calc-breakdown-row"><dt>'+escapeHtml(row.label)+'</dt><dd>'+escapeHtml(row.value)+'</dd></div>').join('');
- return '<div class="calc-result-main"><span class="calc-result-eyebrow">РАССЧИТАННЫЙ ПОКАЗАТЕЛЬ</span><strong class="calc-result-value">'+escapeHtml(outcome.value)+'</strong><b class="calc-result-label">'+escapeHtml(outcome.label)+'</b></div>'+
+ // Separate a numeric metric from its physical unit, instead of flowing both into a heading.
+ // Keeping them in distinct blocks prevents Safari text enlargement from collapsing the report.
+ const measure=/^(\d+(?:[.,]\d+)?)\s*(мм рт\. ст\.|кг\/м²|%)$/.exec(outcome.value);
+ const metric=measure?measure[1].replace('.',','):outcome.value;
+ const unit=measure?'<span class="calc-result-unit">'+escapeHtml(measure[2])+'</span>':'';
+ const longValue=metric.length>12?' calc-result-metric--long':'';
+ return '<header class="calc-result-main"><span class="calc-result-eyebrow">РАССЧИТАННЫЙ ПОКАЗАТЕЛЬ</span><strong class="calc-result-metric'+longValue+' calc-result-value">'+escapeHtml(metric)+'</strong>'+unit+'<span class="calc-result-label">'+escapeHtml(outcome.label)+'</span></header>'+
  '<section class="calc-result-section"><h3>Что означает результат</h3><p class="calc-result-summary">'+escapeHtml(outcome.summary)+'</p></section>'+
  '<section class="calc-result-section"><h3>Как получено</h3><dl class="calc-breakdown">'+rows+'</dl></section>'+
  '<section class="calc-result-section"><h3>Как интерпретировать</h3><p>'+escapeHtml(outcome.interpretation)+'</p></section>'+
