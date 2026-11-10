@@ -1,10 +1,10 @@
-import {ICD_CHAPTERS,createICDIndex,getICDByCode,getAncestors,getChildren,chapterItems,chapterGroups,chapterOf,searchICD,normalizeCode,isCurrent} from './icd-core.js';
+import {ICD_CHAPTERS,createICDIndex,getICDByCode,getAncestors,getChildren,chapterItems,chapterOf,searchICD,isCurrent} from './icd-core.js';
+import {getICDSearchHints,suggestICDQueries,getICDTreeRoots,getICDTreeChildren,getICDTreeLineage,ICD_FAVORITES_KEY,ICD_RECENTS_KEY,readCodeList,writeCodeList} from './icd-enhancements.js';
 
 const DATA_URL=new URL('../data/icd10-v2.27.json',import.meta.url).href;
 const SOURCE_URL='https://nsi.rosminzdrav.ru/dictionaries/1.2.643.5.1.13.13.11.1005/passport/2.27';
 const PAGE_SIZE=60;
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const encode=value=>encodeURIComponent(value);
 const formatCount=n=>n.toLocaleString('ru-RU');
 
 export function bindICD(){
@@ -13,11 +13,93 @@ export function bindICD(){
  const status=document.getElementById('icd-status'),results=document.getElementById('icd-results'),more=document.getElementById('icd-more-wrap');
  const card=document.querySelector('.icd-search-card'),chapters=document.querySelector('.icd-chapters-grid');
  if(!input||!card||!chapters)return;
- status.insertAdjacentHTML('afterend','<section class="icd-entry-detail" id="icd-entry-detail" aria-label="Карточка кода МКБ-10" hidden></section>');
- chapters.insertAdjacentHTML('beforebegin','<div class="icd-class-toolbar" id="icd-class-toolbar" hidden></div>');
+ status.insertAdjacentHTML('afterend',
+  '<div class="icd-search-suggestions" id="icd-search-suggestions" aria-live="polite"></div>'+
+  '<section class="icd-entry-detail" id="icd-entry-detail" aria-label="Карточка кода МКБ-10" hidden></section>'+
+  '<section class="icd-personal"><div class="icd-personal-actions" role="group" aria-label="Личные списки кодов"><button type="button" id="icd-show-favorites" aria-pressed="false">☆ Избранное <span id="icd-favorites-count">0</span></button><button type="button" id="icd-show-recent" aria-pressed="false">Недавние <span id="icd-recents-count">0</span></button></div><div id="icd-personal-content" hidden></div><p class="icd-personal-hint">Здесь сохраняются только коды в этом браузере, без медицинских данных пациентов.</p></section>'+
+  '<p class="icd-offline-state" id="icd-offline-state" role="status">Офлайн-доступ: проверяем поддержку браузера…</p>');
+
+ chapters.insertAdjacentHTML('beforebegin','<div class="icd-class-toolbar" id="icd-class-toolbar" hidden></div><section class="icd-tree-panel" id="icd-tree" hidden aria-label="Дерево классификатора"></section>');
  const detail=document.getElementById('icd-entry-detail'),classToolbar=document.getElementById('icd-class-toolbar');
+ const treePanel=document.getElementById('icd-tree'),suggestions=document.getElementById('icd-search-suggestions');
+ const personal=document.getElementById('icd-personal-content'),favoriteCount=document.getElementById('icd-favorites-count'),recentCount=document.getElementById('icd-recents-count');
+ const offlineStatus=document.getElementById('icd-offline-state');
+ let favorites=readCodeList(globalThis.localStorage||null,ICD_FAVORITES_KEY),recents=readCodeList(globalThis.localStorage||null,ICD_RECENTS_KEY);
+ let personalMode='',treeExpanded=new Set(),treeRange='';
+
  let index=null,loading=null,timer=null,shown=PAGE_SIZE,found=[],chapterRange='',selected='';
  let requestId=0;
+ function persist(key,list){writeCodeList(globalThis.localStorage||null,key,list);}
+ function updateCollections(){
+  favoriteCount.textContent=String(favorites.length);
+  recentCount.textContent=String(recents.length);
+  document.getElementById('icd-show-favorites').setAttribute('aria-pressed',String(personalMode==='favorites'));
+  document.getElementById('icd-show-recent').setAttribute('aria-pressed',String(personalMode==='recent'));
+  if(!personalMode){personal.hidden=true;personal.innerHTML='';return;}
+  const codes=personalMode==='favorites'?favorites:recents;
+  personal.hidden=false;
+  personal.innerHTML='<div class="icd-personal-heading"><strong>'+(personalMode==='favorites'?'Избранные коды':'Недавно открытые')+'</strong><button type="button" id="icd-clear-personal" '+(!codes.length?'disabled':'')+'>Очистить</button></div>'+
+   (codes.length&&index?'<div class="icd-personal-codes">'+codes.map(code=>{
+    const record=getICDByCode(index,code);
+    return record?'<button type="button" data-icd-open="'+esc(record.code)+'"><b>'+esc(record.code)+'</b> '+esc(record.name)+'</button>':'';
+   }).join('')+'</div>':'<p class="icd-personal-empty">Пока ничего нет.</p>');
+ }
+ function recordVisit(code){
+  recents=[code,...recents.filter(c=>c!==code)].slice(0,20);
+  persist(ICD_RECENTS_KEY,recents);
+  updateCollections();
+ }
+ function toggleFavorite(){
+  if(!selected)return;
+  favorites=favorites.includes(selected)?favorites.filter(c=>c!==selected):[selected,...favorites].slice(0,30);
+  persist(ICD_FAVORITES_KEY,favorites);
+  updateCollections();renderDetail();
+ }
+ function renderSuggestions(query,resultsLength){
+  if(!index||!query.trim()){suggestions.innerHTML='';return;}
+  const matched=getICDSearchHints(index,query,{includeInactive:inactive.checked,chapterRange});
+  const hints=matched.filter(row=>!found.some(item=>item.id===row.item.id));
+  const typos=resultsLength===0?suggestICDQueries(index,query):[];
+  suggestions.innerHTML=
+   (hints.length?'<div class="icd-search-hints"><b>Поисковые ориентиры</b><div>'+hints.map(row=>'<button type="button" data-icd-open="'+esc(row.item.code)+'"><strong>'+esc(row.item.code)+'</strong> · '+esc(row.label)+'</button>').join('')+'</div><small>Это подсказки для навигации, а не рекомендации по выбору кода диагноза.</small></div>':'')+
+   (typos.length?'<div class="icd-typos"><b>Возможно, ты искал:</b> '+typos.map(word=>'<button type="button" data-icd-suggest="'+esc(word)+'">'+esc(word)+'</button>').join('')+'</div>':'');
+ }
+ function renderTree(){
+  if(!index||!chapterRange){treePanel.hidden=true;treePanel.innerHTML='';return;}
+  if(treeRange!==chapterRange){treeExpanded=new Set();treeRange=chapterRange;}
+  const roots=getICDTreeRoots(index,chapterRange,inactive.checked),chapter=ICD_CHAPTERS.find(c=>c[1]===chapterRange);
+  let rendered=0;
+  const node=(item,depth=0,parents=new Set())=>{
+   if(depth>12||parents.has(item.id)||rendered>2500)return '';
+   rendered++;
+   const children=getICDTreeChildren(index,item,inactive.checked),expanded=treeExpanded.has(item.id);
+   const nextParents=new Set(parents);nextParents.add(item.id);
+   return '<li class="icd-tree-node"><div class="icd-tree-row'+(selected===item.code?' is-selected':'')+'">'+
+    (children.length?'<button type="button" class="icd-tree-toggle" data-icd-expand="'+esc(item.id)+'" aria-label="'+(expanded?'Свернуть':'Развернуть')+' '+esc(item.code)+'" aria-expanded="'+expanded+'">'+(expanded?'⌄':'›')+'</button>':'<span class="icd-tree-spacer" aria-hidden="true"></span>')+
+    '<button type="button" class="icd-tree-item" data-icd-open="'+esc(item.code)+'"><b>'+esc(item.code)+'</b><span>'+esc(item.name)+'</span></button>'+
+    (children.length?'<small>'+children.length+'</small>':'')+
+    '</div>'+(expanded&&children.length?'<ul>'+children.map(child=>node(child,depth+1,nextParents)).join('')+'</ul>':'')+'</li>';
+  };
+  treePanel.hidden=false;
+  treePanel.innerHTML='<div class="icd-tree-heading"><div><span class="icd-class-eyebrow">ИНТЕРАКТИВНОЕ ДЕРЕВО</span><h3>Класс '+esc(chapter?.[0]||'')+' · '+esc(chapter?.[2]||'')+'</h3><p>Раскрывай блоки и подрубрики. Нажми на код, чтобы открыть полную карточку.</p></div><span class="icd-tree-root-count">'+roots.length+' корневых рубрик</span></div>'+
+   '<ul class="icd-tree-roots">'+roots.map(root=>node(root)).join('')+'</ul>';
+ }
+ function revealInTree(item){
+  if(!chapterRange||!item)return;
+  for(const id of getICDTreeLineage(index,item,chapterRange,inactive.checked))treeExpanded.add(id);
+  renderTree();
+ }
+ async function initOffline(){
+  if(!('serviceWorker' in navigator)||!window.isSecureContext){offlineStatus.textContent='Офлайн-доступ требует HTTPS и браузер с поддержкой Service Worker.';return;}
+  try{
+   await navigator.serviceWorker.register('./sw-icd.js',{scope:'./'});
+   await navigator.serviceWorker.ready;
+   offlineStatus.textContent='Офлайн-копия МКБ-10 подготовлена в браузере. Доступна после первой успешной загрузки, пока браузер хранит кэш.';
+  }catch(e){
+   offlineStatus.textContent='Офлайн-копию не удалось подготовить. При наличии сети справочник продолжит работать.';
+  }
+ }
+
  const initial=new URL(location.href);
  const initialCode=initial.searchParams.get('code')||'';
  const initialSearch=initial.searchParams.get('icd')||'';
