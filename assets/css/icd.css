@@ -1,0 +1,65 @@
+/* Dedicated ICD-10 workspace. Scoped to avoid changing clinical articles or calculators. */
+#icd-entry-detail[hidden],#icd-class-toolbar[hidden]{display:none!important}
+.icd-entry-button{font:inherit;cursor:pointer;width:100%;text-align:left;transition:border-color .15s,background .15s,box-shadow .15s}
+.icd-entry-button:hover,.icd-entry-button:focus-visible{background:#f6faf9;border-color:#8bbcb5;box-shadow:0 2px 12px rgba(19,90,82,.05)}
+.icd-entry-button:focus-visible,.icd-path-code:focus-visible,.icd-detail-dismiss:focus-visible,.icd-chapter:focus-visible{outline:3px solid #5aada2;outline-offset:2px}
+.icd-open-chevron{margin-left:auto;color:#6c9692;font-size:24px;line-height:1}
+.icd-entry-button .icd-result-tags{max-width:240px}
+.icd-result-tags .icd-old-tag{display:inline-flex}
+.icd-start{min-height:130px}
+.icd-start span{max-width:560px;line-height:1.6}
+.icd-class-toolbar{margin:0 0 15px;display:flex;align-items:center;justify-content:space-between;gap:18px;border:1px solid #b9d8d2;border-radius:14px;padding:14px 18px;background:#f4faf8}
+.icd-class-toolbar>div{display:flex;flex-direction:column;gap:3px}
+.icd-class-toolbar strong{font-size:14px;color:#253f46}
+.icd-class-toolbar small{font-size:12px;color:#69848b}
+.icd-class-eyebrow{display:block;letter-spacing:1.1px;font-weight:800;font-size:10px;color:#267f77;text-transform:uppercase}
+.icd-chapter.is-active{border-color:#2d9287;background:#eaf6f3;box-shadow:0 0 0 1px #2d9287 inset}
+.icd-entry-detail{margin:13px 0 18px;padding:clamp(16px,3vw,26px);border:1px solid #badbd4;border-radius:17px;background:linear-gradient(150deg,#fff,#f6fbfa);box-shadow:0 12px 32px rgba(25,70,72,.06);scroll-margin-top:26px}
+.icd-detail-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.icd-detail-heading h2{font:700 clamp(18px,2.2vw,25px)/1.4 'Manrope',sans-serif;letter-spacing:-.25px;margin:7px 0 8px;color:#243f49;overflow-wrap:anywhere}
+.icd-detail-heading h2 span{color:#197e76;margin-right:8px;white-space:nowrap}
+.icd-detail-dismiss{border:1px solid #d6e5e2;background:#fff;color:#45666b;border-radius:10px;width:37px;height:37px;flex:0 0 37px;font-size:25px;cursor:pointer}
+.icd-detail-tools{display:flex;flex-wrap:wrap;gap:8px;margin:13px 0 0}
+.icd-detail-tools .button{font-size:12px;padding:10px 12px;white-space:normal}
+.icd-copy-feedback{font-size:12px;color:#247c74;min-height:15px;padding:3px 0}
+.icd-detail-facts{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 19px}
+.icd-detail-facts span{background:#eaf3f2;border-radius:7px;padding:8px 10px;color:#46636a;font-size:11px}
+.icd-detail-facts b{color:#244f56}
+.icd-detail-section{margin-top:20px;border-top:1px solid #dcece9;padding-top:16px}
+.icd-detail-section h3{font:750 14px/1.4 'Manrope',sans-serif;margin:0 0 9px;color:#2d4a53}
+.icd-detail-section h3 span{font:600 11px 'DM Sans',sans-serif;color:#738a92}
+.icd-detail-section p{color:#6a7d83;font-size:12px;line-height:1.65;margin:8px 0}
+.icd-path{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+.icd-path-separator{color:#90b6af;font-size:18px}
+.icd-path-code{display:inline-flex;align-items:baseline;flex-wrap:wrap;gap:6px;border:1px solid #d5e7e2;border-radius:8px;background:#fff;padding:8px 10px;text-align:left;color:#3b6267;font:500 12px/1.5 'DM Sans',sans-serif;cursor:pointer;max-width:100%}
+.icd-path-code:hover{background:#eff9f6;border-color:#9fc8bf}
+.icd-path-code b{color:#16766e;white-space:nowrap}
+.icd-related-list{display:grid;gap:6px}
+.icd-entry-compact{padding:10px 11px;background:#fff}
+.icd-entry-compact .icd-result-code{flex-basis:80px;font-size:13px}
+.icd-entry-compact .icd-result-main strong{font-size:12px}
+.icd-entry-compact .icd-result-main small{font-size:10px}
+.icd-entry-compact .icd-open-chevron{font-size:18px}
+.icd-detail-caution{font-size:12px;color:#5e747c;line-height:1.7;margin:22px 0 12px;border-left:3px solid #7ab5aa;padding:10px 12px;background:#eef7f5}
+.icd-detail-source{display:inline-block;color:#19766c;text-decoration:underline;text-underline-offset:3px;font-weight:700;font-size:12px;line-height:1.6}
+@media(max-width:760px){
+ .icd-class-toolbar{flex-direction:column;align-items:stretch;padding:13px}
+ .icd-class-toolbar .button{align-self:flex-start}
+ .icd-entry-button{gap:9px}
+ .icd-entry-button .icd-result-tags{max-width:none;order:5;width:auto;padding:0;align-items:center}
+ .icd-entry-button .icd-old-tag{display:inline-flex}
+ .icd-entry-button .icd-result-main{flex:1 1 calc(100% - 120px)}
+ .icd-entry-button .icd-open-chevron{font-size:19px}
+ .icd-detail-heading h2{font-size:19px}
+ .icd-entry-compact .icd-result-code{flex:0 0 64px;font-size:12px}
+ .icd-entry-compact .icd-result-tags{width:100%;flex-basis:100%}
+ .icd-detail-tools .button{flex:1 1 120px}
+}
+@media(max-width:390px){
+ .icd-entry-button{padding:11px;gap:7px}
+ .icd-entry-button .icd-result-code{flex:0 0 58px}
+ .icd-entry-button .icd-result-main{flex:1 1 calc(100% - 99px)}
+ .icd-result-main strong{overflow-wrap:anywhere}
+ .icd-detail-facts{display:grid}
+}
+@media(prefers-reduced-motion:reduce){.icd-entry-button{transition:none}}
