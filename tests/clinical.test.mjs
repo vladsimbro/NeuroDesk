@@ -105,7 +105,7 @@ test('article links are limited to direct Russian clinical recommendation record
 
 test('mobile sidebar backdrop fades smoothly in both directions', () => {
   assert.match(css, /body:before\\{content:"";position:fixed/);
-  assert.match(css, /opacity:0;visibility:hidden;pointer-events:none;transition:opacity .28s ease,visibility .28s ease/);
+  assert.ok(css.includes('opacity:0;visibility:hidden;pointer-events:none;transition:opacity .28s ease,visibility 0s linear .28s'));
   assert.match(css, /body\\.sidebar-open:before\\{opacity:1;visibility:visible;pointer-events:auto/);
 });
 
