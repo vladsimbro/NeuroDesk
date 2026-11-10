@@ -46,7 +46,7 @@ test('every new article contains specific clinical navigation, differential and 
  }
  assert.ok(paragraphs>=320);
 });
-test('official guideline links do not use unavailable /clin-rec /view-cr /preview-cr routes',()=>{
+test('official guideline links do not use unavailable /clin-rec /view-cr /preview-cr routes',async()=>{
  assert.equal(RUS_CLINICAL_REGISTRY,'https://minzdrav.gov.ru/special/smartphone_apps_rubrikator_kr');
  assert.equal(RUS_CLINICAL_PORTAL,'https://cr.minzdrav.gov.ru/');
  for(const doc of Object.values(RUS_CLINICAL_DOCUMENTS)){
