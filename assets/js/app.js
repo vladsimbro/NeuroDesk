@@ -43,11 +43,13 @@ function setActiveNav(route){
   }
 }
 function renderOverview(){
-  return '<div class="page-heading"><div><div class="eyebrow">NEURODESK · СПРАВОЧНИК</div><h1>МКБ-10 без лишнего поиска</h1><p class="lead">Быстрый доступ к российской Международной классификации болезней: найди код по названию диагноза или проверь расшифровку по коду.</p></div></div>'+
-  '<section class="icd-home-hero"><div class="icd-home-copy"><span class="hero-kicker">РОССИЙСКАЯ КЛАССИФИКАЦИЯ</span><h2>Нужный код — за несколько секунд.</h2><p>Поиск по коду, названию и формулировке диагноза. Каталог включает классы, блоки, рубрики и подрубрики классификации.</p><a class="button button-primary" href="#icd">Открыть справочник '+icon('arrow',14)+'</a></div><div class="icd-home-mark" aria-hidden="true"><span>МКБ</span><strong>10</strong><small>ICD · RU</small></div></section>'+
-  '<section class="card card-pad clinical-home-entry"><div class="resource-mark">'+icon('book',20)+'</div><div><div class="eyebrow">КЛИНИЧЕСКАЯ БАЗА ЗНАНИЙ</div><h2>Клинический справочник</h2><p>31 статья по неврологическим симптомам, синдромам, заболеваниям и неотложным состояниям.</p><a class="button button-primary" href="./clinical.html">Открыть клинические статьи '+icon('arrow',14)+'</a></div></section>'+
-  '<div class="icd-home-grid"><article class="card card-pad"><div class="resource-mark">'+icon('search')+'</div><h3>Поиск по названию</h3><p>Например: мигрень, радикулопатия, эпилепсия или инсульт.</p></article><article class="card card-pad"><div class="resource-mark">'+icon('clipboard')+'</div><h3>Поиск по коду</h3><p>Введи полный код или его часть: G43, I63.9, M54.16.</p></article><article class="card card-pad"><div class="resource-mark">'+icon('book')+'</div><h3>Вся классификация</h3><p>22 класса с переходом к нужному разделу и поиском по диагнозам.</p></article></div>'+
-  '<p class="source-citation">Справочник помогает находить классификационные формулировки. Выбор кода для медицинской документации требует проверки клинического контекста и действующих нормативных правил.</p>';
+ return '<section class="home-welcome"><div class="home-welcome-copy"><div class="eyebrow">NEURODESK · РАБОЧЕЕ ПРОСТРАНСТВО</div><h1>Неврологический справочник</h1><p>Два инструмента для повседневной работы: российская классификация заболеваний и клинические материалы по неврологии.</p><div class="home-welcome-meta"><span><i></i> Локальный поиск</span><span>Только российские источники</span></div></div><div class="home-welcome-art" aria-hidden="true"><div class="home-orbit home-orbit-one"></div><div class="home-orbit home-orbit-two"></div><div class="home-brain-mark">'+icon('activity',48)+'</div><span class="home-art-label">NEUROLOGY<br>REFERENCE</span></div></section>'+
+ '<section class="home-module-grid">'+
+ '<a class="home-module home-module-icd" href="#icd"><span class="home-module-icon">'+icon('book-open',24)+'</span><span class="home-module-kicker">КЛАССИФИКАЦИЯ</span><h2>МКБ-10</h2><p>Поиск диагноза по названию, коду или части формулировки. Иерархия классов, блоков и рубрик.</p><span class="home-module-footer"><strong>15 038 записей</strong><span>Открыть справочник '+icon('arrow',16)+'</span></span><span class="home-module-watermark" aria-hidden="true">10</span></a>'+
+ '<a class="home-module home-module-clinical" href="./clinical.html"><span class="home-module-icon">'+icon('file-text',24)+'</span><span class="home-module-kicker">КЛИНИЧЕСКИЕ МАТЕРИАЛЫ</span><h2>Клинический справочник</h2><p>Неврологические симптомы, синдромы и заболевания: клиническая логика, срочность, обследование и дифференциальный ряд.</p><span class="home-module-footer"><strong>31 статья</strong><span>Открыть материалы '+icon('arrow',16)+'</span></span><span class="home-module-watermark home-module-watermark-clinical" aria-hidden="true">N</span></a>'+
+ '</section>'+
+ '<section class="home-lower-grid"><div class="home-lower-card"><div class="home-section-heading"><div><div class="eyebrow">БЫСТРЫЙ ДОСТУП</div><h2>С чего начать</h2></div></div><div class="home-shortcuts"><a href="#icd"><span class="home-shortcut-icon">'+icon('search',17)+'</span><span><strong>Найти код диагноза</strong><small>Поиск по МКБ-10</small></span>'+icon('arrow',15)+'</a><a href="./clinical.html"><span class="home-shortcut-icon">'+icon('activity',17)+'</span><span><strong>Разобрать клинический синдром</strong><small>Открыть статьи по неврологии</small></span>'+icon('arrow',15)+'</a></div></div><aside class="home-lower-card home-source-card"><div class="eyebrow">ПРИНЦИПЫ СПРАВОЧНИКА</div><h2>Проверяемые источники</h2><p>Для классификатора используется российская МКБ-10. Клинические материалы ориентируются на документы Минздрава России. Если профильная рекомендация не подтверждена, это отмечается прямо.</p><a href="https://minzdrav.gov.ru/smartphone_apps_rubrikator_kr." target="_blank" rel="noopener noreferrer">Официальный рубрикатор клинических рекомендаций '+icon('external',14)+'</a></aside></section>'+
+ '<p class="home-disclaimer">NeuroDesk — справочно-информационный инструмент. Материалы не заменяют клинические рекомендации, локальные порядки оказания медицинской помощи и профессиональное решение врача.</p>';
 }
 function renderICD(){
  const chapters=[['I','A00–B99','Некоторые инфекционные и паразитарные болезни','A00-B99'],['II','C00–D48','Новообразования','C00-D48'],['III','D50–D89','Болезни крови и отдельные нарушения иммунитета','D50-D89'],['IV','E00–E90','Болезни эндокринной системы и обмена веществ','E00-E90'],['V','F00–F99','Психические расстройства и расстройства поведения','F00-F99'],['VI','G00–G99','Болезни нервной системы','G00-G99'],['VII','H00–H59','Болезни глаза и его придаточного аппарата','H00-H59'],['VIII','H60–H95','Болезни уха и сосцевидного отростка','H60-H95'],['IX','I00–I99','Болезни системы кровообращения','I00-I99'],['X','J00–J99','Болезни органов дыхания','J00-J99'],['XI','K00–K93','Болезни органов пищеварения','K00-K93'],['XII','L00–L99','Болезни кожи и подкожной клетчатки','L00-L99'],['XIII','M00–M99','Болезни костно-мышечной системы и соединительной ткани','M00-M99'],['XIV','N00–N99','Болезни мочеполовой системы','N00-N99'],['XV','O00–O99','Беременность, роды и послеродовой период','O00-O99'],['XVI','P00–P96','Отдельные состояния перинатального периода','P00-P96'],['XVII','Q00–Q99','Врождённые аномалии, деформации и хромосомные нарушения','Q00-Q99'],['XVIII','R00–R99','Симптомы, признаки и отклонения от нормы','R00-R99'],['XIX','S00–T98','Травмы, отравления и другие последствия воздействия внешних причин','S00-T98'],['XX','U00–U85','Коды для специальных целей','U00-U85'],['XXI','V01–Y98','Внешние причины заболеваемости и смертности','V01-Y98'],['XXII','Z00–Z99','Факторы, влияющие на состояние здоровья и обращения за медицинской помощью','Z00-Z99']];
@@ -300,77 +302,58 @@ function renderClinical(){
 }
 function bindClinical(){
  const query=document.getElementById('clinical-query'),results=document.getElementById('clinical-results'),meta=document.getElementById('clinical-meta'),filters=document.getElementById('clinical-filters');
- let category='Все',selected=new URLSearchParams(location.search).get('article');
- if(selected&&!CLINICAL_LIBRARY.some(item=>item.id===selected))selected=null;
+ let category='Все';
+ const openArticles=new Set(new URLSearchParams(location.search).getAll('article').filter(id=>CLINICAL_LIBRARY.some(item=>item.id===id)));
  const russianGuidelines={
-  headache:[{label:'КР Минздрава России «Мигрень», взрослые · 2024 · ID 295_4 · действует',url:'https://cr.minzdrav.gov.ru/preview-cr/295_4'},{label:'КР Минздрава России «Головная боль напряжения», дети · 2024 · ID 810_1',url:'https://cr.minzdrav.gov.ru/view-cr/810_1'}],
-  stroke:[{label:'КР Минздрава России «Ишемический инсульт и транзиторная ишемическая атака» · 2024 · ID 814_1 · действует',url:'https://cr.minzdrav.gov.ru/preview-cr/814_1'}],
-  tia:[{label:'КР Минздрава России «Ишемический инсульт и транзиторная ишемическая атака» · 2024 · ID 814_1 · действует',url:'https://cr.minzdrav.gov.ru/preview-cr/814_1'}],
-  myasthenia:[{label:'КР Минздрава России «Миастения» · 2025 · ID 165_2 · действует',url:'https://cr.minzdrav.gov.ru/preview-cr/165_2'}],
-  delirium:[{label:'КР Минздрава России «Делирий, не обусловленный алкоголем и другими психоактивными веществами, у лиц пожилого и старческого возраста» · 2026 · ID 742_2 · действует',url:'https://cr.minzdrav.gov.ru/view-cr/742_2'}],
-  dementia:[{label:'КР Минздрава России «Когнитивные расстройства у лиц пожилого и старческого возраста» · 2024 · ID 617_5',url:'https://cr.minzdrav.gov.ru/view-cr/617_5'}]
+  headache:[{label:'КР Минздрава России «Мигрень», взрослые · 2024 · ID 295_4 · действует',url:'https://minzdrav.gov.ru/smartphone_apps_rubrikator_kr.'},{label:'КР Минздрава России «Головная боль напряжения», дети · 2024 · ID 810_1',url:'https://minzdrav.gov.ru/smartphone_apps_rubrikator_kr.'}],
+  stroke:[{label:'КР Минздрава России «Ишемический инсульт и транзиторная ишемическая атака» · 2024 · ID 814_1 · действует',url:'https://minzdrav.gov.ru/smartphone_apps_rubrikator_kr.'}],
+  tia:[{label:'КР Минздрава России «Ишемический инсульт и транзиторная ишемическая атака» · 2024 · ID 814_1 · действует',url:'https://minzdrav.gov.ru/smartphone_apps_rubrikator_kr.'}],
+  myasthenia:[{label:'КР Минздрава России «Миастения» · 2025 · ID 165_2 · действует',url:'https://minzdrav.gov.ru/smartphone_apps_rubrikator_kr.'}],
+  delirium:[{label:'КР Минздрава России «Делирий, не обусловленный алкоголем и другими психоактивными веществами, у лиц пожилого и старческого возраста» · 2026 · ID 742_2 · действует',url:'https://minzdrav.gov.ru/smartphone_apps_rubrikator_kr.'}],
+  dementia:[{label:'КР Минздрава России «Когнитивные расстройства у лиц пожилого и старческого возраста» · 2024 · ID 617_5',url:'https://minzdrav.gov.ru/smartphone_apps_rubrikator_kr.'}]
  };
  const articleMarkup=item=>{
   const sections=item.sections.map(section=>({...section,items:section.items.filter(Boolean)})).filter(section=>section.items.length);
   const sources=russianGuidelines[item.id]||[];
-  return '<div class="clinical-article-panel" data-clinical-panel="'+item.id+'"><div class="clinical-article-panel-inner"><article class="clinical-article" id="clinical-article-'+item.id+'"><div class="clinical-article-head"><div><span class="clinical-category">'+esc(item.category)+'</span><h2>'+esc(item.title)+'</h2><p>'+esc(item.summary)+'</p></div><button type="button" class="clinical-collapse" data-clinical-close="'+item.id+'" aria-label="Свернуть статью" title="Свернуть статью">'+icon('close',19)+'</button></div><nav class="clinical-article-toc" aria-label="Содержание статьи"><strong>Содержание</strong>'+sections.map((section,i)=>'<button type="button" class="clinical-toc-link" data-clinical-section-target="clinical-section-'+item.id+'-'+i+'">'+String(i+1).padStart(2,'0')+' · '+esc(section.title)+'</button>').join('')+'</nav>'+sections.map((section,i)=>'<section class="clinical-article-section" id="clinical-section-'+item.id+'-'+i+'"><h3><span>'+String(i+1).padStart(2,'0')+'</span>'+esc(section.title)+'</h3><ul>'+section.items.map(line=>'<li>'+esc(line)+'</li>').join('')+'</ul></section>').join('')+'<section class="clinical-sources"><h3>Российские клинические рекомендации</h3>'+(sources.length?sources.map(source=>'<a href="'+esc(source.url)+'" target="_blank" rel="noopener noreferrer">'+esc(source.label)+' '+icon('external',13)+'</a>').join(''):'<p>Отдельная российская клиническая рекомендация, непосредственно соответствующая этой теме, в справочнике пока не подтверждена. Зарубежные источники не используются и не подставляются вместо российского документа.</p>')+'</section></article></div></div>';
+  return '<div class="clinical-article-panel is-open" data-clinical-panel="'+item.id+'"><div class="clinical-article-panel-inner"><article class="clinical-article" id="clinical-article-'+item.id+'"><div class="clinical-article-head"><div><span class="clinical-category">'+esc(item.category)+'</span><h2>'+esc(item.title)+'</h2><p>'+esc(item.summary)+'</p></div><button type="button" class="clinical-collapse" data-clinical-close="'+item.id+'" aria-label="Свернуть статью" title="Свернуть статью">'+icon('close',19)+'</button></div><nav class="clinical-article-toc" aria-label="Содержание статьи"><strong>Содержание</strong>'+sections.map((section,i)=>'<button type="button" class="clinical-toc-link" data-clinical-section-target="clinical-section-'+item.id+'-'+i+'">'+String(i+1).padStart(2,'0')+' · '+esc(section.title)+'</button>').join('')+'</nav>'+sections.map((section,i)=>'<section class="clinical-article-section" id="clinical-section-'+item.id+'-'+i+'"><h3><span>'+String(i+1).padStart(2,'0')+'</span>'+esc(section.title)+'</h3><ul>'+section.items.map(line=>'<li>'+esc(line)+'</li>').join('')+'</ul></section>').join('')+'<section class="clinical-sources"><h3>Российские клинические рекомендации</h3>'+(sources.length?sources.map(source=>'<a href="'+esc(source.url)+'" target="_blank" rel="noopener noreferrer">'+esc(source.label)+' '+icon('external',13)+'</a>').join('')+'<p class="clinical-source-note">Ссылка ведёт на официальную страницу Минздрава с информацией о Рубрикаторе КР. Сам рубрикатор на момент проверки сообщал о технических работах; для поиска документа используй его название или ID, указанный выше.</p>':'<p>Отдельная российская клиническая рекомендация, непосредственно соответствующая этой теме, пока не подтверждена. Зарубежные источники не используются и не подставляются вместо российского документа.</p>')+'</section></article></div></div>';
  };
- const updateUrl=()=>{const url=new URL(location.href);if(selected)url.searchParams.set('article',selected);else url.searchParams.delete('article');history.replaceState(null,'',url.pathname+url.search+url.hash);};
- const closeSelected=(id)=>{
-  const panel=results.querySelector('[data-clinical-panel="'+id+'"]');
-  if(!panel){selected=null;updateUrl();render();return;}
-  panel.classList.remove('is-open');
-  const card=results.querySelector('[data-clinical-open="'+id+'"]');
-  if(card){card.classList.remove('selected');card.setAttribute('aria-expanded','false');card.querySelector('.clinical-open-label').innerHTML='Открыть материал '+icon('arrow',13);}
-  const finish=()=>{if(selected===id){selected=null;updateUrl();render();}};
-  panel.addEventListener('transitionend',event=>{if(event.target===panel&&event.propertyName==='grid-template-rows')finish();},{once:true});
-  window.setTimeout(finish,420);
- };
-  const normalizeSearch=value=>String(value??'').normalize('NFKC').toLocaleLowerCase('ru-RU').replace(/ё/g,'е').replace(/[^\p{L}\p{N}]+/gu,' ').trim();
-  const render=()=>{
-   const q=normalizeSearch(query.value);
-   const tokens=q.split(' ').filter(Boolean);
-   const matches=CLINICAL_LIBRARY.filter(item=>{
-    if(category!=='Все'&&item.category!==category)return false;
-    if(!tokens.length)return true;
-    const corpus=normalizeSearch([item.title,item.summary,item.category,...item.tags,...item.sections.flatMap(section=>[section.title,...section.items])].join(' '));
-    const words=corpus.split(' ');
-    return tokens.every(token=>{
-     const stem=token.length>5?token.slice(0,-2):token;
-     return corpus.includes(token)||words.some(word=>word.startsWith(stem)||(token.length>=5&&word.startsWith(token.slice(0,-1))));
-    });
-   }).sort((a,b)=>{
-    const rank=item=>{const title=normalizeSearch(item.title);if(title===q)return 0;if(title.startsWith(q))return 1;if(item.tags.some(tag=>normalizeSearch(tag).startsWith(q)))return 2;return 3;};
-    return rank(a)-rank(b);
-   });
-if(selected&&!matches.some(item=>item.id===selected)){selected=null;updateUrl();}
-  meta.textContent='Найдено материалов: '+matches.length+' из '+CLINICAL_LIBRARY.length;
-  results.innerHTML=matches.length?matches.map(item=>'<div class="clinical-result-wrap"><button type="button" class="clinical-result '+(selected===item.id?'selected':'')+'" data-clinical-open="'+item.id+'" aria-expanded="'+(selected===item.id)+'" aria-controls="clinical-article-'+item.id+'"><span class="clinical-result-top"><span class="clinical-category">'+esc(item.category)+'</span><span class="clinical-updated">'+esc(item.updated)+'</span></span><strong>'+esc(item.title)+'</strong><span>'+esc(item.summary)+'</span><span class="clinical-tags">'+item.tags.map(tag=>'<i>'+esc(tag)+'</i>').join('')+'</span><span class="clinical-open-label">'+(selected===item.id?'Свернуть материал '+icon('arrow',13):'Открыть материал '+icon('arrow',13))+'</span></button>'+(selected===item.id?articleMarkup(item):'')+'</div>').join(''):'<div class="icd-empty"><strong>Ничего не найдено</strong><span>Попробуй другой термин или переключи категорию.</span></div>';
-  if(selected){const panel=results.querySelector('[data-clinical-panel="'+selected+'"]');requestAnimationFrame(()=>panel?.classList.add('is-open'));}
+ const updateUrl=()=>{const url=new URL(location.href);url.searchParams.delete('article');[...openArticles].forEach(id=>url.searchParams.append('article',id));history.replaceState(null,'',url.pathname+url.search+url.hash);};
+ const normalizeSearch=value=>String(value??'').normalize('NFKC').toLocaleLowerCase('ru-RU').replace(/ё/g,'е').replace(/[^\p{L}\p{N}]+/gu,' ').trim();
+ const render=()=>{
+  const q=normalizeSearch(query.value),tokens=q.split(' ').filter(Boolean);
+  const matches=CLINICAL_LIBRARY.filter(item=>{
+   if(category!=='Все'&&item.category!==category)return false;
+   if(!tokens.length)return true;
+   const corpus=normalizeSearch([item.title,item.summary,item.category,...item.tags,...item.sections.flatMap(section=>[section.title,...section.items])].join(' '));
+   const words=corpus.split(' ');
+   return tokens.every(token=>{const stem=token.length>5?token.slice(0,-2):token;return corpus.includes(token)||words.some(word=>word.startsWith(stem)||(token.length>=5&&word.startsWith(token.slice(0,-1))));});
+  }).sort((a,b)=>{
+   const rank=item=>{const title=normalizeSearch(item.title);if(title===q)return 0;if(title.startsWith(q))return 1;if(item.tags.some(tag=>normalizeSearch(tag).startsWith(q)))return 2;return 3;};
+   return rank(a)-rank(b);
+  });
+  meta.textContent='Найдено материалов: '+matches.length+' из '+CLINICAL_LIBRARY.length+(openArticles.size?' · открыто статей: '+openArticles.size:'');
+  const openMarkup=[...openArticles].map(id=>CLINICAL_LIBRARY.find(item=>item.id===id)).filter(Boolean).map(articleMarkup).join('');
+  const cards=matches.map(item=>'<div class="clinical-result-wrap"><button type="button" class="clinical-result '+(openArticles.has(item.id)?'selected':'')+'" data-clinical-open="'+item.id+'" aria-expanded="'+openArticles.has(item.id)+'" aria-controls="clinical-article-'+item.id+'"><span class="clinical-result-top"><span class="clinical-category">'+esc(item.category)+'</span><span class="clinical-updated">'+esc(item.updated)+'</span></span><strong>'+esc(item.title)+'</strong><span>'+esc(item.summary)+'</span><span class="clinical-tags">'+item.tags.map(tag=>'<i>'+esc(tag)+'</i>').join('')+'</span><span class="clinical-open-label">'+(openArticles.has(item.id)?'Статья открыта '+icon('check',13):'Открыть материал '+icon('arrow',13))+'</span></button></div>').join('');
+  results.innerHTML=(openMarkup?'<div class="clinical-open-articles">'+openMarkup+'</div>':'')+(cards||(!openMarkup?'<div class="icd-empty"><strong>Ничего не найдено</strong><span>Попробуй другой термин или переключи категорию.</span></div>':''));
   results.querySelectorAll('[data-clinical-open]').forEach(button=>button.addEventListener('click',()=>{
    const id=button.dataset.clinicalOpen;
-   if(selected===id){closeSelected(id);return;}
-   if(selected){
-    const previous=selected;
-    closeSelected(previous);
-    window.setTimeout(()=>{selected=id;updateUrl();render();results.querySelector('[data-clinical-panel="'+id+'"]')?.scrollIntoView({behavior:'smooth',block:'nearest'});},380);
-    return;
-   }
-   selected=id;updateUrl();render();
-   results.querySelector('[data-clinical-panel="'+id+'"]')?.scrollIntoView({behavior:'smooth',block:'nearest'});
+   if(openArticles.has(id))openArticles.delete(id);else openArticles.add(id);
+   updateUrl();render();
+   if(openArticles.has(id))results.querySelector('[data-clinical-panel="'+id+'"]')?.scrollIntoView({behavior:'smooth',block:'nearest'});
   }));
-  results.querySelectorAll('[data-clinical-close]').forEach(button=>button.addEventListener('click',()=>closeSelected(button.dataset.clinicalClose)));
+  results.querySelectorAll('[data-clinical-close]').forEach(button=>button.addEventListener('click',()=>{
+   openArticles.delete(button.dataset.clinicalClose);updateUrl();render();
+  }));
   results.querySelectorAll('[data-clinical-section-target]').forEach(button=>button.addEventListener('click',()=>{
    const section=document.getElementById(button.dataset.clinicalSectionTarget);
    if(section){section.scrollIntoView({behavior:'smooth',block:'start'});section.setAttribute('tabindex','-1');section.focus({preventScroll:true});}
   }));
  };
- query.addEventListener('input',()=>{selected=null;updateUrl();render();});
- document.getElementById('clinical-clear').addEventListener('click',()=>{query.value='';selected=null;updateUrl();render();query.focus();});
- filters.querySelectorAll('[data-clinical-filter]').forEach(button=>button.addEventListener('click',()=>{category=button.dataset.clinicalFilter;selected=null;updateUrl();filters.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===button));render();}));
+ query.addEventListener('input',render);
+ document.getElementById('clinical-clear').addEventListener('click',()=>{query.value='';render();query.focus();});
+ filters.querySelectorAll('[data-clinical-filter]').forEach(button=>button.addEventListener('click',()=>{category=button.dataset.clinicalFilter;filters.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===button));render();}));
  render();
 }
-
 const PAGES={overview:{title:'Главная',render:renderOverview},icd:{title:'МКБ-10',render:renderICD},clinical:{title:'Клинический справочник',render:renderClinical}};
 function render(){
   const route=routeName(),page=PAGES[route];
@@ -394,17 +377,5 @@ document.getElementById('mobile-menu').addEventListener('click',toggleSidebar);
 document.getElementById('sidebar-close')?.addEventListener('click',closeSidebar);
 document.addEventListener('click',event=>{if(document.body.classList.contains('sidebar-open')&&!sidebar.contains(event.target)&&!event.target.closest('#mobile-menu'))closeSidebar();});
 document.addEventListener('keydown',event=>{if(event.key==='Escape')closeSidebar();});
-document.getElementById('theme-toggle').addEventListener('click',()=>{
-  document.body.classList.toggle('dark');
-  const dark=document.body.classList.contains('dark');
-  localStorage.setItem('neurodesk-theme',dark?'dark':'light');
-  document.getElementById('theme-toggle').innerHTML=icon(dark?'moon':'sun');
-});
-function applyTheme(){
-  const dark=localStorage.getItem('neurodesk-theme')==='dark';
-  document.body.classList.toggle('dark',dark);
-  document.getElementById('theme-toggle').innerHTML=icon(dark?'moon':'sun');
-}
 document.querySelectorAll('[data-icon]').forEach(node=>node.innerHTML=icon(node.dataset.icon));
-applyTheme();
 render();
