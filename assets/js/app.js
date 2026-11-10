@@ -1,10 +1,20 @@
 import {ICD_CHAPTERS} from './icd-core.js';
-import {CLINICAL_EXPANSIONS_A} from './clinical-expansions-a.js';
-import {CLINICAL_EXPANSIONS_B} from './clinical-expansions-b.js';
-import {CLINICAL_EXPANSIONS_C} from './clinical-expansions-c.js';
-import {RUS_CLINICAL_DOCUMENTS,RUS_ARTICLE_SOURCES,RUS_SOURCE_REVIEW_DATE,RUS_CLINICAL_REGISTRY} from './clinical-evidence.js';
-const CLINICAL_EXPANSIONS={...CLINICAL_EXPANSIONS_A,...CLINICAL_EXPANSIONS_B,...CLINICAL_EXPANSIONS_C};
 import {bindICD} from './icd.js';
+// Keep ICD and the landing page independent from large clinical articles.
+let CLINICAL_EXPANSIONS={};
+let RUS_CLINICAL_DOCUMENTS={},RUS_ARTICLE_SOURCES={},RUS_SOURCE_REVIEW_DATE='',RUS_CLINICAL_REGISTRY='https://cr.minzdrav.gov.ru/clin-rec';
+let clinicalContentPromise=null;
+function loadClinicalContent(){
+ if(clinicalContentPromise)return clinicalContentPromise;
+ clinicalContentPromise=import('./clinical-content.js').then(data=>{
+  CLINICAL_EXPANSIONS=data.CLINICAL_EXPANSIONS;
+  RUS_CLINICAL_DOCUMENTS=data.RUS_CLINICAL_DOCUMENTS;
+  RUS_ARTICLE_SOURCES=data.RUS_ARTICLE_SOURCES;
+  RUS_SOURCE_REVIEW_DATE=data.RUS_SOURCE_REVIEW_DATE;
+  RUS_CLINICAL_REGISTRY=data.RUS_CLINICAL_REGISTRY;
+ });
+ return clinicalContentPromise;
+}
 const app = document.getElementById('app-content');
 const breadcrumb = document.getElementById('breadcrumb-current');
 const sidebar = document.getElementById('sidebar');
@@ -421,7 +431,7 @@ document.addEventListener('click',event=>{
   const nav=event.target.closest('[data-route]');
   if(nav){event.preventDefault();navigate(nav.dataset.route);}
 });
-window.addEventListener('hashchange',()=>{if(!location.pathname.endsWith('/clinical.html'))render();});
+window.addEventListener('hashchange',async()=>{if(!location.pathname.endsWith('/clinical.html')){if(routeName()==='clinical')await loadClinicalContent();render();}});
 function closeSidebar(){sidebar.classList.remove('open');document.body.classList.remove('sidebar-open');document.getElementById('mobile-menu').setAttribute('aria-expanded','false');}
 function toggleSidebar(){const open=!sidebar.classList.contains('open');sidebar.classList.toggle('open',open);document.body.classList.toggle('sidebar-open',open);document.getElementById('mobile-menu').setAttribute('aria-expanded',String(open));}
 document.getElementById('mobile-menu').addEventListener('click',toggleSidebar);
@@ -429,4 +439,4 @@ document.getElementById('sidebar-close')?.addEventListener('click',closeSidebar)
 document.addEventListener('click',event=>{if(document.body.classList.contains('sidebar-open')&&!sidebar.contains(event.target)&&!event.target.closest('#mobile-menu'))closeSidebar();});
 document.addEventListener('keydown',event=>{if(event.key==='Escape')closeSidebar();});
 document.querySelectorAll('[data-icon]').forEach(node=>node.innerHTML=icon(node.dataset.icon));
-try{render();}catch(error){console.error('NeuroDesk initialization failed:',error);app.innerHTML='<section class="startup-fallback"><h1>Не удалось загрузить раздел</h1><p>Основные страницы доступны по навигации. Обнови страницу; если ошибка повторяется, проверь подключение к файлам сайта.</p><a href="./index.html#overview">Вернуться на главную</a></section>';}
+try{if(routeName()==='clinical')await loadClinicalContent();render();}catch(error){console.error('NeuroDesk initialization failed:',error);app.innerHTML='<section class="startup-fallback"><h1>Не удалось загрузить раздел</h1><p>Основные страницы доступны по навигации. Обнови страницу; если ошибка повторяется, проверь подключение к файлам сайта.</p><a href="./index.html#overview">Вернуться на главную</a></section>';}
