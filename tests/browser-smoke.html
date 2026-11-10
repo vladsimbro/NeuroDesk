@@ -96,6 +96,52 @@
   fill('alertness','4');fill('orientation','2');fill('attention','2');fill('change','4');
   cdoc.getElementById('calc-form').dispatchEvent(new cwin.Event('submit',{bubbles:true,cancelable:true}));
   assert(cdoc.querySelector('.calc-result-value')?.textContent.includes('12 / 12'),'4AT totals all four domains');
+
+  const examples={
+   score2:{age:'60',sex:'male',region:'moderate',smoker:'no',sbp:'120',total:'6',hdl:'1,3',ascvd:'no',diabetes:'no',ckd:'no'},
+   gcs:{eye:'4',verbal:'5',motor:'6',pupils:'NT'},
+   mrs:{grade:'3'},
+   abcd2:{age:'60',pressure:'yes',symptom:'weakness',duration:'60',diabetes:'yes'},
+   ich:{gcs:'3',age:'80',volume:'30',ivh:'yes',infratentorial:'yes'},
+   fourat:{alertness:'4',orientation:'2',attention:'2',change:'4'},
+   rass:{grade:'-2'},
+   nrs:{value:'7',period:'Сейчас'},
+   mrc:Object.fromEntries(Array.from({length:12},(_,i)=>['m'+i,'5'])),
+   map:{sbp:'120',dbp:'80'},
+   bmi:{weight:'81',height:'180'}
+  };
+  for(const [id,values] of Object.entries(examples)){
+   const entry=cdoc.querySelector('[data-tool="'+id+'"]');
+   assert(!!entry,'Calculator '+id+' listed in search');
+   entry.click();
+   const form=cdoc.getElementById('calc-form');
+   assert(!!form,'Calculator '+id+' opened');
+   for(const [key,value] of Object.entries(values))fill(key,value);
+   form.dispatchEvent(new cwin.Event('submit',{bubbles:true,cancelable:true}));
+   const result=cdoc.getElementById('calc-result');
+   assert(!!result.querySelector('.calc-result-value'),'Calculator '+id+' calculates result');
+   assert(!!result.querySelector('.calc-result-summary'),'Calculator '+id+' explains meaning');
+   assert(result.querySelectorAll('.calc-breakdown-row').length>=1,'Calculator '+id+' breaks down result');
+   assert(!!result.querySelector('.calc-result-caution'),'Calculator '+id+' provides cautions');
+   assert(!!cdoc.querySelector('.calc-help-panel'),'Calculator '+id+' includes assessment guide');
+   assert(!!result.querySelector('#calc-copy'),'Calculator '+id+' supports copying full interpretation');
+  }
+  cdoc.querySelector('[data-tool="mrs"]').click();
+  fill('grade','3');
+  cdoc.getElementById('calc-form').dispatchEvent(new cwin.Event('submit',{bubbles:true,cancelable:true}));
+  assert(cdoc.getElementById('calc-result').textContent.includes('ходить без помощи'),'Rankin 3 explicitly describes walking');
+  fill('grade','4');
+  cdoc.querySelector('[name="grade"]').dispatchEvent(new cwin.Event('change',{bubbles:true}));
+  assert(!cdoc.querySelector('.calc-result-value'),'Changing response invalidates stale interpretation');
+  cdoc.getElementById('calc-form').dispatchEvent(new cwin.Event('submit',{bubbles:true,cancelable:true}));
+  assert(cdoc.getElementById('calc-result').textContent.includes('не способен ходить'),'Rankin 4 explains need for support');
+  cdoc.getElementById('calc-form').reset();
+  await Promise.resolve();
+  assert(!cdoc.querySelector('.calc-result-value'),'Form reset clears displayed result');
+  cdoc.querySelector('[data-tool="gcs"]').click();
+  fill('eye','4');fill('verbal','5');fill('motor','6');fill('pupils','NT');
+  cdoc.getElementById('calc-form').dispatchEvent(new cwin.Event('submit',{bubbles:true,cancelable:true}));
+  assert(cdoc.getElementById('calc-result').textContent.includes('GCS-P не вычисляется'),'Missing pupil data keeps GCS, does not invent GCS-P');
   calcs.frame.remove();
 
   const mobileCalc=await loadFrame('../calculators.html?tool=abcd2',390,844);
