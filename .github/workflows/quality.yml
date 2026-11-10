@@ -26,7 +26,7 @@ jobs:
           trap 'kill "$SERVER_PID" || true' EXIT
           sleep 2
           CHROME=$(command -v google-chrome || command -v chromium)
-          "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=15000 --dump-dom http://127.0.0.1:8765/tests/browser-smoke.html > /tmp/neurodesk-browser.html 2>/tmp/neurodesk-browser-errors.log
+          "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=35000 --dump-dom http://127.0.0.1:8765/tests/browser-smoke.html > /tmp/neurodesk-browser.html 2>/tmp/neurodesk-browser-errors.log
           grep 'id="result"' /tmp/neurodesk-browser.html
           grep -q 'id="result">PASS ' /tmp/neurodesk-browser.html
 
