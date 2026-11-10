@@ -97,7 +97,7 @@ export function calculateABCD2(input = {}) {
   if (!Number.isFinite(age) || age < 0 || age > 120 || !Number.isFinite(sbp) || sbp < 50 || sbp > 300 || !Number.isFinite(dbp) || dbp < 30 || dbp > 200 || sbp <= dbp) return { status: 'invalid', total: null };
   const featurePoints = { unilateral_weakness: 2, speech_without_weakness: 1, other: 0 };
   const durationPoints = { 'lt10': 0, '10to59': 1, 'ge60': 2 };
-  if (!(input.features in featurePoints) || !(input.duration in durationPoints) || !['yes','no'].includes(input.diabetes)) return { status: 'invalid', total: null };
+  if (!Object.hasOwn(featurePoints, input.features) || !Object.hasOwn(durationPoints, input.duration) || !['yes','no'].includes(input.diabetes)) return { status: 'invalid', total: null };
   const components = {
     age: age >= 60 ? 1 : 0,
     bloodPressure: sbp >= 140 || dbp >= 90 ? 1 : 0,
