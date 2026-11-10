@@ -18,7 +18,7 @@ test('20 new original reviews extend 31 unchanged articles to 51 unique entries'
  assert.equal(all.length,51);
  assert.equal(new Set(all.map(x=>x.id)).size,51);
  assert.equal(new Set(all.map(x=>x.title)).size,51);
- assert.equal(new Set(Object.keys(RUS_ARTICLE_SOURCES)).size,51);
+ assert.equal(new Set(Object.keys(RUS_ARTICLE_SOURCES)).size,75);
  for(const article of all)assert.ok(Object.hasOwn(RUS_ARTICLE_SOURCES,article.id),article.id+' source scope not mapped');
 });
 test('every new article contains specific clinical navigation, differential and safety content',()=>{
@@ -66,6 +66,6 @@ test('the clinical module is lazy-loaded, while ICD and calculator logic stay in
  assert.match(app,/for\(const article of data\.CLINICAL_NEW_ARTICLES\)/);
  assert.match(app,/loadClinicalContent\(\)/);
  const index=await readFile(new URL('../index.html',import.meta.url),'utf8');
- assert.match(index,/51 клиническая статья/);
- assert.match(app,/51 клиническая статья/);
+ assert.match(index,/75 клинических статей/);
+ assert.match(app,/75 клинических статей/);
 });
