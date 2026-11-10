@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Russian ICD-10 reference with code and diagnosis search.",
   "scripts": {
-    "test": "node --check assets/js/app.js && node --check assets/js/clinical-evidence.js && node --check assets/js/clinical-expansions-a.js && node --check assets/js/clinical-expansions-b.js && node --check assets/js/clinical-expansions-c.js && node --check assets/js/icd-core.js && node --check assets/js/icd-enhancements.js && node --check sw-icd.js && node --check assets/js/icd.js && node --check assets/js/calculator-models.js && node --check assets/js/calculator-guides.js && node --check assets/js/calculators.js && node --test tests/*.test.mjs"
+    "test": "node --check assets/js/app.js && node --check assets/js/clinical-evidence.js && node --check assets/js/clinical-article-factory.js && node --check assets/js/clinical-content.js && node --check assets/js/clinical-new-a.js && node --check assets/js/clinical-new-b.js && node --check assets/js/clinical-new-c.js && node --check assets/js/clinical-new-d.js && node --check assets/js/clinical-expansions-a.js && node --check assets/js/clinical-expansions-b.js && node --check assets/js/clinical-expansions-c.js && node --check assets/js/icd-core.js && node --check assets/js/icd-enhancements.js && node --check sw-icd.js && node --check assets/js/icd.js && node --check assets/js/calculator-models.js && node --check assets/js/calculator-guides.js && node --check assets/js/calculators.js && node --test tests/*.test.mjs"
   },
   "engines": {
     "node": ">=20"
