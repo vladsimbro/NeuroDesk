@@ -1,4 +1,4 @@
-import { GCS_COMPONENTS, calculateGCS, formatGCSResult, MRS_OPTIONS, GOS_OPTIONS, RASS_OPTIONS, calculateMRS, calculateGOS, calculateRASS } from './calculators.js';
+import { GCS_COMPONENTS, calculateGCS, formatGCSResult, MRS_OPTIONS, GOS_OPTIONS, RASS_OPTIONS, calculateMRS, calculateGOS, calculateRASS, calculateBMI, calculateBSA, calculateMAP, calculateABCD2 } from './calculators.js';
 import { officialResources, scaleCatalog } from './resources.js';
 import { initBrainScene, disposeBrainScene } from './brain-scene.js';
 
@@ -96,7 +96,47 @@ function renderCalculatorCatalog(){
  renderScaleCard('rass','Шкала возбуждения-седации Ричмонда (RASS)','Richmond Agitation-Sedation Scale · диапазон от +4 до −5',RASS_OPTIONS,'https://cr.minzdrav.gov.ru/view-cr/687_3','КР Минздрава РФ · приложение Г6','Оцени последовательно: наблюдение за пациентом, ответ на голос, затем при отсутствии реакции на голос — ответ на физическую стимуляцию. Выбирай только фактически наблюдавшуюся реакцию.')+
  renderScaleCard('mrs','Модифицированная шкала Рэнкина (mRS)','Modified Rankin Scale · функциональная независимость',MRS_OPTIONS,'https://cr.minzdrav.gov.ru/view-cr/732_1','КР Минздрава РФ · приложение Г5','Оценивается общий уровень функциональной независимости и потребность в помощи. Для сопоставимых оценок используй единый подход к интервью и учитывай преморбидный уровень.')+
  renderScaleCard('gos','Шкала исходов Глазго (GOS)','Glasgow Outcome Scale · исход повреждения головного мозга',GOS_OPTIONS,'https://cr.minzdrav.gov.ru/view-cr/732_1','КР Минздрава РФ · приложение Г6','Пятиуровневая шкала исходов. Для формализованной оценки и исследований следуй стандартизированному интервью и протоколу оценки, а не только краткому описанию категории.')+
- '</div>';
+ '</div>'+renderAdditionalCalculators();
+}
+function renderAdditionalCalculators(){
+ return '<div class="utility-calculator-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,310px),1fr));gap:16px;margin-top:18px">'+
+ '<section class="card calc-card" id="abcd2-tool"><div class="calc-title"><div class="metric-icon">'+icon('activity',21)+'</div><div><h2>ABCD²</h2><p>Оценка риска инсульта после ТИА · 0–7 баллов</p></div></div><p class="scale-tool-note">Заполняй по клинической картине эпизода, расценённого как ТИА. Шкала не исключает инсульт при низком балле и не должна быть единственным основанием для маршрутизации или отсрочки обследования.</p><div class="form-grid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px"><label>Возраст, лет<input class="filter-input" type="number" min="0" max="120" id="abcd-age"></label><label>САД, мм рт. ст.<input class="filter-input" type="number" min="50" max="300" id="abcd-sbp"></label><label>ДАД, мм рт. ст.<input class="filter-input" type="number" min="30" max="200" id="abcd-dbp"></label><label>Клинические признаки<select class="filter-input" id="abcd-features"><option value="">Выбрать…</option><option value="unilateral_weakness">Односторонняя слабость</option><option value="speech_without_weakness">Нарушение речи без слабости</option><option value="other">Другие симптомы</option></select></label><label>Длительность симптомов<select class="filter-input" id="abcd-duration"><option value="">Выбрать…</option><option value="lt10">Менее 10 минут</option><option value="10to59">10–59 минут</option><option value="ge60">60 минут и более</option></select></label><label>Сахарный диабет<select class="filter-input" id="abcd-diabetes"><option value="">Выбрать…</option><option value="yes">Да</option><option value="no">Нет</option></select></label></div><div class="scale-tool-footer"><button class="button button-outline" type="button" data-reset-abcd>Сбросить</button><span class="soft-chip" id="abcd-result" aria-live="polite">Заполни все поля</span></div><div class="source-citation">Источник: Johnston SC et al. Lancet. 2007;369:283–292. <a href="https://pubmed.ncbi.nlm.nih.gov/17258668/" target="_blank" rel="noopener noreferrer">PubMed · PMID 17258668 ↗</a>. Клинические рекомендации РФ по ишемическому инсульту/ТИА: <a href="https://cr.minzdrav.gov.ru/preview-cr/814_1" target="_blank" rel="noopener noreferrer">ID 814_1 ↗</a>. Результат не заменяет срочную клиническую оценку.</div></section>'+
+ '<section class="card calc-card"><div class="calc-title"><div class="metric-icon">'+icon('sliders',21)+'</div><div><h2>Антропометрические расчёты</h2><p>ИМТ и площадь поверхности тела</p></div></div><div class="form-grid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px"><label>Рост, см<input class="filter-input" type="number" min="50" max="250" step="0.1" id="body-height"></label><label>Масса, кг<input class="filter-input" type="number" min="1" max="500" step="0.1" id="body-weight"></label></div><div class="scale-tool-result" id="body-result" aria-live="polite">Введи рост и массу тела.</div><div class="source-citation">ИМТ = масса (кг) / рост² (м). ИМТ — скрининговый показатель, не диагностирует нутритивное состояние сам по себе. ППТ: формула Mosteller, Mosteller RD. N Engl J Med. 1987;317:1098. <a href="https://pubmed.ncbi.nlm.nih.gov/3657876/" target="_blank" rel="noopener noreferrer">PubMed ↗</a>.</div></section>'+
+ '<section class="card calc-card"><div class="calc-title"><div class="metric-icon">'+icon('activity',21)+'</div><div><h2>Среднее АД (MAP)</h2><p>Приближённая оценка по САД и ДАД</p></div></div><div class="form-grid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px"><label>САД, мм рт. ст.<input class="filter-input" type="number" min="50" max="350" id="map-sbp"></label><label>ДАД, мм рт. ст.<input class="filter-input" type="number" min="30" max="250" id="map-dbp"></label></div><div class="scale-tool-result" id="map-result" aria-live="polite">Введи оба значения АД.</div><div class="source-citation">Расчётная формула: ДАД + (САД − ДАД) / 3. Приближение для обычной частоты сердечных сокращений; не равно прямому инвазивному измерению и может быть неточным при нарушениях ритма и изменённой гемодинамике. <a href="https://www.ncbi.nlm.nih.gov/books/NBK538226/" target="_blank" rel="noopener noreferrer">NCBI Bookshelf ↗</a>.</div></section></div>';
+}
+function bindDerivedCalculators(){
+ const byId=id=>document.getElementById(id);
+ const read=id=>byId(id)?.value??'';
+ const updateABCD=()=>{
+  const result=calculateABCD2({age:read('abcd-age'),systolic:read('abcd-sbp'),diastolic:read('abcd-dbp'),features:read('abcd-features'),duration:read('abcd-duration'),diabetes:read('abcd-diabetes')});
+  const node=byId('abcd-result');if(!node)return;
+  node.textContent=result.status==='complete'?'ABCD²: '+result.total+'/7 баллов':result.status==='invalid'?'Проверь введённые значения':'Заполни все поля';
+  node.classList.toggle('ready',result.status==='complete');
+ };
+ ['abcd-age','abcd-sbp','abcd-dbp','abcd-features','abcd-duration','abcd-diabetes'].forEach(id=>byId(id)?.addEventListener('input',updateABCD));
+ byId('abcd-diabetes')?.addEventListener('change',updateABCD);
+ byId('abcd-features')?.addEventListener('change',updateABCD);
+ byId('abcd-duration')?.addEventListener('change',updateABCD);
+ byId('abcd-age')?.addEventListener('change',updateABCD);
+ byId('abcd-sbp')?.addEventListener('change',updateABCD);
+ byId('abcd-dbp')?.addEventListener('change',updateABCD);
+ byId('abcd-result')?.classList.remove('ready');
+ byId('abcd-tool')?.querySelector('[data-reset-abcd]')?.addEventListener('click',()=>{['abcd-age','abcd-sbp','abcd-dbp','abcd-features','abcd-duration','abcd-diabetes'].forEach(id=>{if(byId(id))byId(id).value='';});updateABCD();});
+ const updateBody=()=>{
+  const h=read('body-height'),w=read('body-weight'),node=byId('body-result');if(!node)return;
+  if(!h||!w){node.textContent='Введи рост и массу тела.';return;}
+  const bmi=calculateBMI(w,h),bsa=calculateBSA(w,h);
+  if(bmi.status!=='complete'||bsa.status!=='complete'){node.textContent='Проверь рост и массу: значения вне допустимого диапазона.';return;}
+  node.innerHTML='<strong>ИМТ: '+bmi.value.toFixed(1)+' кг/м²</strong><p>ППТ (Mosteller): '+bsa.value.toFixed(2)+' м²</p>';
+ };
+ ['body-height','body-weight'].forEach(id=>byId(id)?.addEventListener('input',updateBody));
+ const updateMAP=()=>{
+  const node=byId('map-result');if(!node)return;
+  if(!read('map-sbp')||!read('map-dbp')){node.textContent='Введи оба значения АД.';return;}
+  const result=calculateMAP(read('map-sbp'),read('map-dbp'));
+  node.textContent=result.status==='complete'?'Расчётное среднее АД: '+result.value.toFixed(1)+' мм рт. ст.':'Проверь значения: САД должно быть выше ДАД.';
+ };
+ ['map-sbp','map-dbp'].forEach(id=>byId(id)?.addEventListener('input',updateMAP));
 }
 function bindCalculatorFilter(){
  const input=document.getElementById('calculator-filter');if(!input)return;
@@ -253,7 +293,7 @@ function render() {
   setActiveNav(route);
   breadcrumb.textContent = page.title;
   app.innerHTML = page.render();
-  if (route === 'calculators') { bindGCS(); bindScaleTools(); bindCalculatorFilter(); }
+  if (route === 'calculators') { bindGCS(); bindScaleTools(); bindCalculatorFilter(); bindDerivedCalculators(); }
   if (route === 'handbook') bindResourceFilter();
   if (route === 'anatomy' || route === 'overview') initBrainScene('brain-canvas');
   sidebar.classList.remove('open');
