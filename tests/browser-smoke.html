@@ -12,11 +12,11 @@
   frame.style.width=width+'px';frame.style.height=height+'px';
   frame.onload=()=>resolve({frame,doc:frame.contentDocument,win:frame.contentWindow});
   frame.onerror=()=>reject(Error('Frame failed: '+url));
-  document.body.appendChild(frame);frame.src=url;
+  frame.src=url;document.body.appendChild(frame);
  });
  try{
   const home=await loadFrame('../index.html');
-  assert(home.doc.title==='Главная — NeuroDesk','Home JavaScript rendered');
+  assert(home.doc.title==='Главная — NeuroDesk','Home JavaScript rendered (title='+home.doc.title+')');
   assert(home.doc.querySelectorAll('.nd-home-gateway').length===2,'Two main sections render');
   assert(home.doc.querySelectorAll('.nd-home-topic-grid a').length===6,'Six real quick article links render');
   const gateways=home.doc.querySelector('.nd-home-gateways');
