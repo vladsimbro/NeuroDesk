@@ -251,3 +251,16 @@ body.nd-reader-open{overflow:hidden}
 }
 
 .nd-clinical-loading{min-height:48vh;display:flex;align-items:center;justify-content:center;text-align:center;color:#68818a;font:650 14px/1.6 'DM Sans',sans-serif;padding:25px}
+
+/* Source links intentionally lead to the confirmed Ministry information page,
+   while the direct clinical recommendation portal remains under maintenance. */
+.nd-article-source-actions{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;margin-top:9px}
+.nd-article-source-actions a{margin:0;display:inline-flex;font-size:11px;line-height:1.5;overflow-wrap:anywhere}
+.nd-article-source-actions button{display:inline-flex;align-items:center;justify-content:center;border:1px solid #cddedb;background:#f5faf8;color:#226c65;font:700 11px/1.4 'DM Sans',sans-serif;border-radius:8px;cursor:pointer;padding:8px 11px;max-width:100%;text-align:left}
+.nd-article-source-actions button:hover,.nd-article-source-actions button:focus-visible{border-color:#519386;background:#e8f5f1}
+.nd-article-source-entry strong{overflow-wrap:break-word}
+@media(max-width:560px){
+ .nd-article-source-actions{flex-direction:column;align-items:stretch}
+ .nd-article-source-actions a{display:block}
+ .nd-article-source-actions button{align-self:flex-start}
+}
