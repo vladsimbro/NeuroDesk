@@ -67,3 +67,43 @@ function scoreFromOptions(value,options){
 export const calculateMRS=value=>scoreFromOptions(value,MRS_OPTIONS);
 export const calculateGOS=value=>scoreFromOptions(value,GOS_OPTIONS);
 export const calculateRASS=value=>scoreFromOptions(value,RASS_OPTIONS);
+
+
+// General-purpose derived calculations. These are arithmetic aids, not treatment rules.
+function finitePositive(value) {
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+export function calculateBMI(weightKg, heightCm) {
+  const weight = finitePositive(weightKg), height = finitePositive(heightCm);
+  if (!weight || !height || height < 50 || height > 250 || weight > 500) return { status: 'invalid', value: null };
+  const meters = height / 100;
+  return { status: 'complete', value: weight / (meters * meters), category: weight / (meters * meters) };
+}
+export function calculateBSA(weightKg, heightCm) {
+  const weight = finitePositive(weightKg), height = finitePositive(heightCm);
+  if (!weight || !height || height < 50 || height > 250 || weight > 500) return { status: 'invalid', value: null };
+  return { status: 'complete', value: Math.sqrt((height * weight) / 3600), formula: 'Mosteller' };
+}
+export function calculateMAP(systolic, diastolic) {
+  const sbp = finitePositive(systolic), dbp = finitePositive(diastolic);
+  if (!sbp || !dbp || sbp > 350 || dbp > 250 || sbp <= dbp) return { status: 'invalid', value: null };
+  return { status: 'complete', value: dbp + (sbp - dbp) / 3 };
+}
+export function calculateABCD2(input = {}) {
+  const required = ['age','systolic','diastolic','features','duration','diabetes'];
+  if (required.some(key => input[key] === undefined || input[key] === null || input[key] === '')) return { status: 'incomplete', total: null };
+  const age = Number(input.age), sbp = Number(input.systolic), dbp = Number(input.diastolic);
+  if (!Number.isFinite(age) || age < 0 || age > 120 || !Number.isFinite(sbp) || sbp < 50 || sbp > 300 || !Number.isFinite(dbp) || dbp < 30 || dbp > 200 || sbp <= dbp) return { status: 'invalid', total: null };
+  const featurePoints = { unilateral_weakness: 2, speech_without_weakness: 1, other: 0 };
+  const durationPoints = { 'lt10': 0, '10to59': 1, 'ge60': 2 };
+  if (!(input.features in featurePoints) || !(input.duration in durationPoints) || !['yes','no'].includes(input.diabetes)) return { status: 'invalid', total: null };
+  const components = {
+    age: age >= 60 ? 1 : 0,
+    bloodPressure: sbp >= 140 || dbp >= 90 ? 1 : 0,
+    clinicalFeatures: featurePoints[input.features],
+    duration: durationPoints[input.duration],
+    diabetes: input.diabetes === 'yes' ? 1 : 0
+  };
+  return { status: 'complete', total: Object.values(components).reduce((a,b)=>a+b,0), components, maximum: 7 };
+}
