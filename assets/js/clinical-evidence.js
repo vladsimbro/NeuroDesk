@@ -1,25 +1,28 @@
 // Ссылки исключительно на российский Рубрикатор клинических рекомендаций.
 // Статус и редакция конкретной КР могут измениться: перед практическим применением перепроверь паспорт.
-export const RUS_CLINICAL_REGISTRY = 'https://cr.minzdrav.gov.ru/clin-rec';
+// Official Ministry information page: verified accessible 10.11.2026.
+// The document portal itself displays a maintenance notice; /clin-rec and /view-cr/... return 404.
+export const RUS_CLINICAL_REGISTRY = 'https://minzdrav.gov.ru/special/smartphone_apps_rubrikator_kr';
+export const RUS_CLINICAL_PORTAL = 'https://cr.minzdrav.gov.ru/';
 export const RUS_CLINICAL_DOCUMENTS = Object.freeze({
- migraine:{id:'295_4',name:'Мигрень',year:2024,age:'Взрослые',url:'https://cr.minzdrav.gov.ru/preview-cr/295_4',verifiedLink:true},
+ migraine:{id:'295_4',name:'Мигрень',year:2024,age:'Взрослые',url:RUS_CLINICAL_REGISTRY,verifiedLink:false},
  tension:{id:'162_3',name:'Головная боль напряжения',year:2024,age:'Взрослые',url:RUS_CLINICAL_REGISTRY,verifiedLink:false},
- stroke:{id:'814_1',name:'Ишемический инсульт и транзиторная ишемическая атака',year:2024,age:'Взрослые и дети',url:'https://cr.minzdrav.gov.ru/preview-cr/814_1',verifiedLink:true},
+ stroke:{id:'814_1',name:'Ишемический инсульт и транзиторная ишемическая атака',year:2024,age:'Взрослые и дети',url:RUS_CLINICAL_REGISTRY,verifiedLink:false},
  hemorrhage:{id:'523_3',name:'Геморрагический инсульт',year:2025,age:'Взрослые',url:RUS_CLINICAL_REGISTRY,verifiedLink:false},
  epilepsy:{id:'741_1',name:'Эпилепсия и эпилептический статус у взрослых и детей',year:2022,age:'Взрослые и дети',url:RUS_CLINICAL_REGISTRY,verifiedLink:false},
  parkinson:{id:'716_1',name:'Болезнь Паркинсона, вторичный паркинсонизм и другие заболевания с синдромом паркинсонизма',year:2022,age:'Взрослые',url:RUS_CLINICAL_REGISTRY,verifiedLink:false},
  ms:{id:'739_2',name:'Рассеянный склероз',year:2025,age:'Взрослые и дети',url:RUS_CLINICAL_REGISTRY,verifiedLink:false},
- delirium:{id:'742_2',name:'Делирий у лиц пожилого и старческого возраста',year:2026,age:'Взрослые пожилого возраста',url:'https://cr.minzdrav.gov.ru/view-cr/742_2',verifiedLink:true},
- dementia:{id:'617_5',name:'Когнитивные расстройства у лиц пожилого и старческого возраста',year:2024,age:'Взрослые пожилого возраста',url:'https://cr.minzdrav.gov.ru/view-cr/617_5',verifiedLink:true},
+ delirium:{id:'742_2',name:'Делирий у лиц пожилого и старческого возраста',year:2026,age:'Взрослые пожилого возраста',url:RUS_CLINICAL_REGISTRY,verifiedLink:false},
+ dementia:{id:'617_5',name:'Когнитивные расстройства у лиц пожилого и старческого возраста',year:2024,age:'Взрослые пожилого возраста',url:RUS_CLINICAL_REGISTRY,verifiedLink:false},
  cranial:{id:'895_1',name:'Краниальные мононейропатии у взрослых',year:2024,age:'Взрослые',url:RUS_CLINICAL_REGISTRY,verifiedLink:false},
- myasthenia:{id:'165_2',name:'Миастения',year:2025,age:'Взрослые и дети',url:'https://cr.minzdrav.gov.ru/preview-cr/165_2',verifiedLink:true},
+ myasthenia:{id:'165_2',name:'Миастения',year:2025,age:'Взрослые и дети',url:RUS_CLINICAL_REGISTRY,verifiedLink:false},
  radiculopathy:{id:'777_1',name:'Дискогенная пояснично-крестцовая радикулопатия',year:2023,age:'Взрослые',url:RUS_CLINICAL_REGISTRY,verifiedLink:false},
  degenerative:{id:'826_1',name:'Дегенеративные заболевания позвоночника',year:2024,age:'Взрослые и дети',url:RUS_CLINICAL_REGISTRY,verifiedLink:false},
- diabetes:{id:'290_2',name:'Сахарный диабет 2 типа у взрослых (раздел о диабетической нейропатии)',year:2022,age:'Взрослые',url:'https://cr.minzdrav.gov.ru/view-cr/290_2',verifiedLink:true},
+ diabetes:{id:'290_2',name:'Сахарный диабет 2 типа у взрослых (раздел о диабетической нейропатии)',year:2022,age:'Взрослые',url:RUS_CLINICAL_REGISTRY,verifiedLink:false},
  toxic:{id:'998_1',name:'Токсические и метаболические поражения нервной системы',year:2025,age:'Взрослые',url:RUS_CLINICAL_REGISTRY,verifiedLink:false},
  inflammatory:{id:'358_3',name:'Хроническая воспалительная демиелинизирующая полирадикулонейропатия',year:2024,age:'Дети',url:RUS_CLINICAL_REGISTRY,verifiedLink:false},
- amyloid:{id:'1077_1',name:'Транстиретиновая семейная амилоидная полинейропатия',year:2026,age:'Взрослые',url:'https://cr.minzdrav.gov.ru/view-cr/1077_1',verifiedLink:true},
- tickEncephalitis:{id:'567_2',name:'Клещевой вирусный энцефалит у взрослых',year:2025,age:'Взрослые',url:'https://cr.minzdrav.gov.ru/view-cr/567_2',verifiedLink:true}
+ amyloid:{id:'1077_1',name:'Транстиретиновая семейная амилоидная полинейропатия',year:2026,age:'Взрослые',url:RUS_CLINICAL_REGISTRY,verifiedLink:false},
+ tickEncephalitis:{id:'567_2',name:'Клещевой вирусный энцефалит у взрослых',year:2025,age:'Взрослые',url:RUS_CLINICAL_REGISTRY,verifiedLink:false}
 });
 const link=(doc,kind,scope)=>({doc,kind,scope});
 export const RUS_ARTICLE_SOURCES=Object.freeze({
@@ -54,5 +57,29 @@ export const RUS_ARTICLE_SOURCES=Object.freeze({
  ptosis:[link('myasthenia','смежная','Флюктуирующий птоз при миастении'),link('cranial','смежная','Мононейропатии черепных нервов у взрослых')],
  gait:[link('parkinson','смежная','Паркинсоническая походка'),link('dementia','смежная','Когнитивный и функциональный вклад у пожилых')],
  dysphagia:[link('stroke','смежная','Дисфагия в контексте инсульта'),link('myasthenia','смежная','Бульбарные проявления миастении')]
+});
+// Additional original reviews. Empty mappings deliberately mean that no suitable
+// official Russian recommendation has been confirmed for the complete topic.
+Object.assign(RUS_ARTICLE_SOURCES,{
+ bppv:[],
+ 'vestibular-neuritis':[link('stroke','смежная','Только исключение сосудистой причины острого вестибулярного синдрома')],
+ meniere:[],
+ 'vestibular-migraine':[link('migraine','смежная','Мигрень у взрослых: КР не охватывает все вестибулярные синдромы')],
+ 'medication-overuse-headache':[link('migraine','смежная','Частое применение препаратов при мигрени; не все варианты вторичной боли')],
+ 'subarachnoid-hemorrhage':[link('hemorrhage','смежная','Отдельное кровоизлияние; конкретный раздел КР необходимо уточнять')],
+ 'intracerebral-hemorrhage':[link('hemorrhage','по заболеванию','Геморрагический инсульт; проверить редакцию и локализацию')],
+ 'cerebral-venous-thrombosis':[],
+ 'guillain-barre':[],
+ 'cidp-adult':[],
+ 'carpal-tunnel':[],
+ 'ulnar-neuropathy':[],
+ 'peroneal-neuropathy':[],
+ 'restless-legs':[],
+ 'obstructive-sleep-apnea':[],
+ 'essential-tremor':[],
+ dystonia:[],
+ huntington:[],
+ 'normal-pressure-hydrocephalus':[link('dementia','смежная','Только когнитивный компонент у пожилых; не КР по гидроцефалии')],
+ concussion:[]
 });
 export const RUS_SOURCE_REVIEW_DATE='10.11.2026';
