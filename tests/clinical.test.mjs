@@ -125,7 +125,7 @@ test('all 31 clinical materials remain present with complete article structure',
 test('clinical recommendations are linked to Russian official source passports', async () => {
   const evidence=await readFile(new URL('assets/js/clinical-evidence.js',root),'utf8');
   assert.match(app,/Российские клинические рекомендации/);
-  assert.match(app,/https:\/\/minzdrav\.gov\.ru\/smartphone_apps_rubrikator_kr/);
+  assert.match(app,/https:\/\/minzdrav\.gov\.ru\/special\/smartphone_apps_rubrikator_kr/);
   assert.doesNotMatch(app,/smartphone_apps_rubrikator_kr\./);
   assert.match(evidence,/https:\/\/cr\.minzdrav\.gov\.ru\//);
   for (const id of ['814_1','295_4','165_2','742_2','617_5','741_1','290_2','739_2']) {
