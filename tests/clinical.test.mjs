@@ -28,7 +28,7 @@ test('the home page renders meaningful content even with JavaScript disabled', (
   assert.match(homeMarkup, /nd-home-gateways/);
   assert.match(homeMarkup, /nd-home-topic-grid/);
   assert.match(homeMarkup, /МКБ-10/);
-  assert.match(homeMarkup, /Клинический справочник/);
+  assert.match(homeMarkup, /КЛИНИЧЕСКИЙ СПРАВОЧНИК/i);
   assert.doesNotMatch(homeMarkup, /home-welcome-art|home-orbit|home-module-watermark/);
   assert.match(home, /id="app-content" aria-live="polite"/);
 });
