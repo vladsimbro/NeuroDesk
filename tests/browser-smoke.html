@@ -114,6 +114,19 @@
   assert(doc.querySelectorAll('.nd-article-section').length>=7,'Article without direct guideline still has full review');
   assert(doc.querySelector('.nd-article-source-warning')?.textContent.includes('не подтверждена'),'Unverified guideline is not presented as official');
   doc.getElementById('clinical-close-all').click();
+  doc.querySelector('[data-clinical-open="bppv"]').click();
+  assert(doc.querySelector('.nd-article-head h2')?.textContent.includes('позиционное головокружение'),'New BPPV article opens');
+  assert(doc.querySelectorAll('.nd-article-section').length>=4,'New BPPV article contains detailed unique sections');
+  assert(doc.querySelector('.nd-article-source-warning')?.textContent.includes('не подтверждена'),'Unverified guideline stays explicitly unverified in new article');
+  doc.getElementById('clinical-close-all').click();
+  doc.querySelector('[data-clinical-open="intracerebral-hemorrhage"]').click();
+  assert(doc.querySelector('.nd-article-source-entry')?.textContent.includes('523_3'),'New hemorrhage article links to Russian document ID');
+  const copyGuideline=doc.querySelector('[data-clinical-copy-id="523_3"]');
+  assert(!!copyGuideline,'Guideline ID copy control is present');
+  copyGuideline.click();
+  await waitUntil(()=>copyGuideline.textContent.includes('523_3')&&/скопирован|для поиска/.test(copyGuideline.textContent),'copy guideline ID confirmation');
+  assert(doc.querySelector('.nd-article-source-actions a')?.href.startsWith('https://minzdrav.gov.ru/special/'),'New article guideline link uses accessible Ministry hub');
+  doc.getElementById('clinical-close-all').click();
 
   const search=doc.getElementById('clinical-query');
   search.value='миастения';search.dispatchEvent(new win.Event('input',{bubbles:true}));
