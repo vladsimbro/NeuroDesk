@@ -296,7 +296,7 @@ function bindClinical(){
  let category='Все',selected=new URLSearchParams(location.search).get('article');
  if(selected&&!CLINICAL_LIBRARY.some(item=>item.id===selected))selected=null;
  const russianGuidelines={
-  headache:[{label:'КР Минздрава России «Мигрень», взрослые · 2024 · ID 295_4 · действует',url:'https://cr.minzdrav.gov.ru/preview-cr/295_4'}],
+  headache:[{label:'КР Минздрава России «Мигрень», взрослые · 2024 · ID 295_4 · действует',url:'https://cr.minzdrav.gov.ru/preview-cr/295_4'},{label:'КР Минздрава России «Головная боль напряжения», дети · 2024 · ID 810_1',url:'https://cr.minzdrav.gov.ru/view-cr/810_1'}],
   stroke:[{label:'КР Минздрава России «Ишемический инсульт и транзиторная ишемическая атака» · 2024 · ID 814_1 · действует',url:'https://cr.minzdrav.gov.ru/preview-cr/814_1'}],
   tia:[{label:'КР Минздрава России «Ишемический инсульт и транзиторная ишемическая атака» · 2024 · ID 814_1 · действует',url:'https://cr.minzdrav.gov.ru/preview-cr/814_1'}],
   myasthenia:[{label:'КР Минздрава России «Миастения» · 2025 · ID 165_2 · действует',url:'https://cr.minzdrav.gov.ru/preview-cr/165_2'}],
