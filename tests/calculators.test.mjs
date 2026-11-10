@@ -18,8 +18,8 @@ test('calculator page is discoverable from all three entry points',()=>{
 });
 
 test('all scale cards have a working implementation, fields, warning and source',()=>{
- assert.equal(SCALE_DEFS.length,9);
- assert.equal(new Set(SCALE_DEFS.map(x=>x.id)).size,9);
+ assert.equal(SCALE_DEFS.length,11);
+ assert.equal(new Set(SCALE_DEFS.map(x=>x.id)).size,11);
  for(const scale of SCALE_DEFS){
   assert.ok(scale.title&&scale.subtitle&&scale.fields.length&&scale.sources.length&&scale.note,scale.id);
   assert.ok(scale.fields.every(field=>field.key&&field.label),scale.id);
@@ -89,4 +89,22 @@ test('simple score results are validated and explanatory',()=>{
  assert.match(calculate('mrc',mrc).value,/60 \/ 60/);
  assert.throws(()=>calculate('map',{sbp:'100',dbp:'120'}));
  assert.throws(()=>calculate('bmi',{height:'0',weight:'81'}));
+});
+
+test('4AT sums all four components and handles untestable attention/orientation',()=>{
+ assert.equal(calculate('fourat',{alertness:'0',orientation:'0',attention:'0',change:'0'}).value,'0 / 12');
+ assert.equal(calculate('fourat',{alertness:'4',orientation:'2',attention:'2',change:'4'}).value,'12 / 12');
+ assert.match(calculate('fourat',{alertness:'0',orientation:'2',attention:'2',change:'0'}).label,/делирий/);
+ assert.throws(()=>calculate('fourat',{alertness:'0',orientation:'0',attention:'0',change:''}));
+});
+test('RASS preserves positive, neutral and negative scale signs',()=>{
+ assert.equal(calculate('rass',{grade:'4'}).value,'+4');
+ assert.equal(calculate('rass',{grade:'0'}).value,'0');
+ assert.equal(calculate('rass',{grade:'-5'}).value,'-5');
+});
+test('4AT attribution and adaptation disclosures are included',()=>{
+ const instrument=SCALE_DEFS.find(x=>x.id==='fourat');
+ assert.match(instrument.note,/CC BY 4\.0/);
+ assert.match(instrument.note,/адаптаци/);
+ assert.ok(instrument.sources.some(x=>x[1].includes('the4at.com/attribution')));
 });
