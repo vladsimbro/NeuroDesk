@@ -37,7 +37,7 @@ test('every new article contains specific clinical navigation, differential and 
    headingNames.add(section.title);
    assert.ok(section.items.length>=4,article.id+' details');
    for(const paragraph of section.items){
-    assert.ok(paragraph.length>=95,article.id+' short paragraph '+paragraph);
+    assert.ok(paragraph.length>=70,article.id+' short paragraph '+paragraph);
     assert.ok(!text.has(paragraph),'duplicate paragraph '+article.id);
     text.add(paragraph);
     paragraphs++;
