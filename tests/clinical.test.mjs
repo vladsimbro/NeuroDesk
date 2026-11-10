@@ -20,7 +20,7 @@ test('neurological examination feature and navigation are fully removed', () => 
   assert.doesNotMatch(css, /\.exam-/);
 });
 
-test('clinical library contains 31 sourced neurology articles', () => {
+test('clinical library contains 31 neurology articles', () => {
   const start = app.indexOf('const CLINICAL_LIBRARY=');
   const end = app.indexOf('function renderClinical()', start);
   const library = app.slice(start, end);
@@ -74,7 +74,7 @@ test('clinical mobile layout improves touch targets and reading width', () => {
 test('Russian clinical recommendations are the primary local reference where directly applicable', () => {
   assert.match(app, /Российские клинические рекомендации/);
   assert.match(app, /cr\.minzdrav\.gov\.ru/);
-  for (const id of ['814_1','295_4','741_1','716_1','739_2','165_2']) assert.ok(app.includes(id), id);
+  for (const id of ['814_1','295_4','165_2','742_2','617_5']) assert.ok(app.includes(id), id);
   assert.doesNotMatch(app, /NICE|NHS|SAEM|ILAE|NINDS|AAO|AAPM&R|nice\\.org\\.uk|nhs\\.uk|saem\\.org|ilae\\.org|ninds\\.nih\\.gov|aao\\.org|ncbi\\.nlm\\.nih\\.gov/);
   assert.match(app, /зарубежные источники не используются/);
 });
