@@ -29,7 +29,7 @@ test('clinical library contains 31 sourced neurology articles', () => {
   for (const topic of ['Острый инсульт','Транзиторная ишемическая атака','Первый эпилептический приступ','Эпилептический статус','Паркинсонизм','Рассеянный склероз','Делирий','Когнитивное снижение','Нейропатическая боль','Невралгия тройничного нерва','Болезнь двигательного нейрона','Острая слабость мимических мышц','радикулопатия','Атаксия','Тремор','Обморок','Кластерная головная боль','Миастения','Оптический неврит','Шейная миелопатия','Менингит','Дистальная симметричная полинейропатия','Острый миелит','Диплопия','Птоз','Нарушение походки','Дисфагия']) {
     assert.ok(library.toLocaleLowerCase('ru-RU').includes(topic.toLocaleLowerCase('ru-RU')), topic);
   }
-  assert.match(library, /sources:\[/);
+  assert.match(library, /sources:\[\]/);
 });
 
 test('clinical articles support deep links and table of contents', () => {
@@ -75,8 +75,8 @@ test('Russian clinical recommendations are the primary local reference where dir
   assert.match(app, /Российские клинические рекомендации/);
   assert.match(app, /cr\.minzdrav\.gov\.ru/);
   for (const id of ['814_1','295_4','741_1','716_1','739_2','165_2']) assert.ok(app.includes(id), id);
-  assert.match(app, /Дополнительные международные источники/);
-  assert.match(app, /не заменяют российские клинические рекомендации/);
+  assert.doesNotMatch(app, /NICE|NHS|SAEM|ILAE|NINDS|AAO|AAPM&R|nice\\.org\\.uk|nhs\\.uk|saem\\.org|ilae\\.org|ninds\\.nih\\.gov|aao\\.org|ncbi\\.nlm\\.nih\\.gov/);
+  assert.match(app, /зарубежные источники не используются/);
 });
 
 test('article expansion and collapse use a smooth height transition and an in-article check control', () => {
@@ -87,4 +87,24 @@ test('article expansion and collapse use a smooth height transition and an in-ar
   assert.match(css, /grid-template-rows:0fr/);
   assert.match(css, /grid-template-rows:1fr/);
   assert.match(css, /prefers-reduced-motion:reduce/);
+});
+
+test('clinical route remains clinical when an article section hash changes', () => {
+  assert.match(app, /if\\(location\\.pathname\\.endsWith\\('\\/clinical\\.html'\\)\\)return 'clinical'/);
+  assert.match(app, /hashchange',\\(\\)=>\\{if\\(!location\\.pathname\\.endsWith\\('\\/clinical\\.html'\\)\\)render\\(\\)\\}/);
+  assert.match(clinicalPage, /data-nav="clinical"/);
+  assert.match(home, /data-nav="clinical"/);
+});
+
+test('article links are limited to direct Russian clinical recommendation records', () => {
+  assert.doesNotMatch(app, /https?:\\/\\/(?!cr\\.minzdrav\\.gov\\.ru|nsi\\.rosminzdrav\\.ru)[^'"]+/);
+  assert.doesNotMatch(app, /href="https:\\/\\/cr\\.minzdrav\\.gov\\.ru\/"[^>]*>Официальный рубрикатор/);
+  assert.match(app, /view-cr\\/742_2/);
+  assert.match(app, /view-cr\\/617_5/);
+});
+
+test('mobile sidebar backdrop fades smoothly in both directions', () => {
+  assert.match(css, /body:before\\{content:"";position:fixed/);
+  assert.match(css, /opacity:0;visibility:hidden;pointer-events:none;transition:opacity .28s ease,visibility .28s ease/);
+  assert.match(css, /body\\.sidebar-open:before\\{opacity:1;visibility:visible;pointer-events:auto/);
 });
