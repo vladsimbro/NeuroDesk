@@ -97,3 +97,8 @@ test('ABCD2 requires every field and rejects unsupported categories or invalid p
   assert.equal(calculateABCD2({age:30,systolic:120,diastolic:80,features:'other',duration:'lt10',diabetes:'maybe'}).status, 'invalid');
   assert.equal(calculateABCD2({age:30,systolic:80,diastolic:90,features:'other',duration:'lt10',diabetes:'no'}).status, 'invalid');
 });
+
+test('ABCD2 rejects inherited object property names as unsupported options', () => {
+  assert.equal(calculateABCD2({age:30,systolic:120,diastolic:80,features:'toString',duration:'lt10',diabetes:'no'}).status, 'invalid');
+  assert.equal(calculateABCD2({age:30,systolic:120,diastolic:80,features:'other',duration:'constructor',diabetes:'no'}).status, 'invalid');
+});
