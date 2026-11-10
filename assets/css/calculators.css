@@ -1,0 +1,65 @@
+.calc-page{max-width:1450px;margin:0 auto;color:#25414e}
+.calc-page-heading{margin:4px 0 25px}
+.calc-page-heading h1{font:800 clamp(32px,3.4vw,46px)/1.19 'Manrope',sans-serif;letter-spacing:-1.35px;margin:15px 0 10px}
+.calc-page-heading p{font-size:13px;color:#778b96;line-height:1.75;max-width:780px;margin:0}
+.calc-workspace{display:grid;grid-template-columns:minmax(285px,345px) minmax(0,1fr);align-items:start;gap:18px}
+.calc-catalog,.calc-detail{border:1px solid #dfe8eb;border-radius:17px;background:#fff;box-shadow:0 8px 22px rgba(24,65,71,.034)}
+.calc-catalog{padding:21px;position:sticky;top:18px;max-height:calc(100vh - 55px);overflow-y:auto}
+.calc-search-bar label{font-size:12px;font-weight:800;display:block;margin-bottom:10px}
+.calc-search-bar>div{display:flex;border:1px solid #dbe6e8;border-radius:10px;background:#f9fbfb;height:46px;overflow:hidden}
+.calc-search-bar input{flex:1;width:1px;border:none;background:transparent;padding:0 12px;font-size:12px;color:#23424c;outline:none}
+.calc-search-bar button{border:0;background:transparent;font-size:20px;padding:0 11px;color:#8b9a9f}
+.calc-search-bar>div:focus-within{border-color:#76b8aa;box-shadow:0 0 0 3px #e0f2ed}
+.calc-filters{display:flex;flex-wrap:wrap;gap:7px;margin:16px 0 11px}
+.calc-filter{border:1px solid #e0e8e9;border-radius:7px;background:#fff;color:#718690;padding:8px 11px;font-size:11px;font-weight:700}
+.calc-filter:hover{background:#f2faf7;color:#23786d}
+.calc-filter.active{background:#e8f5f0;color:#267a70;border-color:#baded3}
+.calc-count{margin:10px 0;color:#95a5ab;font-size:10px}
+.calc-items{display:grid;gap:8px}
+.calc-card{display:flex;align-items:center;gap:12px;text-align:left;background:#fff;border:1px solid #e5ebed;border-radius:11px;padding:14px 12px;width:100%;transition:background .18s,border-color .18s}
+.calc-card:hover{background:#f5fbf9;border-color:#b9ded4}
+.calc-card.active{background:#eff8f5;border-color:#9dcfc1}
+.calc-card-number{align-self:flex-start;color:#90b4aa;font:800 11px 'Manrope',sans-serif;margin-top:3px}
+.calc-card-info{min-width:0;flex:1;display:flex;flex-direction:column;gap:5px}
+.calc-card-group{color:#47877b;font-size:10px;font-weight:800}
+.calc-card-info strong{color:#304c59;font-size:12px;line-height:1.4}
+.calc-card-info small{color:#8d9ba2;font-size:10px;line-height:1.45}
+.calc-card-chevron{font-size:17px;color:#5e9a8c}
+.calc-empty{font-size:12px;color:#88999e}
+.calc-detail{min-width:0;padding:clamp(23px,3vw,42px)}
+.calc-tool-header{border-bottom:1px solid #e4ebed;padding-bottom:23px;margin-bottom:26px}
+.calc-tool-category{background:#e8f5f1;color:#26796f;padding:7px 10px;border-radius:7px;font-size:10px;font-weight:800}
+.calc-tool-header h2{font:800 clamp(25px,2.6vw,35px)/1.2 'Manrope',sans-serif;color:#254453;letter-spacing:-.8px;margin:18px 0 12px}
+.calc-tool-header p{font-size:13px;color:#748994;line-height:1.78;margin:0;max-width:750px}
+.calc-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 16px}
+.calc-field{min-width:0}
+.calc-field-title{display:block;font-size:11px;font-weight:800;color:#395765;margin-bottom:9px;line-height:1.5}
+.calc-field input,.calc-field select{height:46px;width:100%;min-width:0;border:1px solid #dbe5e8;border-radius:10px;padding:0 12px;background:#fbfdfd;font-size:12px;color:#334e59;outline:none}
+.calc-field select{padding-right:25px}
+.calc-field input:focus,.calc-field select:focus{border-color:#73b2a8;box-shadow:0 0 0 3px #e4f2ed;background:#fff}
+.calc-form-actions{display:flex;flex-wrap:wrap;gap:10px;margin:28px 0 21px}
+.calc-primary-button,.calc-secondary-button{height:45px;padding:0 24px;border-radius:10px;font-size:12px;font-weight:800}
+.calc-primary-button{background:#1c746a;color:#fff;border:1px solid #1c746a}
+.calc-primary-button:hover{background:#135c56}
+.calc-secondary-button{background:#fff;color:#5e7983;border:1px solid #dae7e8}
+.calc-secondary-button:hover{background:#eef6f3}
+.calc-result{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-height:85px;border:1px solid #d5e9e2;border-radius:13px;background:#f1faf6;padding:21px;color:#52736c}
+.calc-result:not(.is-error)>span:first-child:not(.calc-result-eyebrow){font-size:12px}
+.calc-result-eyebrow{font-size:10px;font-weight:800;letter-spacing:1.2px;color:#579c8b}
+.calc-result-value{font:800 clamp(31px,3.3vw,45px)/1.2 'Manrope',sans-serif;color:#195e57}
+.calc-result>b{font-size:13px;color:#316c61}
+.calc-result>p{font-size:12px;line-height:1.65;margin:0;color:#587d76}
+.calc-result>button{border:1px solid #afcfc5;border-radius:8px;padding:10px 15px;background:#fff;font-size:11px;font-weight:800;color:#1e7368;margin-top:5px}
+.calc-result.is-error{background:#fff8f5;border-color:#f0d3c4;color:#a55939}
+.calc-result.is-error strong{font-size:14px}
+.calc-result.is-error p{font-size:12px;margin:0;line-height:1.6}
+.calc-tool-notice{margin:22px 0;border:1px solid #e3e9eb;border-radius:11px;padding:17px 19px;background:#fafcfc}
+.calc-tool-notice strong,.calc-tool-sources>strong{display:block;font-size:12px;color:#3b5d69;margin-bottom:8px}
+.calc-tool-notice p{font-size:11px;line-height:1.8;color:#70868e;margin:0}
+.calc-tool-sources{padding-top:18px;border-top:1px solid #e5eced}
+.calc-tool-sources a{font-size:11px;line-height:1.7;color:#257a70;display:block;text-decoration:underline;text-underline-offset:3px;margin-top:8px;overflow-wrap:anywhere}
+.calc-disclaimer{font-size:11px;color:#879ba4;line-height:1.7;margin:19px 4px}
+.calc-page :is(button,input,select,a):focus-visible{outline:3px solid #83c9b6;outline-offset:2px}
+@media(max-width:1150px){.calc-workspace{grid-template-columns:minmax(260px,310px) minmax(0,1fr)}.calc-fields{grid-template-columns:1fr}}
+@media(max-width:900px){.calc-workspace{grid-template-columns:1fr}.calc-catalog{position:static;max-height:none}.calc-items{grid-template-columns:repeat(2,minmax(0,1fr))}.calc-fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.calc-page-heading h1{font-size:32px}.calc-catalog,.calc-detail{padding:17px}.calc-items{grid-template-columns:1fr}.calc-fields{grid-template-columns:1fr}.calc-filter{min-height:38px}.calc-primary-button,.calc-secondary-button{flex:1}.calc-tool-header h2{font-size:27px}}
