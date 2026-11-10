@@ -24,16 +24,23 @@ function esc(value){
   return String(value).replace(/[&<>"']/g,(char)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 }
 function routeName(){
-  if(location.pathname.endsWith('/clinical.html'))return 'clinical';
+  const page=location.pathname.split('/').filter(Boolean).at(-1)||'';
+  if(page==='clinical.html')return 'clinical';
   const route=(location.hash||'#overview').slice(1);
   return route==='icd'?'icd':'overview';
 }
 
 function setActiveNav(route){
-  document.querySelectorAll('[data-nav], [data-route]').forEach(node=>{
-    const key=node.dataset.nav||node.dataset.route;
-    node.classList.toggle('active',key===route);
+  const links=document.querySelectorAll('.primary-nav [data-nav], .primary-nav [data-route]');
+  links.forEach(node=>{
+    node.classList.remove('active');
+    node.removeAttribute('aria-current');
   });
+  const active=[...links].find(node=>(node.dataset.nav||node.dataset.route)===route);
+  if(active){
+    active.classList.add('active');
+    active.setAttribute('aria-current','page');
+  }
 }
 function renderOverview(){
   return '<div class="page-heading"><div><div class="eyebrow">NEURODESK · СПРАВОЧНИК</div><h1>МКБ-10 без лишнего поиска</h1><p class="lead">Быстрый доступ к российской Международной классификации болезней: найди код по названию диагноза или проверь расшифровку по коду.</p></div></div>'+
