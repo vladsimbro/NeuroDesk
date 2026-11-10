@@ -127,16 +127,24 @@
   await waitUntil(()=>copyGuideline.textContent.includes('523_3')&&/скопирован|для поиска/.test(copyGuideline.textContent),'copy guideline ID confirmation');
   assert(doc.querySelector('.nd-article-source-actions a')?.href.startsWith('https://minzdrav.gov.ru/special/'),'New article guideline link uses accessible Ministry hub');
   doc.getElementById('clinical-close-all').click();
+  doc.querySelector('[data-clinical-open="headache"]').click();
+  const related=doc.querySelector('[data-clinical-related]');
+  assert(!!related,'Reader suggests related clinical articles using shared medical tags');
+  related.click();
+  assert(doc.querySelectorAll('.nd-reader-tab').length===2,'Related clinical article opens in a second tab');
+  doc.getElementById('clinical-close-all').click();
 
   const search=doc.getElementById('clinical-query');
   search.value='миастения';search.dispatchEvent(new win.Event('input',{bubbles:true}));
   assert(doc.querySelectorAll('.nd-clinical-card').length>=1,'Search works after closing reader');
   clinical.frame.remove();
 
-  const deep=await loadFrame('../clinical.html?article=stroke&article=headache&active=stroke',390,844);
+  const deep=await loadFrame('../clinical.html?article=stroke&article=cerebral-palsy&active=cerebral-palsy',390,844);
   await waitUntil(()=>deep.doc.getElementById('clinical-reader')&&!deep.doc.getElementById('clinical-reader').hidden,'clinical mobile deep link ready');
   assert(!deep.doc.getElementById('clinical-reader').hidden,'Mobile deep link opens reader');
   assert(deep.doc.querySelectorAll('.nd-reader-tab').length===2,'Mobile deep link preserves two tabs');
+  assert(deep.doc.querySelector('.nd-article-head h2')?.textContent.includes('Церебральный паралич'),'One of the 24 new clinical articles opens via mobile deep link');
+  assert(deep.doc.querySelector('[data-clinical-copy-id="1087_1"]'),'New pediatric article exposes official Russian guideline identifier');
   const panel=deep.doc.querySelector('.nd-reader-dialog').getBoundingClientRect();
   assert(panel.width<=391&&panel.width>=360,'Reader fits mobile width');
   assert(panel.height>=790,'Reader uses full mobile screen height');
