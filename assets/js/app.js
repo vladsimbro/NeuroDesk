@@ -1,4 +1,4 @@
-import { GCS_COMPONENTS, calculateGCS, formatGCSResult } from './calculators.js';
+import { GCS_COMPONENTS, calculateGCS, formatGCSResult, MRS_OPTIONS, GOS_OPTIONS, RASS_OPTIONS, calculateMRS, calculateGOS, calculateRASS } from './calculators.js';
 import { officialResources, scaleCatalog } from './resources.js';
 import { initBrainScene, disposeBrainScene } from './brain-scene.js';
 
@@ -83,11 +83,43 @@ function renderGCSCalculator() {
   return '<div class="calculator-layout"><section class="card calc-card"><div class="calc-title"><div class="metric-icon">' + icon('activity',21) + '</div><div><h2>Шкала комы Глазго</h2><p>Glasgow Coma Scale · взрослая версия · три независимых компонента</p></div></div><hr class="calc-divider"><div class="notice" style="margin-bottom:18px">' + icon('info') + '<div>Оценивай наилучшую наблюдаемую реакцию по стандартизированному подходу. До оценки учитывай факторы, которые могут повлиять на ответ. Не подменяй наблюдение предположением.</div></div>' + groups + '<div class="calc-actions"><button class="button button-outline" type="button" data-gcs-reset>' + icon('refresh',14) + ' Сбросить</button><button class="button button-primary" type="button" data-gcs-copy disabled>' + icon('clipboard',14) + ' Скопировать результат</button></div></section>' +
     '<aside class="card result-card" id="gcs-result" aria-live="polite"><div class="result-top"><span class="result-label">РЕЗУЛЬТАТ ОЦЕНКИ</span><span class="result-state">Не завершено</span></div><p class="result-empty">Выбери по одному варианту в каждом компоненте. Сумма появится только если все три компонента поддаются оценке.</p><div class="source-citation">Методика: <a href="https://www.glasgowcomascale.org/" target="_blank" rel="noopener noreferrer">официальный ресурс GCS ↗</a>. Правило NT и запрет суммирования неоцениваемого компонента: <a href="https://www.ncbi.nlm.nih.gov/books/NBK513298/" target="_blank" rel="noopener noreferrer">NCBI Bookshelf ↗</a>.</div></aside></div>';
 }
-function renderCalculatorCatalog() {
-  return heading('ИНСТРУМЕНТЫ','Клинические калькуляторы и шкалы','Доступны только инструменты с реализованной логикой и тестами. Остальные методики проходят отдельную проверку источников, условий использования и алгоритмов.') +
-    '<div class="notice warning" style="margin-bottom:17px">' + icon('info') + '<div><strong>Важно.</strong> Скрининговые и оценочные шкалы не заменяют клиническую оценку. Не используй числовой результат изолированно от клинического контекста.</div></div>' +
-    '<div class="catalog-grid">' + scaleCatalog.map((item) => '<article class="catalog-card"><div class="metric-icon">' + icon(item.icon) + '</div><div class="catalog-card-copy"><h3>' + esc(item.title) + '</h3><p>' + esc(item.description) + '</p>' + statusChip(item.status,item.label) + (item.status === 'ready' ? '<br><button type="button" class="text-link" data-scroll-gcs>Открыть калькулятор ↓</button>' : '') + '</div></article>').join('') + '</div>' +
-    '<div id="gcs" style="margin-top:23px">' + renderGCSCalculator() + '</div>';
+function renderScaleCard(id,title,subtitle,options,sourceUrl,sourceLabel,note){
+ const choices=options.map(o=>'<button type="button" class="scale-option" data-scale-id="'+id+'" data-scale-value="'+o.value+'" aria-pressed="false"><span class="option-score">'+(o.value>0?'+':'')+o.value+'</span><span><strong>'+esc(o.label)+'</strong><small>'+esc(o.detail)+'</small></span></button>').join('');
+ return '<section class="card calc-card scale-tool" id="tool-'+id+'"><div class="calc-title"><div class="metric-icon">'+icon(id==='rass'?'activity':'clipboard',21)+'</div><div><h2>'+title+'</h2><p>'+subtitle+'</p></div></div><p class="scale-tool-note">'+note+'</p><div class="scale-options scale-tool-options">'+choices+'</div><div class="scale-tool-footer"><button type="button" class="button button-outline" data-scale-reset="'+id+'">'+icon('refresh',14)+' Сбросить</button><button type="button" class="button button-primary" data-scale-copy="'+id+'" disabled>'+icon('clipboard',14)+' Скопировать</button></div><div class="scale-tool-result" id="result-'+id+'" aria-live="polite"><span>Выбери один вариант для расчёта.</span></div><div class="source-citation">Источник методики: <a href="'+sourceUrl+'" target="_blank" rel="noopener noreferrer">'+sourceLabel+' ↗</a>. Перед клиническим применением проверь актуальную редакцию документа и локальные протоколы.</div></section>';
+}
+function renderCalculatorCatalog(){
+ return heading('ИНСТРУМЕНТЫ','Клинические калькуляторы и шкалы','Интерактивные инструменты для оценки сознания, функционального исхода и неврологического статуса. У каждой шкалы указаны источник и ограничения.')+
+ '<div class="notice warning" style="margin-bottom:17px">'+icon('info')+'<div><strong>Статус медицинской проверки.</strong> «Технически реализована» означает, что интерфейс и автоматические тесты работают. Это не означает независимую медицинскую валидацию. До такой проверки результаты следует сверять с первоисточником.</div></div>'+
+ '<div class="page-toolbar calculator-toolbar"><input class="filter-input" id="calculator-filter" type="search" placeholder="Найти шкалу или инструмент…" aria-label="Поиск по калькуляторам"><span class="soft-chip">4 интерактивных инструмента</span></div>'+
+ '<div class="catalog-grid" id="calculator-grid">'+scaleCatalog.map(item=>'<article class="catalog-card" data-calculator-card="'+item.id+'"><div class="metric-icon">'+icon(item.icon)+'</div><div class="catalog-card-copy"><div class="eyebrow">'+esc(item.group||'Шкалы')+'</div><h3>'+esc(item.title)+'</h3><p>'+esc(item.description)+'</p>'+statusChip(item.status,item.label)+(item.status==='ready'?'<br><button type="button" class="text-link" data-open-tool="'+item.id+'">Открыть инструмент ↓</button>':'')+'</div></article>').join('')+'</div>'+
+ '<div id="gcs" style="margin-top:23px">'+renderGCSCalculator()+'</div><div class="scale-tools-stack">'+
+ renderScaleCard('rass','Шкала возбуждения-седации Ричмонда (RASS)','Richmond Agitation-Sedation Scale · диапазон от +4 до −5',RASS_OPTIONS,'https://cr.minzdrav.gov.ru/view-cr/687_3','КР Минздрава РФ · приложение Г6','Оцени последовательно: наблюдение за пациентом, ответ на голос, затем при отсутствии реакции на голос — ответ на физическую стимуляцию. Выбирай только фактически наблюдавшуюся реакцию.')+
+ renderScaleCard('mrs','Модифицированная шкала Рэнкина (mRS)','Modified Rankin Scale · функциональная независимость',MRS_OPTIONS,'https://cr.minzdrav.gov.ru/view-cr/732_1','КР Минздрава РФ · приложение Г5','Оценивается общий уровень функциональной независимости и потребность в помощи. Для сопоставимых оценок используй единый подход к интервью и учитывай преморбидный уровень.')+
+ renderScaleCard('gos','Шкала исходов Глазго (GOS)','Glasgow Outcome Scale · исход повреждения головного мозга',GOS_OPTIONS,'https://cr.minzdrav.gov.ru/view-cr/732_1','КР Минздрава РФ · приложение Г6','Пятиуровневая шкала исходов. Для формализованной оценки и исследований следуй стандартизированному интервью и протоколу оценки, а не только краткому описанию категории.')+
+ '</div>';
+}
+function bindCalculatorFilter(){
+ const input=document.getElementById('calculator-filter');if(!input)return;
+ input.addEventListener('input',()=>{const q=input.value.trim().toLowerCase();document.querySelectorAll('[data-calculator-card]').forEach(card=>{card.hidden=!card.textContent.toLowerCase().includes(q);});});
+}
+const scaleDefinitions={rass:{options:RASS_OPTIONS,calculate:calculateRASS,title:'RASS'},mrs:{options:MRS_OPTIONS,calculate:calculateMRS,title:'mRS'},gos:{options:GOS_OPTIONS,calculate:calculateGOS,title:'GOS'}};
+const scaleState={rass:null,mrs:null,gos:null};
+function updateScaleResult(id){
+ const definition=scaleDefinitions[id],node=document.getElementById('result-'+id),copy=document.querySelector('[data-scale-copy="'+id+'"]');
+ if(!definition||!node)return;
+ const result=definition.calculate(scaleState[id]);
+ document.querySelectorAll('[data-scale-id="'+id+'"]').forEach(button=>{const selected=String(scaleState[id])===button.dataset.scaleValue;button.classList.toggle('selected',selected);button.setAttribute('aria-pressed',String(selected));});
+ if(result.status==='complete'){
+  node.innerHTML='<div class="scale-result-score">'+(result.score>0&&id==='rass'?'+':'')+result.score+'</div><div class="scale-result-copy"><strong>'+esc(result.option.label)+'</strong><p>'+esc(result.option.detail)+'</p><small>Результат: '+definition.title+' '+result.score+'</small></div>';
+  if(copy)copy.disabled=false;
+ }else{node.innerHTML='<span>Выбери один вариант для расчёта.</span>';if(copy)copy.disabled=true;}
+}
+function bindScaleTools(){
+ Object.keys(scaleState).forEach(id=>{scaleState[id]=null;});
+ document.querySelectorAll('[data-scale-id]').forEach(button=>button.addEventListener('click',()=>{scaleState[button.dataset.scaleId]=Number(button.dataset.scaleValue);updateScaleResult(button.dataset.scaleId);}));
+ document.querySelectorAll('[data-scale-reset]').forEach(button=>button.addEventListener('click',()=>{const id=button.dataset.scaleReset;scaleState[id]=null;updateScaleResult(id);}));
+ document.querySelectorAll('[data-scale-copy]').forEach(button=>button.addEventListener('click',async()=>{const id=button.dataset.scaleCopy,result=scaleDefinitions[id].calculate(scaleState[id]);if(result.status!=='complete')return;try{await navigator.clipboard.writeText(scaleDefinitions[id].title+': '+result.score+' — '+result.option.label);button.textContent='Скопировано';}catch{button.textContent='Не удалось скопировать';}}));
+ Object.keys(scaleState).forEach(updateScaleResult);
 }
 const gcsState = { eye:null, verbal:null, motor:null };
 function updateGCSResult() {
@@ -216,7 +248,7 @@ function render() {
   setActiveNav(route);
   breadcrumb.textContent = page.title;
   app.innerHTML = page.render();
-  if (route === 'calculators') bindGCS();
+  if (route === 'calculators') { bindGCS(); bindScaleTools(); bindCalculatorFilter(); }
   if (route === 'handbook') bindResourceFilter();
   if (route === 'anatomy' || route === 'overview') initBrainScene('brain-canvas');
   sidebar.classList.remove('open');
@@ -227,7 +259,7 @@ function navigate(route) { location.hash = route; }
 document.addEventListener('click',(event) => {
   const nav = event.target.closest('[data-route]');
   if (nav) { event.preventDefault(); navigate(nav.dataset.route); }
-  if (event.target.closest('[data-scroll-gcs]')) document.getElementById('gcs')?.scrollIntoView({behavior:'smooth',block:'start'});
+  if (event.target.closest('[data-scroll-gcs]')) document.getElementById('gcs')?.scrollIntoView({behavior:'smooth',block:'start'});\n  const toolLink = event.target.closest('[data-open-tool]');\n  if (toolLink) document.getElementById('tool-' + toolLink.dataset.openTool)?.scrollIntoView({behavior:'smooth',block:'start'});
   if (!event.target.closest('.global-search') && !event.target.closest('.search-popover')) searchPopover.hidden = true;
 });
 window.addEventListener('hashchange',render);
