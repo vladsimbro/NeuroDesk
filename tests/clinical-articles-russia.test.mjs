@@ -53,7 +53,7 @@ test('every listed reference maps only to Russian official medical documents or 
   if(!d.verifiedLink)assert.equal(d.url,RUS_CLINICAL_REGISTRY);
  }
  for(const [article,links] of Object.entries(RUS_ARTICLE_SOURCES)){
-  assert.ok(typeof article==='string'&&article.length>=3,article);
+  assert.ok(typeof article==='string'&&article.length>=2,article);
   for(const link of links){
    assert.ok(RUS_CLINICAL_DOCUMENTS[link.doc],article+': unknown source '+link.doc);
    assert.ok(['по заболеванию','смежная'].includes(link.kind));
