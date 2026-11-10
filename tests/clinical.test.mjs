@@ -97,7 +97,7 @@ test('clinical route remains clinical when an article section hash changes', () 
 });
 
 test('article links are limited to direct Russian clinical recommendation records', () => {
-  const urls = [...app.matchAll(/https?:\\/\\/[^'"\\s)]+/g)].map(match => match[0]);
+  const urls = app.split('https://').slice(1).map(part => 'https://' + part.split("'")[0].split('"')[0].split(')')[0]);
   assert.ok(urls.every(url => url.startsWith('https://cr.minzdrav.gov.ru/') || url.startsWith('https://nsi.rosminzdrav.ru/')));
   assert.ok(!app.includes('https://cr.minzdrav.gov.ru/"'));
   assert.ok(app.includes('view-cr/742_2'));
