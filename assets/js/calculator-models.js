@@ -1,5 +1,7 @@
 /* NeuroDesk calculators — standalone, local-only, no personal data persistence.
  * SCORE2 and SCORE2-OP are independent implementations from published model parameters.
+ * Original model author implementation used for coefficient verification:
+ * https://github.com/skkceu/stata/tree/main (score2risk.ado, score2oprisk.ado).
  * Not the ESC HeartScore application; never use as an autonomous clinical decision engine.
  */
 export const SCORE2_COEFFICIENTS={
@@ -7,16 +9,16 @@ export const SCORE2_COEFFICIENTS={
  female:{age:.4648,smoke:.7744,sbp:.3131,total:.1002,hdl:-.2606,ageSmoke:-.1088,ageSbp:-.0277,ageTotal:-.0226,ageHdl:.0613,base:.9776}
 };
 export const SCORE2OP_COEFFICIENTS={
- male:{age:.0634,smoke:.3524,sbp:.0094,total:.0850,hdl:-.3564,ageSmoke:-.0247,ageSbp:-.0005,ageTotal:.0073,ageHdl:.0091,base:.7576,mean:.0929},
- female:{age:.0789,smoke:.4921,sbp:.0102,total:.0605,hdl:-.3040,ageSmoke:-.0255,ageSbp:-.0004,ageTotal:-.0009,ageHdl:.0154,base:.8082,mean:.2290}
+ male:{age:.0633767915,smoke:.3523957899,sbp:.0094362177,total:.0849594156,hdl:-.3563571842,ageSmoke:-.0247205945,ageSbp:-.0004794522,ageTotal:.0073336663,ageHdl:.0091317857,base:1-.24235298,mean:.09285225},
+ female:{age:.0789191229,smoke:.4921147010,sbp:.0101993091,total:.0604939598,hdl:-.3040280248,ageSmoke:-.0255496313,ageSbp:-.0004404728,ageTotal:-.0009121461,ageHdl:.0153779923,base:1-.19178759,mean:.2287676}
 };
 export const SCORE2_RECALIBRATION={
- male:{low:[-.5699,.7476],moderate:[-.1565,.8009],high:[.3207,.9360],very_high:[.5836,.8294]},
- female:{low:[-.7380,.7019],moderate:[-.3143,.7701],high:[.5710,.9369],very_high:[.9369,.8329]}
+ male:{low:[-.569857,.747593],moderate:[-.156481,.800869],high:[.320717,.936004],very_high:[.583578,.829368]},
+ female:{low:[-.737966,.701868],moderate:[-.314269,.770149],high:[.570963,.936893],very_high:[.941177,.832923]}
 };
 export const SCORE2OP_RECALIBRATION={
- male:{low:[-.34,1.19],moderate:[.01,1.25],high:[.08,1.15],very_high:[.05,.70]},
- female:{low:[-.52,1.01],moderate:[-.10,1.10],high:[.38,1.09],very_high:[.38,.69]}
+ male:{low:[-.343484,1.193038],moderate:[.005320,1.248514],high:[.084305,1.151902],very_high:[.045959,.703625]},
+ female:{low:[-.516054,1.007238],moderate:[-.101044,1.099621],high:[.375720,1.089031],very_high:[.379293,.691530]}
 };
 const assertNumber=(value,min,max,label)=>{
  if(value===''||value===null||value===undefined)throw Error('Заполни поле «'+label+'».');
