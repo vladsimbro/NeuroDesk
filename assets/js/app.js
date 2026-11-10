@@ -283,7 +283,7 @@ const CLINICAL_LIBRARY=[
 ];
 function renderClinical(){
  return '<div class="page-heading"><div><div class="eyebrow">КЛИНИЧЕСКАЯ БАЗА ЗНАНИЙ</div><h1>Клинический справочник</h1><p class="lead">Развёрнутые клинические статьи: фенотип синдрома, топическая логика, дифференциальный ряд, обследование, срочность и первоисточники.</p></div><span class="date-chip">31 клиническая статья · локальный поиск</span></div>'+
- '<section class="clinical-notice"><strong>'+icon('info',16)+' Важно о применении</strong><p>Это навигационный справочник, а не система поддержки принятия клинических решений. Он не оценивает пациента и не заменяет полный текст рекомендаций, локальные протоколы и клиническое суждение. Значительная часть источников NICE относится к системе здравоохранения Великобритании: лекарственные схемы, маршрутизация и нормативные правила не переносятся автоматически на другие страны. При острых угрожающих симптомах действуй по экстренному маршруту учреждения.</p></section>'+
+ '<section class="clinical-notice"><strong>'+icon('info',16)+' Российский контекст и границы справочника</strong><p>Материалы предназначены для навигации по клинической оценке, а не для автоматического принятия решений. Основной нормативный ориентир для практики в РФ — действующие клинические рекомендации из официального <a href="https://cr.minzdrav.gov.ru/" target="_blank" rel="noopener noreferrer">Рубрикатора Минздрава России</a>. Российские рекомендации добавлены к тем темам, где удалось подтвердить прямое соответствие. Иностранные документы оставлены только как дополнительные источники, не как основание для переноса британских маршрутов, лекарственных схем или организационных правил в РФ. Если отдельной российской КР по симптому нет, это не означает, что международный протокол автоматически применим. Всегда проверяй актуальную редакцию, возрастную группу и локальные порядки оказания помощи.</p></section>'+
  '<section class="card card-pad clinical-search-card"><label for="clinical-query" class="icd-search-label">Найти симптом, синдром или термин</label><div class="icd-search-row"><span class="icd-search-icon">'+icon('search',20)+'</span><input id="clinical-query" type="search" autocomplete="off" placeholder="Например: головокружение, парез, онемение…"><button id="clinical-clear" class="button button-outline" type="button">Очистить</button></div><div class="clinical-filter-row" id="clinical-filters"><button type="button" class="clinical-filter active" data-clinical-filter="Все">Все материалы</button><button type="button" class="clinical-filter" data-clinical-filter="Симптомы">Симптомы</button><button type="button" class="clinical-filter" data-clinical-filter="Синдромы">Синдромы</button><button type="button" class="clinical-filter" data-clinical-filter="Заболевания">Заболевания</button><button type="button" class="clinical-filter" data-clinical-filter="Неотложные состояния">Неотложные состояния</button></div><div class="clinical-results-meta" id="clinical-meta" role="status" aria-live="polite"></div><div class="clinical-results" id="clinical-results"></div></section>'+
  '<section class="clinical-method"><div class="eyebrow">КАК УСТРОЕНЫ МАТЕРИАЛЫ</div><div class="clinical-method-grid"><div><strong>01 · Срочность</strong><span>Признаки, которые нельзя пропустить</span></div><div><strong>02 · Оценка</strong><span>Что уточнить и проверить при осмотре</span></div><div><strong>03 · Логика</strong><span>Дифференциальные ориентиры и ловушки</span></div><div><strong>04 · Источники</strong><span>Ссылки на рекомендации и дату редакции</span></div></div></section>';
 }
@@ -291,10 +291,31 @@ function bindClinical(){
  const query=document.getElementById('clinical-query'),results=document.getElementById('clinical-results'),meta=document.getElementById('clinical-meta'),filters=document.getElementById('clinical-filters');
  let category='Все',selected=new URLSearchParams(location.search).get('article');
  if(selected&&!CLINICAL_LIBRARY.some(item=>item.id===selected))selected=null;
- const articleMarkup=item=>'<article class="clinical-article" id="clinical-article-'+item.id+'"><div class="clinical-article-head"><div><span class="clinical-category">'+esc(item.category)+'</span><h2>'+esc(item.title)+'</h2><p>'+esc(item.summary)+'</p></div><button type="button" class="button button-ghost" data-clinical-close="'+item.id+'">Свернуть</button></div>'+'<nav class="clinical-article-toc" aria-label="Содержание статьи"><strong>Содержание</strong>'+item.sections.map((section,i)=>'<a href="#clinical-section-'+item.id+'-'+i+'">'+String(i+1).padStart(2,'0')+' · '+esc(section.title)+'</a>').join('')+'</nav>'+item.sections.map((section,i)=>'<section class="clinical-article-section" id="clinical-section-'+item.id+'-'+i+'"><h3><span>'+String(i+1).padStart(2,'0')+'</span>'+esc(section.title)+'</h3><ul>'+section.items.map(line=>'<li>'+esc(line)+'</li>').join('')+'</ul></section>').join('')+'<section class="clinical-sources"><h3>Первоисточники</h3>'+item.sources.map(source=>'<a href="'+esc(source.url)+'" target="_blank" rel="noopener noreferrer">'+esc(source.label)+' '+icon('external',13)+'</a>').join('')+'<p>Краткое изложение не заменяет оригинальную рекомендацию. Перед клиническим применением открой источник и проверь действующую редакцию.</p></section></article>';
+ const russianGuidelines={
+  headache:[{label:'КР Минздрава России «Мигрень», взрослые · 2024 · ID 295, версия 4',url:'https://cr.minzdrav.gov.ru/preview-cr/295_4'}],
+  stroke:[{label:'КР Минздрава России «Ишемический инсульт и транзиторная ишемическая атака» · 2024 · ID 814, версия 1',url:'https://cr.minzdrav.gov.ru/preview-cr/814_1'},{label:'Официальный рубрикатор КР Минздрава России',url:'https://cr.minzdrav.gov.ru/'}],
+  tia:[{label:'КР Минздрава России «Ишемический инсульт и транзиторная ишемическая атака» · 2024 · ID 814, версия 1',url:'https://cr.minzdrav.gov.ru/preview-cr/814_1'}],
+  seizure:[{label:'КР Минздрава России «Эпилепсия и эпилептический статус у взрослых и детей» · 2022 · ID 741, версия 1',url:'https://cr.minzdrav.gov.ru/preview-cr/741_1'}],
+  status:[{label:'КР Минздрава России «Эпилепсия и эпилептический статус у взрослых и детей» · 2022 · ID 741, версия 1',url:'https://cr.minzdrav.gov.ru/preview-cr/741_1'}],
+  parkinson:[{label:'КР Минздрава России «Болезнь Паркинсона и другие заболевания с паркинсонизмом» · 2022 · ID 716, версия 1',url:'https://cr.minzdrav.gov.ru/preview-cr/716_1'}],
+  ms:[{label:'КР Минздрава России «Рассеянный склероз» · 2025 · ID 739, версия 2',url:'https://cr.minzdrav.gov.ru/preview-cr/739_2'}],
+  myasthenia:[{label:'КР Минздрава России «Миастения» · 2025 · ID 165, версия 2',url:'https://cr.minzdrav.gov.ru/preview-cr/165_2'}]
+ };
+ const articleMarkup=item=>'<div class="clinical-article-panel" data-clinical-panel="'+item.id+'"><div class="clinical-article-panel-inner"><article class="clinical-article" id="clinical-article-'+item.id+'"><div class="clinical-article-head"><div><span class="clinical-category">'+esc(item.category)+'</span><h2>'+esc(item.title)+'</h2><p>'+esc(item.summary)+'</p></div><button type="button" class="clinical-collapse" data-clinical-close="'+item.id+'" aria-label="Свернуть статью" title="Свернуть статью">'+icon('check',19)+'</button></div><nav class="clinical-article-toc" aria-label="Содержание статьи"><strong>Содержание</strong>'+item.sections.map((section,i)=>'<a href="#clinical-section-'+item.id+'-'+i+'">'+String(i+1).padStart(2,'0')+' · '+esc(section.title)+'</a>').join('')+'</nav>'+item.sections.map((section,i)=>'<section class="clinical-article-section" id="clinical-section-'+item.id+'-'+i+'"><h3><span>'+String(i+1).padStart(2,'0')+'</span>'+esc(section.title)+'</h3><ul>'+section.items.map(line=>'<li>'+esc(line)+'</li>').join('')+'</ul></section>').join('')+'<section class="clinical-sources"><h3>Российские клинические рекомендации</h3>'+(russianGuidelines[item.id]||[]).map(source=>'<a href="'+esc(source.url)+'" target="_blank" rel="noopener noreferrer">'+esc(source.label)+' '+icon('external',13)+'</a>').join('')+(russianGuidelines[item.id]?'':'<p>Отдельная российская КР, напрямую соответствующая этой теме как самостоятельному симптому/синдрому, в справочнике пока не подтверждена. Проверь связанные нозологии и действующие документы в официальном рубрикаторе Минздрава России.</p>')+'<a href="https://cr.minzdrav.gov.ru/" target="_blank" rel="noopener noreferrer">Официальный рубрикатор клинических рекомендаций Минздрава России '+icon('external',13)+'</a><h3 class="clinical-extra-sources-title">Дополнительные международные источники</h3>'+item.sources.map(source=>'<a href="'+esc(source.url)+'" target="_blank" rel="noopener noreferrer">'+esc(source.label)+' '+icon('external',13)+'</a>').join('')+'<p>Международные источники приведены для дополнительного ознакомления. Они не заменяют российские клинические рекомендации и локальные порядки. Перед применением проверяй первоисточник и действующую редакцию.</p></section></article></div></div>';
+ const updateUrl=()=>{const url=new URL(location.href);if(selected)url.searchParams.set('article',selected);else url.searchParams.delete('article');history.replaceState(null,'',url.pathname+url.search+url.hash);};
+ const closeSelected=(id)=>{
+  const panel=results.querySelector('[data-clinical-panel="'+id+'"]');
+  if(!panel){selected=null;updateUrl();render();return;}
+  panel.classList.remove('is-open');
+  const card=results.querySelector('[data-clinical-open="'+id+'"]');
+  if(card){card.classList.remove('selected');card.setAttribute('aria-expanded','false');card.querySelector('.clinical-open-label').innerHTML='Открыть материал '+icon('arrow',13);}
+  const finish=()=>{if(selected===id){selected=null;updateUrl();render();}};
+  panel.addEventListener('transitionend',event=>{if(event.target===panel&&event.propertyName==='grid-template-rows')finish();},{once:true});
+  window.setTimeout(finish,420);
+ };
  const render=()=>{
   const q=query.value.trim().toLocaleLowerCase('ru-RU').replace(/ё/g,'е');
-  const tokens=q.split(/[\s,;]+/u).filter(Boolean);
+  const tokens=q.split(/[\\s,;]+/u).filter(Boolean);
   const matches=CLINICAL_LIBRARY.filter(item=>{
    if(category!=='Все'&&item.category!==category)return false;
    if(!tokens.length)return true;
@@ -304,34 +325,21 @@ function bindClinical(){
    const rank=item=>{const title=item.title.toLocaleLowerCase('ru-RU').replace(/ё/g,'е');if(title===q)return 0;if(title.startsWith(q))return 1;if(item.tags.some(tag=>tag.toLocaleLowerCase('ru-RU').replace(/ё/g,'е').startsWith(q)))return 2;return 3;};
    return rank(a)-rank(b);
   });
+  if(selected&&!matches.some(item=>item.id===selected)){selected=null;updateUrl();}
   meta.textContent='Найдено материалов: '+matches.length+' из '+CLINICAL_LIBRARY.length;
-  results.innerHTML=matches.length?matches.map(item=>'<div class="clinical-result-wrap"><button type="button" class="clinical-result '+(selected===item.id?'selected':'')+'" data-clinical-open="'+item.id+'" aria-expanded="'+(selected===item.id)+'" aria-controls="clinical-article-'+item.id+'"><span class="clinical-result-top"><span class="clinical-category">'+esc(item.category)+'</span><span class="clinical-updated">'+esc(item.updated)+'</span></span><strong>'+esc(item.title)+'</strong><span>'+esc(item.summary)+'</span><span class="clinical-tags">'+item.tags.map(tag=>'<i>'+esc(tag)+'</i>').join('')+'</span><span class="clinical-open-label">'+(selected===item.id?'Свернуть материал':'Открыть материал '+icon('arrow',13))+'</span></button>'+(selected===item.id?articleMarkup(item):'')+'</div>').join(''):'<div class="icd-empty"><strong>Ничего не найдено</strong><span>Попробуй другой термин или переключи категорию.</span></div>';
+  results.innerHTML=matches.length?matches.map(item=>'<div class="clinical-result-wrap"><button type="button" class="clinical-result '+(selected===item.id?'selected':'')+'" data-clinical-open="'+item.id+'" aria-expanded="'+(selected===item.id)+'" aria-controls="clinical-article-'+item.id+'"><span class="clinical-result-top"><span class="clinical-category">'+esc(item.category)+'</span><span class="clinical-updated">'+esc(item.updated)+'</span></span><strong>'+esc(item.title)+'</strong><span>'+esc(item.summary)+'</span><span class="clinical-tags">'+item.tags.map(tag=>'<i>'+esc(tag)+'</i>').join('')+'</span><span class="clinical-open-label">'+(selected===item.id?'Свернуть материал '+icon('arrow',13):'Открыть материал '+icon('arrow',13))+'</span></button>'+(selected===item.id?articleMarkup(item):'')+'</div>').join(''):'<div class="icd-empty"><strong>Ничего не найдено</strong><span>Попробуй другой термин или переключи категорию.</span></div>';
+  if(selected){const panel=results.querySelector('[data-clinical-panel="'+selected+'"]');requestAnimationFrame(()=>panel?.classList.add('is-open'));}
   results.querySelectorAll('[data-clinical-open]').forEach(button=>button.addEventListener('click',()=>{
-   const wasOpen=selected===button.dataset.clinicalOpen;
-   selected=wasOpen?null:button.dataset.clinicalOpen;
-   const url=new URL(location.href);
-   if(selected)url.searchParams.set('article',selected);else url.searchParams.delete('article');
-   history.replaceState(null,'',url.pathname+url.search+url.hash);
-   render();
-   if(selected)document.getElementById('clinical-article-'+selected)?.scrollIntoView({behavior:'smooth',block:'nearest'});
+   const id=button.dataset.clinicalOpen;
+   if(selected===id){closeSelected(id);return;}
+   selected=id;updateUrl();render();
+   results.querySelector('[data-clinical-panel="'+id+'"]')?.scrollIntoView({behavior:'smooth',block:'nearest'});
   }));
-  results.querySelectorAll('[data-clinical-close]').forEach(button=>button.addEventListener('click',()=>{
-   const id=button.dataset.clinicalClose;
-   selected=null;
-   const url=new URL(location.href);url.searchParams.delete('article');
-   history.replaceState(null,'',url.pathname+url.search+url.hash);
-   render();
-   document.querySelector('[data-clinical-open="'+id+'"]')?.focus({preventScroll:true});
-  }));
-  if(selected&&!matches.some(item=>item.id===selected)){
-   selected=null;
-   const url=new URL(location.href);url.searchParams.delete('article');
-   history.replaceState(null,'',url.pathname+url.search+url.hash);
-  }
+  results.querySelectorAll('[data-clinical-close]').forEach(button=>button.addEventListener('click',()=>closeSelected(button.dataset.clinicalClose)));
  };
- query.addEventListener('input',()=>{selected=null;const url=new URL(location.href);url.searchParams.delete('article');history.replaceState(null,'',url.pathname+url.search+url.hash);render();});
- document.getElementById('clinical-clear').addEventListener('click',()=>{query.value='';selected=null;const url=new URL(location.href);url.searchParams.delete('article');history.replaceState(null,'',url.pathname+url.search+url.hash);render();query.focus();});
- filters.querySelectorAll('[data-clinical-filter]').forEach(button=>button.addEventListener('click',()=>{category=button.dataset.clinicalFilter;selected=null;const url=new URL(location.href);url.searchParams.delete('article');history.replaceState(null,'',url.pathname+url.search+url.hash);filters.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===button));render();}));
+ query.addEventListener('input',()=>{selected=null;updateUrl();render();});
+ document.getElementById('clinical-clear').addEventListener('click',()=>{query.value='';selected=null;updateUrl();render();query.focus();});
+ filters.querySelectorAll('[data-clinical-filter]').forEach(button=>button.addEventListener('click',()=>{category=button.dataset.clinicalFilter;selected=null;updateUrl();filters.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===button));render();}));
  render();
 }
 
