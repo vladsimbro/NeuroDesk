@@ -47,6 +47,27 @@
   assert(icd.doc.querySelector('#icd-results [data-icd-open]')!==null,'ICD supports short Russian fragments');
   icd.doc.querySelector('[data-icd-chapter="G00-G99"]').click();
   assert(icd.doc.getElementById('icd-class-toolbar').textContent.includes('Болезни нервной системы'),'ICD opens selected chapter');
+
+  const icdTree=icd.doc.getElementById('icd-tree');
+  assert(!icdTree.hidden&&icdTree.querySelectorAll('[data-icd-open]').length>0,'Expandable chapter tree is visible');
+  const expanding=icdTree.querySelector('[data-icd-expand]');
+  assert(!!expanding,'Chapter contains expandable rubric');
+  const toggleId=expanding.dataset.icdExpand;
+  expanding.click();
+  assert(icdTree.querySelector('[data-icd-expand="'+toggleId+'"]')?.getAttribute('aria-expanded')==='true','Chapter tree expands inline');
+  assert(queryIcd.value==='ми','Changing chapter preserves user search query');
+  assert(icd.doc.getElementById('icd-favorites-count').textContent==='0','Favorites start empty');
+  icdDetail.querySelector('#icd-toggle-favorite').click();
+  assert(icd.doc.getElementById('icd-favorites-count').textContent==='1','Adding code to favorites updates count');
+  icd.doc.getElementById('icd-show-favorites').click();
+  assert(!icd.doc.getElementById('icd-personal-content').hidden&&icd.doc.getElementById('icd-personal-content').textContent.includes('G43.1'),'Favorites panel lists saved codes');
+  icd.doc.getElementById('icd-reset-chapter').click();
+  queryIcd.value='ишемический инсульт';
+  queryIcd.dispatchEvent(new icd.win.Event('input',{bubbles:true}));
+  await waitUntil(()=>icd.doc.getElementById('icd-search-suggestions').textContent.includes('I63'),'medical terminology search hint');
+  assert(icd.doc.getElementById('icd-search-suggestions').textContent.includes('не рекомендации'),'Search hints avoid automatic medical coding');
+  assert(!!icd.doc.getElementById('icd-offline-state'),'ICD offline state is accessible');
+
   const width=icd.doc.documentElement.scrollWidth;
   assert(width<=icd.win.innerWidth+1,'ICD mobile view has no horizontal page overflow');
   icd.frame.remove();

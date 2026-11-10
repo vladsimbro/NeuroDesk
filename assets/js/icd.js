@@ -1,10 +1,10 @@
-import {ICD_CHAPTERS,createICDIndex,getICDByCode,getAncestors,getChildren,chapterItems,chapterGroups,chapterOf,searchICD,normalizeCode,isCurrent} from './icd-core.js';
+import {ICD_CHAPTERS,createICDIndex,getICDByCode,getAncestors,getChildren,chapterItems,chapterGroups,chapterOf,searchICD,isCurrent} from './icd-core.js';
+import {getICDSearchHints,suggestICDQueries,getICDTreeRoots,getICDTreeChildren,getICDTreeLineage,ICD_FAVORITES_KEY,ICD_RECENTS_KEY,readCodeList,writeCodeList} from './icd-enhancements.js';
 
 const DATA_URL=new URL('../data/icd10-v2.27.json',import.meta.url).href;
 const SOURCE_URL='https://nsi.rosminzdrav.ru/dictionaries/1.2.643.5.1.13.13.11.1005/passport/2.27';
 const PAGE_SIZE=60;
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const encode=value=>encodeURIComponent(value);
 const formatCount=n=>n.toLocaleString('ru-RU');
 
 export function bindICD(){
@@ -13,11 +13,93 @@ export function bindICD(){
  const status=document.getElementById('icd-status'),results=document.getElementById('icd-results'),more=document.getElementById('icd-more-wrap');
  const card=document.querySelector('.icd-search-card'),chapters=document.querySelector('.icd-chapters-grid');
  if(!input||!card||!chapters)return;
- status.insertAdjacentHTML('afterend','<section class="icd-entry-detail" id="icd-entry-detail" aria-label="Карточка кода МКБ-10" hidden></section>');
- chapters.insertAdjacentHTML('beforebegin','<div class="icd-class-toolbar" id="icd-class-toolbar" hidden></div>');
+ status.insertAdjacentHTML('afterend',
+  '<div class="icd-search-suggestions" id="icd-search-suggestions" aria-live="polite"></div>'+
+  '<section class="icd-entry-detail" id="icd-entry-detail" aria-label="Карточка кода МКБ-10" hidden></section>'+
+  '<section class="icd-personal"><div class="icd-personal-actions" role="group" aria-label="Личные списки кодов"><button type="button" id="icd-show-favorites" aria-pressed="false">☆ Избранное <span id="icd-favorites-count">0</span></button><button type="button" id="icd-show-recent" aria-pressed="false">Недавние <span id="icd-recents-count">0</span></button></div><div id="icd-personal-content" hidden></div><p class="icd-personal-hint">Здесь сохраняются только коды в этом браузере, без медицинских данных пациентов.</p></section>'+
+  '<p class="icd-offline-state" id="icd-offline-state" role="status">Офлайн-доступ: проверяем поддержку браузера…</p>');
+
+ chapters.insertAdjacentHTML('beforebegin','<div class="icd-class-toolbar" id="icd-class-toolbar" hidden></div><section class="icd-tree-panel" id="icd-tree" hidden aria-label="Дерево классификатора"></section>');
  const detail=document.getElementById('icd-entry-detail'),classToolbar=document.getElementById('icd-class-toolbar');
+ const treePanel=document.getElementById('icd-tree'),suggestions=document.getElementById('icd-search-suggestions');
+ const personal=document.getElementById('icd-personal-content'),favoriteCount=document.getElementById('icd-favorites-count'),recentCount=document.getElementById('icd-recents-count');
+ const offlineStatus=document.getElementById('icd-offline-state');
+ let favorites=readCodeList(globalThis.localStorage||null,ICD_FAVORITES_KEY),recents=readCodeList(globalThis.localStorage||null,ICD_RECENTS_KEY);
+ let personalMode='',treeExpanded=new Set(),treeRange='';
+
  let index=null,loading=null,timer=null,shown=PAGE_SIZE,found=[],chapterRange='',selected='';
  let requestId=0;
+ function persist(key,list){writeCodeList(globalThis.localStorage||null,key,list);}
+ function updateCollections(){
+  favoriteCount.textContent=String(favorites.length);
+  recentCount.textContent=String(recents.length);
+  document.getElementById('icd-show-favorites').setAttribute('aria-pressed',String(personalMode==='favorites'));
+  document.getElementById('icd-show-recent').setAttribute('aria-pressed',String(personalMode==='recent'));
+  if(!personalMode){personal.hidden=true;personal.innerHTML='';return;}
+  const codes=personalMode==='favorites'?favorites:recents;
+  personal.hidden=false;
+  personal.innerHTML='<div class="icd-personal-heading"><strong>'+(personalMode==='favorites'?'Избранные коды':'Недавно открытые')+'</strong><button type="button" id="icd-clear-personal" '+(!codes.length?'disabled':'')+'>Очистить</button></div>'+
+   (codes.length&&index?'<div class="icd-personal-codes">'+codes.map(code=>{
+    const record=getICDByCode(index,code);
+    return record?'<button type="button" data-icd-open="'+esc(record.code)+'"><b>'+esc(record.code)+'</b> '+esc(record.name)+'</button>':'';
+   }).join('')+'</div>':'<p class="icd-personal-empty">Пока ничего нет.</p>');
+ }
+ function recordVisit(code){
+  recents=[code,...recents.filter(c=>c!==code)].slice(0,20);
+  persist(ICD_RECENTS_KEY,recents);
+  updateCollections();
+ }
+ function toggleFavorite(){
+  if(!selected)return;
+  favorites=favorites.includes(selected)?favorites.filter(c=>c!==selected):[selected,...favorites].slice(0,30);
+  persist(ICD_FAVORITES_KEY,favorites);
+  updateCollections();renderDetail();
+ }
+ function renderSuggestions(query,resultsLength){
+  if(!index||!query.trim()){suggestions.innerHTML='';return;}
+  const matched=getICDSearchHints(index,query,{includeInactive:inactive.checked,chapterRange});
+  const hints=matched.filter(row=>!found.some(item=>item.id===row.item.id));
+  const typos=resultsLength===0?suggestICDQueries(index,query):[];
+  suggestions.innerHTML=
+   (hints.length?'<div class="icd-search-hints"><b>Поисковые ориентиры</b><div>'+hints.map(row=>'<button type="button" data-icd-open="'+esc(row.item.code)+'"><strong>'+esc(row.item.code)+'</strong> · '+esc(row.label)+'</button>').join('')+'</div><small>Это подсказки для навигации, а не рекомендации по выбору кода диагноза.</small></div>':'')+
+   (typos.length?'<div class="icd-typos"><b>Возможно, ты искал:</b> '+typos.map(word=>'<button type="button" data-icd-suggest="'+esc(word)+'">'+esc(word)+'</button>').join('')+'</div>':'');
+ }
+ function renderTree(){
+  if(!index||!chapterRange){treePanel.hidden=true;treePanel.innerHTML='';return;}
+  if(treeRange!==chapterRange){treeExpanded=new Set();treeRange=chapterRange;}
+  const roots=getICDTreeRoots(index,chapterRange,inactive.checked),chapter=ICD_CHAPTERS.find(c=>c[1]===chapterRange);
+  let rendered=0;
+  const node=(item,depth=0,parents=new Set())=>{
+   if(depth>12||parents.has(item.id)||rendered>2500)return '';
+   rendered++;
+   const children=getICDTreeChildren(index,item,inactive.checked),expanded=treeExpanded.has(item.id);
+   const nextParents=new Set(parents);nextParents.add(item.id);
+   return '<li class="icd-tree-node"><div class="icd-tree-row'+(selected===item.code?' is-selected':'')+'">'+
+    (children.length?'<button type="button" class="icd-tree-toggle" data-icd-expand="'+esc(item.id)+'" aria-label="'+(expanded?'Свернуть':'Развернуть')+' '+esc(item.code)+'" aria-expanded="'+expanded+'">'+(expanded?'⌄':'›')+'</button>':'<span class="icd-tree-spacer" aria-hidden="true"></span>')+
+    '<button type="button" class="icd-tree-item" data-icd-open="'+esc(item.code)+'"><b>'+esc(item.code)+'</b><span>'+esc(item.name)+'</span></button>'+
+    (children.length?'<small>'+children.length+'</small>':'')+
+    '</div>'+(expanded&&children.length?'<ul>'+children.map(child=>node(child,depth+1,nextParents)).join('')+'</ul>':'')+'</li>';
+  };
+  treePanel.hidden=false;
+  treePanel.innerHTML='<div class="icd-tree-heading"><div><span class="icd-class-eyebrow">ИНТЕРАКТИВНОЕ ДЕРЕВО</span><h3>Класс '+esc(chapter?.[0]||'')+' · '+esc(chapter?.[2]||'')+'</h3><p>Раскрывай блоки и подрубрики. Нажми на код, чтобы открыть полную карточку.</p></div><span class="icd-tree-root-count">'+roots.length+' корневых рубрик</span></div>'+
+   '<ul class="icd-tree-roots">'+roots.map(root=>node(root)).join('')+'</ul>';
+ }
+ function revealInTree(item){
+  if(!chapterRange||!item)return;
+  for(const id of getICDTreeLineage(index,item,chapterRange,inactive.checked))treeExpanded.add(id);
+  renderTree();
+ }
+ async function initOffline(){
+  if(!('serviceWorker' in navigator)||!window.isSecureContext){offlineStatus.textContent='Офлайн-доступ требует HTTPS и браузер с поддержкой Service Worker.';return;}
+  try{
+   await navigator.serviceWorker.register('./sw-icd.js',{scope:'./'});
+   await navigator.serviceWorker.ready;
+   offlineStatus.textContent='Офлайн-копия МКБ-10 подготовлена в браузере. Доступна после первой успешной загрузки, пока браузер хранит кэш.';
+  }catch(e){
+   offlineStatus.textContent='Офлайн-копию не удалось подготовить. При наличии сети справочник продолжит работать.';
+  }
+ }
+
  const initial=new URL(location.href);
  const initialCode=initial.searchParams.get('code')||'';
  const initialSearch=initial.searchParams.get('icd')||'';
@@ -76,10 +158,13 @@ export function bindICD(){
    results.innerHTML=found.slice(0,shown).map(item=>itemButton(item)).join('');
    more.innerHTML=shown<found.length?'<button class="button button-outline icd-more-button" type="button" id="icd-more">Показать ещё '+Math.min(PAGE_SIZE,found.length-shown)+' из '+formatCount(found.length-shown)+' оставшихся</button>':'';
   }
-  if(filtered)status.textContent='Найдено '+formatCount(found.length)+(scope?' в классе '+scope[0]:'')+'.'+(found.length>'0'?' Показано '+formatCount(Math.min(found.length,shown))+'.':'');
+  if(filtered)status.textContent='Найдено '+formatCount(found.length)+(scope?' в классе '+scope[0]:'')+'.'+(found.length>0?' Показано '+formatCount(Math.min(found.length,shown))+'.':'');
   else if(scope)status.textContent='Класс '+scope[0]+' · '+scope[2]+' · '+formatCount(chapterItems(index,scope[1],inactive.checked).length)+' записей. Ниже показаны основные рубрики.';
   else status.textContent='База загружена. Доступно '+formatCount(index.records.length)+' записей. Выбери класс или введи запрос.';
   renderChapterToolbar();
+  renderSuggestions(q,found.length);
+  renderTree();
+  updateCollections();
  }
  function renderChapterToolbar(){
   if(!chapterRange){classToolbar.hidden=true;classToolbar.innerHTML='';chapters.querySelectorAll('button').forEach(b=>b.classList.remove('is-active'));return;}
@@ -103,7 +188,7 @@ export function bindICD(){
   const parent=ancestors.at(-1),siblings=parent?getChildren(index,parent,inactive.checked).filter(x=>x.id!==item.id).slice(0,12):[];
   detail.hidden=false;
   detail.innerHTML='<div class="icd-detail-heading"><div><span class="icd-class-eyebrow">КАРТОЧКА ЗАПИСИ · МКБ-10 РФ</span><h2><span>'+esc(item.code)+'</span> '+esc(item.name)+'</h2></div><button class="icd-detail-dismiss" type="button" id="icd-hide-detail" aria-label="Закрыть карточку">×</button></div>'+
-   '<div class="icd-detail-tools"><button type="button" id="icd-copy-code" class="button button-outline">Скопировать код</button><button type="button" id="icd-copy-entry" class="button button-outline">Скопировать код и название</button><button type="button" id="icd-copy-link" class="button button-outline">Ссылка на запись</button></div>'+
+   '<div class="icd-detail-tools"><button type="button" id="icd-toggle-favorite" class="button button-outline" aria-pressed="'+favorites.includes(item.code)+'">'+(favorites.includes(item.code)?'★ В избранном':'☆ В избранное')+'</button><button type="button" id="icd-copy-code" class="button button-outline">Скопировать код</button><button type="button" id="icd-copy-entry" class="button button-outline">Скопировать код и название</button><button type="button" id="icd-copy-link" class="button button-outline">Ссылка на запись</button></div>'+
    '<div id="icd-copy-feedback" class="icd-copy-feedback" role="status" aria-live="polite"></div>'+
    '<div class="icd-detail-facts"><span><b>Статус:</b> '+(isCurrent(item)?'актуальна в версии 2.27':'неактуальна в версии 2.27')+'</span>'+(item.date?'<span><b>Дата в источнике:</b> '+esc(item.date)+'</span>':'')+(item.addlCode==='1'||item.addlCode==='2'?'<span><b>Признак дополнительного кодирования:</b> '+(item.addlCode==='1'?'+':'*')+'</span>':'')+'</div>'+
    (chapter?'<div class="icd-detail-section"><h3>Класс МКБ-10</h3><button type="button" data-icd-chapter="'+esc(chapter[1])+'" class="icd-path-code"><b>'+esc(chapter[0]+' · '+chapter[1])+'</b> '+esc(chapter[2])+'</button></div>':'')+
@@ -111,12 +196,14 @@ export function bindICD(){
    '<div class="icd-detail-section"><h3>Подрубрики <span>'+formatCount(children.length)+'</span></h3>'+(children.length?'<div class="icd-related-list">'+children.slice(0,120).map(x=>itemButton(x,{compact:true})).join('')+'</div>'+(children.length>120?'<p>Показаны первые 120 записей. Для полного списка используй поиск по коду.</p>':''):'<p>В текущей выгрузке дочерних рубрик нет. Это не подтверждает допустимость кода как окончательного диагноза.</p>')+'</div>'+
    (siblings.length?'<div class="icd-detail-section"><h3>Соседние коды</h3><div class="icd-related-list">'+siblings.map(x=>itemButton(x,{compact:true})).join('')+'</div></div>':'')+
    '<p class="icd-detail-caution">Наименования и признаки получены из справочника НСИ. Этот набор не содержит полных примечаний «включено», «исключено» и всех правил кодирования. Для медицинской документации сверяй официальный классификатор и действующие инструкции.</p>'+
-   '<a class="icd-detail-source" href="'+SOURCE_URL+'" target="_blank" rel="noopener noreferrer">Открыть паспорт версии 2.27 в НСИ Минздрава ↗</a>';
+   '<div class="icd-detail-source-links"><a class="icd-detail-source" href="'+SOURCE_URL+'" target="_blank" rel="noopener noreferrer">Российская база МКБ-10 · версия 2.27 ↗</a><a class="icd-detail-source" href="https://icd.who.int/browse10/2019/en" target="_blank" rel="noopener noreferrer">МКБ-10 ВОЗ 2019 (другая редакция) ↗</a></div>';
  }
  function selectCode(code,{push=true,scroll=true}={}){
   const item=index&&getICDByCode(index,code);
   if(!item)return false;
   selected=item.code;
+  recordVisit(selected);
+  revealInTree(item);
   renderDetail();
   updateAddress({push});
   if(scroll)detail.scrollIntoView({behavior:'smooth',block:'start'});
@@ -126,14 +213,12 @@ export function bindICD(){
   if(!ICD_CHAPTERS.some(ch=>ch[1]===range))return;
   chapterRange=range;
   shown=PAGE_SIZE;
-  input.value='';
   renderList();
-  updateAddress();
-  card.scrollIntoView({behavior:'smooth',block:'start'});
+  updateAddress({push:true});
+  treePanel.scrollIntoView({behavior:'smooth',block:'start'});
  }
  function performSearch(){
   if(!index)return;
-  chapterRange='';
   shown=PAGE_SIZE;
   renderList();
   updateAddress();
@@ -148,6 +233,8 @@ export function bindICD(){
    chapterRange=ICD_CHAPTERS.some(ch=>ch[1]===classValue)?classValue:'';
    shown=PAGE_SIZE;
    renderList();
+   updateCollections();
+   initOffline();
    const code=address.searchParams.get('code')||initialCode;
    if(code){
     const ok=selectCode(code,{push:false,scroll:false});
@@ -171,6 +258,7 @@ export function bindICD(){
   if(open){selectCode(open.dataset.icdOpen);return;}
   const chapterButton=event.target.closest('[data-icd-chapter]');
   if(chapterButton){setChapter(chapterButton.dataset.icdChapter);return;}
+  if(event.target.closest('#icd-toggle-favorite')){toggleFavorite();return;}
   if(event.target.closest('#icd-hide-detail')){
    selected='';renderDetail();updateAddress({push:true});input.focus();return;
   }
@@ -188,7 +276,7 @@ export function bindICD(){
  });
  classToolbar.addEventListener('click',event=>{
   if(!event.target.closest('#icd-reset-chapter'))return;
-  chapterRange='';input.value='';shown=PAGE_SIZE;renderList();updateAddress();
+  chapterRange='';shown=PAGE_SIZE;renderList();updateAddress({push:true});
  });
  input.addEventListener('input',()=>{
   clearTimeout(timer);
@@ -203,6 +291,45 @@ export function bindICD(){
  inactive.addEventListener('change',()=>{
   shown=PAGE_SIZE;renderList();renderDetail();
  });
+ suggestions.addEventListener('click',event=>{
+  const open=event.target.closest('[data-icd-open]');
+  if(open){selectCode(open.dataset.icdOpen);return;}
+  const suggested=event.target.closest('[data-icd-suggest]');
+  if(suggested){
+   input.value=suggested.dataset.icdSuggest;
+   performSearch();input.focus();
+  }
+ });
+ treePanel.addEventListener('click',event=>{
+  const toggle=event.target.closest('[data-icd-expand]');
+  if(toggle){
+   const id=toggle.dataset.icdExpand;
+   if(treeExpanded.has(id))treeExpanded.delete(id);
+   else treeExpanded.add(id);
+   renderTree();
+   treePanel.querySelector('[data-icd-expand="'+CSS.escape(id)+'"]')?.focus({preventScroll:true});
+   return;
+  }
+  const open=event.target.closest('[data-icd-open]');
+  if(open)selectCode(open.dataset.icdOpen);
+ });
+ const personalActions=document.querySelector('.icd-personal-actions');
+ personalActions.addEventListener('click',event=>{
+  const favorite=event.target.closest('#icd-show-favorites');
+  const recent=event.target.closest('#icd-show-recent');
+  if(favorite)personalMode=personalMode==='favorites'?'':'favorites';
+  else if(recent)personalMode=personalMode==='recent'?'':'recent';
+  else return;
+  updateCollections();
+ });
+ personal.addEventListener('click',event=>{
+  const open=event.target.closest('[data-icd-open]');
+  if(open){selectCode(open.dataset.icdOpen);return;}
+  if(!event.target.closest('#icd-clear-personal'))return;
+  if(personalMode==='favorites'){favorites=[];persist(ICD_FAVORITES_KEY,favorites);}
+  if(personalMode==='recent'){recents=[];persist(ICD_RECENTS_KEY,recents);}
+  updateCollections();renderDetail();
+ });
  window.addEventListener('popstate',()=>{
   if(!input.isConnected||!index)return;
   const url=new URL(location.href);
@@ -210,7 +337,9 @@ export function bindICD(){
   const range=url.searchParams.get('chapter')||'';
   chapterRange=ICD_CHAPTERS.some(ch=>ch[1]===range)?range:'';
   selected=getICDByCode(index,url.searchParams.get('code')||'')?.code||'';
-  shown=PAGE_SIZE;renderList();renderDetail();
+  shown=PAGE_SIZE;renderList();
+  if(selected)revealInTree(getICDByCode(index,selected));
+  renderDetail();
  });
  startup();
 }

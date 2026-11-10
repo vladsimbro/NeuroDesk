@@ -63,3 +63,60 @@
  .icd-detail-facts{display:grid}
 }
 @media(prefers-reduced-motion:reduce){.icd-entry-button{transition:none}}
+
+
+/* ICD-10 advanced search, readable chapter tree, and code-only personal lists */
+.icd-search-suggestions:empty{display:none}
+.icd-search-hints,.icd-typos{border:1px solid #cde3de;border-radius:12px;background:#f5faf8;padding:13px 14px;margin:11px 0}
+.icd-search-hints>b,.icd-typos>b{display:block;color:#2d5960;font-size:12px;margin-bottom:8px}
+.icd-search-hints>div{display:flex;flex-wrap:wrap;gap:6px}
+.icd-search-hints button,.icd-typos button{font:600 12px/1.4 'DM Sans',sans-serif;color:#1b716a;border:1px solid #b9d5ce;background:#fff;border-radius:9px;padding:8px 10px;cursor:pointer}
+.icd-search-hints small{display:block;color:#657b80;margin-top:9px;font-size:11px;line-height:1.5}
+.icd-typos button{margin:0 5px 5px 0}
+.icd-search-hints button:hover,.icd-typos button:hover{border-color:#418b80;background:#edf7f4}
+.icd-personal{margin-top:14px;padding:13px 15px;border:1px solid var(--line,#e1e8e8);border-radius:14px;background:#fbfdfc}
+.icd-personal-actions{display:flex;flex-wrap:wrap;gap:8px}
+.icd-personal-actions button{display:inline-flex;align-items:center;gap:7px;padding:9px 12px;border-radius:10px;border:1px solid #d3e3df;background:#fff;color:#326c6a;font:700 12px 'DM Sans',sans-serif;cursor:pointer}
+.icd-personal-actions button[aria-pressed=true]{background:#dfefeb;border-color:#529489}
+.icd-personal-actions button span{font-size:11px;border-radius:8px;padding:2px 5px;background:#eef6f3}
+.icd-personal-hint{font-size:11px;color:#788c92;line-height:1.5;margin:10px 0 0}
+.icd-personal-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:13px 0 9px}
+.icd-personal-heading strong{font-size:13px;color:#2a4b52}
+.icd-personal-heading button{background:none;border:0;color:#2c7b72;font:600 12px 'DM Sans',sans-serif;cursor:pointer}
+.icd-personal-heading button:disabled{opacity:.4;cursor:default}
+.icd-personal-codes{display:grid;gap:5px;max-height:320px;overflow:auto}
+.icd-personal-codes button{font:500 12px/1.45 'DM Sans',sans-serif;text-align:left;border:1px solid #e0ece8;background:white;border-radius:8px;padding:9px 10px;color:#3f5d65;cursor:pointer}
+.icd-personal-codes button:hover{background:#f0f8f5}
+.icd-personal-codes b{color:#1e7b75;margin-right:7px}
+.icd-personal-empty{font-size:12px;color:#7e9294;padding:8px}
+.icd-offline-state{font-size:11px;color:#657c82;line-height:1.6;padding:8px 3px;margin:8px 0}
+.icd-tree-panel{margin:0 0 20px;border:1px solid #d4e7e2;border-radius:17px;background:#fff;padding:clamp(13px,2vw,24px);scroll-margin-top:16px}
+.icd-tree-panel[hidden]{display:none}
+.icd-tree-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding-bottom:14px;border-bottom:1px solid #e8f0ed;margin-bottom:12px}
+.icd-tree-heading h3{font:750 clamp(15px,1.9vw,19px)/1.4 'Manrope',sans-serif;color:#2b4e54;margin:7px 0}
+.icd-tree-heading p{font-size:12px;line-height:1.55;color:#75888d;margin:0}
+.icd-tree-root-count{white-space:nowrap;padding:6px 9px;border-radius:7px;background:#eff7f5;color:#437f76;font-size:10px;font-weight:700}
+.icd-tree-panel ul{list-style:none;padding:0;margin:0}
+.icd-tree-panel .icd-tree-node>ul{border-left:1px solid #c9ded9;margin-left:13px;padding-left:17px}
+.icd-tree-row{display:flex;align-items:flex-start;gap:8px;padding:3px 4px;border-radius:8px}
+.icd-tree-row:hover,.icd-tree-row.is-selected{background:#edf7f4}
+.icd-tree-toggle,.icd-tree-spacer{flex:0 0 27px;width:27px;height:31px}
+.icd-tree-toggle{font-size:21px;color:#43857c;background:#edf6f3;border:1px solid #d8e9e4;border-radius:7px;cursor:pointer;line-height:24px}
+.icd-tree-item{display:flex;align-items:baseline;flex:1;min-width:0;text-align:left;gap:10px;padding:6px 1px;background:none;border:0;font:500 12px/1.5 'DM Sans',sans-serif;cursor:pointer;color:#37535c}
+.icd-tree-item b{flex:0 0 80px;color:#1c7872;font:750 12px/1.5 'Manrope',sans-serif}
+.icd-tree-item span{overflow-wrap:anywhere}
+.icd-tree-row small{color:#7e9995;font-size:10px;padding-top:8px}
+.icd-tree-item:hover span{text-decoration:underline;text-underline-offset:2px}
+.icd-tree-toggle:focus-visible,.icd-tree-item:focus-visible,.icd-personal button:focus-visible,.icd-search-suggestions button:focus-visible{outline:2px solid #2b9386;outline-offset:2px}
+.icd-detail-source-links{display:flex;flex-wrap:wrap;gap:10px 18px}
+@media(max-width:760px){
+ .icd-tree-heading{flex-direction:column;gap:8px}
+ .icd-tree-root-count{white-space:normal}
+ .icd-tree-panel{padding:12px}
+ .icd-tree-item{font-size:11px;gap:6px;flex-wrap:wrap}
+ .icd-tree-item b{flex:0 0 auto;min-width:57px;font-size:11px}
+ .icd-tree-row{gap:5px;padding:3px 1px}
+ .icd-tree-panel .icd-tree-node>ul{margin-left:9px;padding-left:9px}
+ .icd-tree-toggle,.icd-tree-spacer{flex-basis:23px;width:23px}
+}
+@media(max-width:390px){.icd-tree-item b{min-width:53px}.icd-tree-heading p{font-size:11px}.icd-personal{padding:12px}}
