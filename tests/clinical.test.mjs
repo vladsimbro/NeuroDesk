@@ -90,8 +90,8 @@ test('article expansion and collapse use a smooth height transition and an in-ar
 });
 
 test('clinical route remains clinical when an article section hash changes', () => {
-  assert.match(app, /if\\(location\\.pathname\\.endsWith\\('\\/clinical\\.html'\\)\\)return 'clinical'/);
-  assert.match(app, /hashchange',\\(\\)=>\\{if\\(!location\\.pathname\\.endsWith\\('\\/clinical\\.html'\\)\\)render\\(\\)\\}/);
+  assert.ok(app.includes("if(location.pathname.endsWith('/clinical.html'))return 'clinical'"));
+  assert.ok(app.includes("window.addEventListener('hashchange',()=>{if(!location.pathname.endsWith('/clinical.html'))render();});"));
   assert.match(clinicalPage, /data-nav="clinical"/);
   assert.match(home, /data-nav="clinical"/);
 });
@@ -104,9 +104,9 @@ test('article links are limited to direct Russian clinical recommendation record
 });
 
 test('mobile sidebar backdrop fades smoothly in both directions', () => {
-  assert.match(css, /body:before\\{content:"";position:fixed/);
+  assert.ok(css.includes('body:before{content:"";position:fixed'));
   assert.ok(css.includes('opacity:0;visibility:hidden;pointer-events:none;transition:opacity .28s ease,visibility 0s linear .28s'));
-  assert.match(css, /body\\.sidebar-open:before\\{opacity:1;visibility:visible;pointer-events:auto/);
+  assert.ok(css.includes('body.sidebar-open:before{opacity:1;visibility:visible;pointer-events:auto;transition-delay:0s'));
 });
 
 test('project literature policy lists Russian official sources only', async () => {
