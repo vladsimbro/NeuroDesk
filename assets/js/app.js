@@ -305,7 +305,8 @@ document.addEventListener('click',(event) => {
   const nav = event.target.closest('[data-route]');
   if (nav) { event.preventDefault(); navigate(nav.dataset.route); }
   if (event.target.closest('[data-scroll-gcs]')) document.getElementById('gcs')?.scrollIntoView({behavior:'smooth',block:'start'});
-  const toolLink = event.target.closest('[data-open-tool]');\n  if (toolLink) document.getElementById('tool-' + toolLink.dataset.openTool)?.scrollIntoView({behavior:'smooth',block:'start'});
+  const toolLink = event.target.closest('[data-open-tool]');
+  if (toolLink) document.getElementById('tool-' + toolLink.dataset.openTool)?.scrollIntoView({behavior:'smooth',block:'start'});
   if (!event.target.closest('.global-search') && !event.target.closest('.search-popover')) searchPopover.hidden = true;
 });
 window.addEventListener('hashchange',render);
