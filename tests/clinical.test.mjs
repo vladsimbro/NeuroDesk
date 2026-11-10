@@ -84,7 +84,7 @@ test('clinical mobile layout improves touch targets and reading width', () => {
 test('Russian clinical recommendations are the primary local reference where directly applicable', () => {
   assert.match(app, /Российские клинические рекомендации/);
   assert.match(app, /minzdrav\.gov\.ru\/smartphone_apps_rubrikator_kr/);
-  for (const id of ['814_1','295_4','810_1','165_2','742_2','617_5']) assert.ok(app.includes(id), id);
+  for (const id of ['814_1','295_4','810_1','165_2','742_2','617_5','741','290_2']) assert.ok(app.includes(id), id);
   assert.doesNotMatch(app, /NICE|NHS|SAEM|ILAE|NINDS|AAO|AAPM&R|nice\\.org\\.uk|nhs\\.uk|saem\\.org|ilae\\.org|ninds\\.nih\\.gov|aao\\.org|ncbi\\.nlm\\.nih\\.gov/);
   assert.match(app, /зарубежные источники не используются/i);
 });
@@ -161,4 +161,13 @@ test('home page presents the two main reference modules clearly', () => {
   assert.match(app, /home-module-clinical/);
   assert.match(css, /\.home-welcome/);
   assert.match(css, /\.home-module-grid/);
+});
+
+test('clinical article wording does not expose foreign guideline names or untranslated clinical shortcuts', () => {
+  const start = app.indexOf('const CLINICAL_LIBRARY=');
+  const end = app.indexOf('function renderClinical()', start);
+  const library = app.slice(start, end);
+  assert.doesNotMatch(library, /McDonald|myasthenia gravis|déjà vu|jamais vu|HINTS|FAST|last known well|head impulse|MND|ALS|NMOSD|MOGAD|AQP4|SUNCT|SUNA|ABCD2/i);
+  assert.match(library, /диагностические критерии рассеянного склероза/);
+  assert.match(library, /ощущение уже виденного или никогда не виденного/);
 });
