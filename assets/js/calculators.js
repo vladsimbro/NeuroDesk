@@ -1,5 +1,6 @@
 import {SCALE_DEFS,calculate} from './calculator-models.js';
 import {CALCULATOR_GUIDES} from './calculator-guides.js';
+import {renderCalculatorFields,completionState,missingField,displayScoreProgress} from './calculator-workspace.js';
 
 const items=document.getElementById('calc-items');
 const details=document.getElementById('calc-detail');
@@ -16,20 +17,12 @@ function list(){
  count.textContent='Найдено инструментов: '+match.length+' из '+SCALE_DEFS.length;
  items.innerHTML=match.map((s,i)=>'<button type="button" data-tool="'+s.id+'" aria-pressed="'+(active===s.id)+'" class="calc-card'+(active===s.id?' active':'')+'"><span class="calc-card-number">'+String(i+1).padStart(2,'0')+'</span><span class="calc-card-info"><span class="calc-card-group">'+escapeHtml(s.group)+'</span><strong>'+escapeHtml(s.title)+'</strong><small>'+escapeHtml(s.subtitle)+'</small></span><span class="calc-card-chevron" aria-hidden="true">↗</span></button>').join('')||'<p class="calc-empty">Ничего не найдено. Попробуй другой запрос.</p>';
 }
-function fieldMarkup(tool,f){
- const hint=CALCULATOR_GUIDES[tool.id]?.hints?.[f.key];
- const desc=hint?' aria-describedby="calc-help-'+f.key+'"':'';
- const label='<label class="calc-field-title" for="calc-'+f.key+'">'+escapeHtml(f.label)+'</label>';
- const hintMarkup=hint?'<small class="calc-field-hint" id="calc-help-'+f.key+'">'+escapeHtml(hint)+'</small>':'';
- if(f.type==='select')return '<div class="calc-field">'+label+'<select id="calc-'+f.key+'" name="'+f.key+'" required'+desc+'><option value="" disabled selected>Выбери вариант</option>'+f.options.filter(pair=>pair[0]!=='').map(pair=>'<option value="'+escapeHtml(pair[0])+'">'+escapeHtml(pair[1])+'</option>').join('')+'</select>'+hintMarkup+'</div>';
- return '<div class="calc-field">'+label+'<input type="text" id="calc-'+f.key+'" name="'+f.key+'" inputmode="'+(f.step===1?'numeric':'decimal')+'" autocomplete="off" required'+desc+' placeholder="'+(f.step===1?'Целое число':'Число, можно через запятую')+'">'+hintMarkup+'</div>';
-}
 function guideMarkup(tool){
  const guide=CALCULATOR_GUIDES[tool.id];
  if(!guide)return '';
- return '<details class="calc-help-panel"><summary><span>Порядок оценки и важные критерии</span><span class="calc-help-marker" aria-hidden="true">+</span></summary><ol>'+guide.steps.map(step=>'<li>'+escapeHtml(step)+'</li>').join('')+'</ol></details>';
+ return '<details class="calc-help-panel"'+(['gcs','fourat','rass','mrc'].includes(tool.id)?' open':'')+'><summary><span>Порядок оценки и важные критерии</span><span class="calc-help-marker" aria-hidden="true">+</span></summary><ol>'+guide.steps.map(step=>'<li>'+escapeHtml(step)+'</li>').join('')+'</ol></details>';
 }
-function resultMarkup(outcome){
+function resultMarkup(tool,outcome){
  const rows=outcome.breakdown.map(row=>'<div class="calc-breakdown-row"><dt>'+escapeHtml(row.label)+'</dt><dd>'+escapeHtml(row.value)+'</dd></div>').join('');
  // Separate a numeric metric from its physical unit, instead of flowing both into a heading.
  // Keeping them in distinct blocks prevents Safari text enlargement from collapsing the report.
@@ -38,19 +31,26 @@ function resultMarkup(outcome){
  const unit=measure?'<span class="calc-result-unit">'+escapeHtml(measure[2])+'</span>':'';
  const longValue=metric.length>12?' calc-result-metric--long':'';
  return '<header class="calc-result-main"><span class="calc-result-eyebrow">РАССЧИТАННЫЙ ПОКАЗАТЕЛЬ</span><strong class="calc-result-metric'+longValue+' calc-result-value">'+escapeHtml(metric)+'</strong>'+unit+'<span class="calc-result-label">'+escapeHtml(outcome.label)+'</span></header>'+
+ displayScoreProgress(tool,outcome,escapeHtml)+
  '<section class="calc-result-section"><h3>Что означает результат</h3><p class="calc-result-summary">'+escapeHtml(outcome.summary)+'</p></section>'+
  '<section class="calc-result-section"><h3>Как получено</h3><dl class="calc-breakdown">'+rows+'</dl></section>'+
  '<section class="calc-result-section"><h3>Как интерпретировать</h3><p>'+escapeHtml(outcome.interpretation)+'</p></section>'+
  '<section class="calc-result-caution"><h3>Важные ограничения</h3><p>'+escapeHtml(outcome.note)+'</p></section>'+
  '<button type="button" class="calc-copy" id="calc-copy">Скопировать результат и расшифровку</button>';
 }
-function showError(result,message,form){
+function showError(result,message,form,tool){
  result.classList.remove('has-result');
  result.classList.add('is-error');
  result.innerHTML='<strong class="calc-error-title">Результат не рассчитан</strong><p>'+escapeHtml(message)+'</p>';
- if(form){
-  const candidate=[...form.querySelectorAll('[name]')].find(node=>!String(node.value).trim());
-  if(candidate){candidate.setAttribute('aria-invalid','true');candidate.focus({preventScroll:true});}
+ if(!form||!tool)return;
+ const missing=missingField(form,tool);
+ if(!missing)return;
+ const candidate=form.querySelector('[name="'+missing.key+'"]');
+ if(candidate){
+  candidate.setAttribute('aria-invalid','true');
+  candidate.closest('.calc-field')?.classList.add('calc-field--invalid');
+  candidate.focus({preventScroll:true});
+  if(window.matchMedia('(max-width:900px)').matches)candidate.closest('.calc-field')?.scrollIntoView({behavior:'smooth',block:'center'});
  }
 }
 function openTool(id,focus=true){
@@ -59,14 +59,28 @@ function openTool(id,focus=true){
  active=id;list();
  details.innerHTML='<div class="calc-tool-header"><span class="calc-tool-category">'+escapeHtml(tool.group)+'</span><h2>'+escapeHtml(tool.title)+'</h2><p>'+escapeHtml(tool.detail)+'</p></div>'+
   guideMarkup(tool)+
-  '<form id="calc-form" novalidate aria-label="Параметры для '+escapeHtml(tool.title)+'"><div class="calc-fields'+(tool.id==='mrc'?' calc-fields--mrc':'')+'">'+tool.fields.map(f=>fieldMarkup(tool,f)).join('')+'</div><div class="calc-form-actions"><button type="submit" class="calc-primary-button">Рассчитать результат</button><button type="reset" class="calc-secondary-button">Очистить форму</button></div></form>'+
+  '<form id="calc-form" novalidate aria-label="Параметры для '+escapeHtml(tool.title)+'"><div class="calc-form-progress" id="calc-form-progress" role="status" aria-live="polite"><span>Заполнено <strong id="calc-progress-label">0 из '+tool.fields.length+'</strong> полей</span><progress id="calc-completion" max="'+tool.fields.length+'" value="0" aria-label="Прогресс заполнения"></progress></div>'+renderCalculatorFields(tool,CALCULATOR_GUIDES[tool.id],escapeHtml)+'<div class="calc-form-actions"><button type="submit" class="calc-primary-button">Рассчитать результат</button><button type="reset" class="calc-secondary-button">Очистить форму</button></div></form>'+
   '<section class="calc-report"><h3 class="calc-report-title">Результат и расшифровка</h3><div class="calc-result" id="calc-result" role="status" aria-live="polite"><span>Заполни параметры и нажми «Рассчитать результат».</span></div></section>'+
   '<div class="calc-tool-notice"><strong>Границы применения</strong><p>'+escapeHtml(tool.note)+'</p></div>'+
   '<div class="calc-tool-sources"><strong>Первоисточники и методика</strong>'+tool.sources.map(s=>'<a href="'+escapeHtml(s[1])+'" target="_blank" rel="noopener noreferrer">'+escapeHtml(s[0])+' ↗</a>').join('')+'</div>';
  const form=document.getElementById('calc-form'),result=document.getElementById('calc-result');
+ const updateProgress=()=>{
+  const {complete,total}=completionState(form,tool);
+  document.getElementById('calc-progress-label').textContent=complete+' из '+total;
+  document.getElementById('calc-completion').value=complete;
+  const box=document.getElementById('calc-form-progress');
+  box.classList.toggle('is-complete',complete===total);
+ };
  const pending=()=>{result.classList.remove('has-result');result.classList.remove('is-error');result.innerHTML='<span>Параметры изменены. Нажми «Рассчитать результат», чтобы обновить интерпретацию.</span>';};
- form.addEventListener('input',event=>{event.target.removeAttribute('aria-invalid');pending();});
- form.addEventListener('change',event=>{event.target.removeAttribute('aria-invalid');pending();});
+ const inputChanged=event=>{
+  event.target.removeAttribute('aria-invalid');
+  const field=event.target.closest('.calc-field');
+  field?.classList.remove('calc-field--invalid');
+  pending();
+  updateProgress();
+ };
+ form.addEventListener('input',inputChanged);
+ form.addEventListener('change',inputChanged);
  form.addEventListener('submit',event=>{
   event.preventDefault();
   const data=Object.fromEntries([...new FormData(form).entries()].map(([key,value])=>[key,typeof value==='string'?value.trim().replace(',','.'):value]));
@@ -74,12 +88,13 @@ function openTool(id,focus=true){
    const outcome=calculate(id,data);
    result.classList.remove('is-error');
    result.classList.add('has-result');
-   result.innerHTML=resultMarkup(outcome);
+   result.innerHTML=resultMarkup(tool,outcome);
    document.getElementById('calc-copy').addEventListener('click',()=>copyResult(tool,outcome));
    if(window.matchMedia('(max-width:900px)').matches)result.scrollIntoView({behavior:'smooth',block:'nearest'});
-  }catch(error){showError(result,error.message,form);}
+  }catch(error){showError(result,error.message,form,tool);}
  });
- form.addEventListener('reset',()=>{queueMicrotask(()=>{form.querySelectorAll('[aria-invalid]').forEach(n=>n.removeAttribute('aria-invalid'));result.classList.remove('has-result');result.classList.remove('is-error');result.innerHTML='<span>Заполни параметры и нажми «Рассчитать результат».</span>';});});
+ form.addEventListener('reset',()=>{queueMicrotask(()=>{form.querySelectorAll('[aria-invalid]').forEach(n=>n.removeAttribute('aria-invalid'));form.querySelectorAll('.calc-field--invalid').forEach(n=>n.classList.remove('calc-field--invalid'));result.classList.remove('has-result');result.classList.remove('is-error');result.innerHTML='<span>Заполни параметры и нажми «Рассчитать результат».</span>';updateProgress();});});
+ updateProgress();
  const url=new URL(location.href);url.searchParams.set('tool',id);history.replaceState(null,'',url.pathname+url.search+url.hash);
  if(focus){
   if(window.matchMedia('(max-width:900px)').matches)details.scrollIntoView({behavior:'smooth',block:'start'});
