@@ -134,3 +134,11 @@ test('Anion gap includes both measured and albumin-corrected values', () => {
   assert.equal(result.albuminCorrected, 17);
   assert.equal(calculateAnionGap(140, 104, 24, 0).status, 'invalid');
 });
+
+import { calculateCPP } from '../assets/js/calculators.js';
+test('CPP is calculated as MAP minus ICP without applying a treatment threshold', () => {
+  assert.equal(calculateCPP(90, 20).value, 70);
+  assert.equal(calculateCPP(65, 75).value, -10);
+  assert.equal(calculateCPP(0, 10).status, 'invalid');
+  assert.equal(calculateCPP(90, 151).status, 'invalid');
+});
